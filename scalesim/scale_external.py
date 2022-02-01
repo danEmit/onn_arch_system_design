@@ -4,15 +4,10 @@ import numpy as np
 import time
 import os
 
-sys.path.append("/Users/D/Desktop/research/scale-sim-v2/scalesim")
-
-from scalesim.scale_sim import scalesim
-import globals
+import scalesim.global_vars as global_vars
+global_vars.initialize()
 
 
-globals.initialize()
-
-logpath = ""
 
 def analyze_memory_writes():
     # here are some magic numbers. they are important!
@@ -37,7 +32,7 @@ def analyze_memory_writes():
     dram_filter_reads = 0
     dram_ofmap_writes = 0
 
-    for row in globals.memoryAccess:
+    for row in global_vars.memoryAccess:
         sram_reads  += row[SRAM_IFMAP_READS] + row[SRAM_FILTER_READS]
         sram_writes += row[SRAM_OFMAP_WRITES]
         dram_reads  += row[DRAM_IFMAP_READS] + row[DRAM_FILTER_READS]
@@ -104,10 +99,10 @@ def analyze_SRAM_trace(SRAM_demand_mat):
 
 
 def analyze_SRAM_usage():
-    input_demand_mat = globals.ifmap_demand_mat
-    filter_demand_mat = globals.filter_demand_mat
-    output_demand_mat = globals.ofmap_demand_mat
-    input_demand_mat_non_skew = globals.ifmap_demand_mat_non_skew
+    input_demand_mat = global_vars.ifmap_demand_mat
+    filter_demand_mat = global_vars.filter_demand_mat
+    output_demand_mat = global_vars.ofmap_demand_mat
+    input_demand_mat_non_skew = global_vars.ifmap_demand_mat_non_skew
 
     filter_SRAM_cycles = analyze_SRAM_trace(filter_demand_mat)
     num_weight_programming_cycles_total = 0

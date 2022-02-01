@@ -1,18 +1,20 @@
 import argparse
 import sys
-import globals
 import numpy as np
 import time
 import os
 
-#content_path = "/Users/D/Desktop/research/scale-sim-v2/"
 
+# this is necessary not for this file itself but because other 
+# files called by this file have import statements that rely on 
+# a certain path being set
 content_path = os.getcwd()
 content_path = content_path[0:content_path.rfind("/")+1]
 sys.path.append(content_path)
 from scalesim.scale_sim import scalesim
+import scalesim.global_vars as global_vars
 
-globals.initialize()
+global_vars.initialize()
 
 logpath = ""
 
@@ -39,7 +41,7 @@ def analyze_memory_writes():
     dram_filter_reads = 0
     dram_ofmap_writes = 0
 
-    for row in globals.memoryAccess:
+    for row in global_vars.memoryAccess:
         sram_reads  += row[SRAM_IFMAP_READS] + row[SRAM_FILTER_READS]
         sram_writes += row[SRAM_OFMAP_WRITES]
         dram_reads  += row[DRAM_IFMAP_READS] + row[DRAM_FILTER_READS]
@@ -106,10 +108,10 @@ def analyze_SRAM_trace(SRAM_demand_mat):
 
 
 def analyze_SRAM_usage():
-    input_demand_mat = globals.ifmap_demand_mat
-    filter_demand_mat = globals.filter_demand_mat
-    output_demand_mat = globals.ofmap_demand_mat
-    input_demand_mat_non_skew = globals.ifmap_demand_mat_non_skew
+    input_demand_mat = global_vars.ifmap_demand_mat
+    filter_demand_mat = global_vars.filter_demand_mat
+    output_demand_mat = global_vars.ofmap_demand_mat
+    input_demand_mat_non_skew = global_vars.ifmap_demand_mat_non_skew
 
     np.savetxt(logpath + "/input_SRAM_mat.csv",  input_demand_mat[0], delimiter = ",")
     np.savetxt(logpath + "/filter_SRAM_mat.csv", filter_demand_mat[0], delimiter = ",")

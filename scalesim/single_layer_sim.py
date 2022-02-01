@@ -1,6 +1,5 @@
 import os
-import globals
-
+import scalesim.global_vars as global_vars
 from scalesim.scale_config import scale_config as cfg
 from scalesim.topology_utils import topologies as topo
 from scalesim.compute.operand_matrix import operand_matrix as opmat
@@ -69,6 +68,7 @@ class single_layer_sim:
         self.runs_ready = False
         self.report_items_ready = False
 
+
     def set_params(self,
                    layer_id=0,
                    config_obj=cfg(), topology_obj=topo(),
@@ -128,10 +128,10 @@ class single_layer_sim:
 
 
 
-        globals.ifmap_demand_mat.append(ifmap_demand_mat)
-        globals.filter_demand_mat.append(filter_demand_mat)
-        globals.ofmap_demand_mat.append(ofmap_demand_mat)
-        globals.ifmap_demand_mat_non_skew.append(ifmap_demand_mat_non_skew)
+        global_vars.ifmap_demand_mat.append(ifmap_demand_mat)
+        global_vars.filter_demand_mat.append(filter_demand_mat)
+        global_vars.ofmap_demand_mat.append(ofmap_demand_mat)
+        global_vars.ifmap_demand_mat_non_skew.append(ifmap_demand_mat_non_skew)
 
 
 

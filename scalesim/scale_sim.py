@@ -3,6 +3,9 @@ from scalesim.scale_config import scale_config
 from scalesim.topology_utils import topologies
 from scalesim.simulator import simulator as sim
 
+#import scalesim.global_vars as global_vars
+import scalesim.global_vars as global_vars
+
 
 class scalesim:
     def __init__(self,

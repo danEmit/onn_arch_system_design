@@ -1,9 +1,10 @@
 import os
 
-import globals
 from scalesim.scale_config import scale_config as cfg
 from scalesim.topology_utils import topologies as topo
 from scalesim.single_layer_sim import single_layer_sim as layer_sim
+import scalesim.global_vars as global_vars
+
 
 class simulator:
     def __init__(self):
@@ -149,7 +150,7 @@ class simulator:
             bandwidth_report.write(log)
 
             detail_report_items_this_layer = single_layer_obj.get_detail_report_items()
-            globals.memoryAccess.append(detail_report_items_this_layer)
+            global_vars.memoryAccess.append(detail_report_items_this_layer)
             log = str(lid) + ', '
             log += ', '.join([str(x) for x in detail_report_items_this_layer])
             log += ',\n'

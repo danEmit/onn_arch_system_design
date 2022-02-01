@@ -33,6 +33,8 @@ class systolic_compute_ws:
         self.ofmap_demand_matrix = np.zeros((1,1))
         self.filter_demand_matrix = np.zeros((1,1))
 
+        self.ifmap_demand_matrix_NON_SKEW = np.zeros((1,1))
+
         # Generated metrics
         self.ifmap_reads = 0
         self.filter_reads = 0
@@ -181,7 +183,10 @@ class systolic_compute_ws:
         inter_fold_gap_prefix = self.arr_row
         inter_fold_gap_prefix_mat = np.ones((inter_fold_gap_prefix, self.arr_row)) * -1
 
-        inter_fold_gap_suffix = self.arr_row + self.arr_col - 2
+        # my change is necesssary to counteract their update, their's causes issues
+        #inter_fold_gap_suffix = self.arr_row + self.arr_col - 2
+        inter_fold_gap_suffix = self.arr_col - 1
+
         #The last input needs self.arr_row - 1 cycles to reach the last column of PE array and then self.arr_col - 1 cycles to reduce along the last column.
 
         inter_fold_gap_suffix_mat = np.ones((inter_fold_gap_suffix, self.arr_row)) * -1
@@ -207,14 +212,18 @@ class systolic_compute_ws:
 
                 # Account for the cycles for final output to drain out
                 this_fold_demand = np.concatenate((this_fold_demand, inter_fold_gap_suffix_mat), axis=0)
+                this_fold_demand_non_skew = this_fold_demand
+                #self.ifmap_demand_matrix_NON_SKEW = this_fold_demand
 
                 # Add skew to the IFMAP demand matrix to reflect systolic pipeline fill
                 this_fold_demand = skew_matrix(this_fold_demand)
 
                 if fr == 0 and fc == 0:
                     self.ifmap_demand_matrix = this_fold_demand
+                    self.ifmap_demand_matrix_NON_SKEW = this_fold_demand_non_skew
                 else:
                     self.ifmap_demand_matrix = np.concatenate((self.ifmap_demand_matrix, this_fold_demand), axis=0)
+                    self.ifmap_demand_matrix_NON_SKEW = np.concatenate((self.ifmap_demand_matrix_NON_SKEW, this_fold_demand_non_skew), axis = 0)
     # END of IFMAP demand generation
 
     #
@@ -355,7 +364,7 @@ class systolic_compute_ws:
         if not self.demand_mat_ready_flag:
             self.create_demand_matrices()
 
-        return self.ifmap_demand_matrix, self.filter_demand_matrix, self.ofmap_demand_matrix
+        return self.ifmap_demand_matrix, self.filter_demand_matrix, self.ofmap_demand_matrix, self.ifmap_demand_matrix_NON_SKEW
 
     #
     def get_avg_mapping_efficiency(self):

@@ -15,4 +15,4 @@ topologies/*.zip
 
 configs/scale.cfg 
 topologies/ONN/*
-results/*
+Logs/ONN_sim/*

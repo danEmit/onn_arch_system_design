@@ -1,5 +1,5 @@
 def initialize():
-	print("\nInitializing Globals\n")
+	#print("\nInitializing Globals\n")
 	global memoryAccess 
 	#global SRAM_demand_mat
 	global ifmap_demand_mat

@@ -8,6 +8,8 @@ import scalesim.global_vars as global_vars
 global_vars.initialize()
 
 
+from scalesim.scale_sim import scalesim
+SS_results_file_global = ""
 
 def analyze_memory_writes():
     # here are some magic numbers. they are important!
@@ -54,14 +56,26 @@ def analyze_memory_writes():
 
     print()
     if (1):
-        print("SRAM IFMAP Reads:   ", sram_ifmap_reads)
+        print("SRAM Input Reads:   ", sram_ifmap_reads)
         print("SRAM Filter Reads:  ", sram_filter_reads)
         print("SRAM Output Writes: ", sram_ofmap_writes)
 
-        print("DRAM IFMAP Reads:   ", dram_ifmap_reads)
+        print("DRAM Input Reads:   ", dram_ifmap_reads)
         print("DRAM Filter Reads:  ", dram_filter_reads)
         print("DRAM Output Writes: ", dram_ofmap_writes)
         print()
+
+    with open(SS_results_file_global, 'a') as file:
+        file.write("\n")
+        file.write("SRAM Input Reads,%s\n"%(sram_ifmap_reads))
+        file.write("SRAM Filter Reads,%s\n"%(sram_filter_reads))
+        file.write("SRAM Output Reads,%s\n"%(sram_ofmap_writes))
+
+        file.write("DRAM Input Reads,%s\n"%(dram_ifmap_reads))
+        file.write("DRAM Filter Reads,%s\n"%(dram_filter_reads))
+        file.write("DRAM Output Reads,%s\n"%(dram_ofmap_writes))
+
+
 
 
 def analyze_SRAM_trace(SRAM_demand_mat):
@@ -142,6 +156,11 @@ def analyze_SRAM_usage():
     print("TOTAL VECTOR SEGMENTS PROCESSED IN ARRAY:", num_input_compute_vector_segments_total)
     print()
 
+    with open(SS_results_file_global, 'a') as file:
+        #file.write("\n")
+        file.write("Total Weights Programming Cycles,%s\n"%(num_weight_programming_cycles_total))
+        file.write("Total Vector Segments Processed,%s\n"%(num_input_compute_vector_segments_total))
+
 
 def post_process():
     print("\n**** Will now do post-processing ****")
@@ -149,14 +168,21 @@ def post_process():
     analyze_SRAM_usage()
 
 
-def run_scale_sim():
-    print("MADE IT HERE")
+def run_scale_sim(config_file_path, NN_file_path, SS_results_file, SS_folder_outputs):
+    gemm_input = False
+    global SS_results_file_global 
+    SS_results_file_global = SS_results_file
+
+    print("inputted topology file")
+    print(NN_file_path)
     s = scalesim(save_disk_space=True, verbose=True,
-                 config=config,
-                 topology=topology,
+                 config=config_file_path,
+                 topology=NN_file_path,
                  input_type_gemm=gemm_input
                  )
     startExecutionTime = time.time()
+    logpath = SS_folder_outputs
+    logpath = "../test_runs"
     s.run_scale(top_path=logpath)
     endExecutionTime = time.time()
     print("\nTOTAL EXECUTION TIME:", round((endExecutionTime - startExecutionTime), 3))

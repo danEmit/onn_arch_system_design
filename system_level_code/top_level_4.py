@@ -4,6 +4,8 @@ import pandas as pd
 import os
 import matplotlib.pyplot as plt
 
+import numpy as np
+
 
 ## Generic Info
 base_directory = "/Users/D/Desktop/research/"
@@ -28,6 +30,7 @@ SS_outputs_names = ["SRAM Input Reads", "SRAM Filter Reads", "SRAM Output Writes
           "Total Weights Programming Cycles", "Total Vector Segments Processed"]
 
 chip_specs_names = ["Total Chip Area", "Total Chip Power", "Inferences Per Second", "Inferences Per Second Per Watt"]
+all_names = SS_inputs_names + SS_outputs_names + chip_specs_names
 chip_specs_all = pd.DataFrame(index = chip_specs_names)
 
 
@@ -119,16 +122,18 @@ def main():
 
      symbol_rate_options = [1 * 10**9, 10 * 10**9]
      symbol_rate = symbol_rate_options[1]
-     array_size_options = [8, 16, 32, 64]
+     array_size_options = [[8,8], [8,16], [16, 8]]#, [32,64], [64,64]]
+     chip_specs_all_symbol_rates = [0] * len(symbol_rate_options)
 
      print("will now loop through desired inputs")
      for array_size in array_size_options:
           need_run_SS = 1
-          SS_inputs = [array_size, array_size, SRAM_input_size, SRAM_filter_size, SRAM_output_size, DRAM_mode]
+          SS_rows = array_size[0]; SS_cols = array_size[1]
+          SS_inputs = [SS_rows, SS_cols, SRAM_input_size, SRAM_filter_size, SRAM_output_size, DRAM_mode]
           SS_inputs_wanted = pd.DataFrame(SS_inputs, index = SS_inputs_names, columns = [""])
           SS_inputs_wanted.index.name = "Parameters"
           #print("\nsearching for column of DF with the current desired SS inputs: ", SS_inputs_wanted, "\n")
-          print("start of loop. searching for column of DF with the current desired SS inputs, rows:", array_size, "cols:", array_size)
+          print("start of loop. searching for column of DF with the current desired SS inputs, rows:", SS_rows, "cols:", SS_cols)
 
           results_position = 0
           for column_name in SS_inputs_all:
@@ -142,8 +147,8 @@ def main():
 
           if (need_run_SS):
                print("did not find matching SS inputs. will now run scale sim with current desired inputs")
-               SS_inputs_dict = dict({"NN Model Name": NN_file_name, "NN Model Filepath": NN_file_path_local, "Systolic Array Rows": array_size, \
-                    "Systolic Array Cols": array_size, "SRAM Input Size": SRAM_input_size, "SRAM Filter Size": SRAM_filter_size, \
+               SS_inputs_dict = dict({"NN Model Name": NN_file_name, "NN Model Filepath": NN_file_path_local, "Systolic Array Rows": SS_rows, \
+                    "Systolic Array Cols": SS_cols, "SRAM Input Size": SRAM_input_size, "SRAM Filter Size": SRAM_filter_size, \
                     "SRAM Output Size": SRAM_output_size, "DRAM Bandwidth Mode": DRAM_mode}) 
                write_config_file(SS_inputs_dict)
                NN_file_path_complete = SS_file_path + NN_file_path_local_B + NN_file_name + ".csv"
@@ -163,7 +168,9 @@ def main():
                #SS_outputs_all.insert(0, "hi", SS_combined, allow_duplicates= True)
 
           
-          print("will now run power and area model using SS inputs, SS outputs, and symbol rate")
+          #print("will now loop through desired symbol rates")
+          #for symbol_rate in symbol_rate_options:
+          print("will now run power and area model using SS inputs, SS outputs, and symbol rate of:", symbol_rate)
           chip_specs = system_specs_6.run_power_area_model(SS_outputs_single, SS_inputs_wanted, symbol_rate)
           chip_specs_all.insert(0, results_position, chip_specs, allow_duplicates=True)
           #print("results returned from system specs")
@@ -193,8 +200,19 @@ def main():
      
      #SS_inOut_all_final = pd.concat([SS_inputs_all, filler, SS_outputs_all])
      SS_inOut_all_final = pd.concat([SS_inputs_all, SS_outputs_all]).astype(float)
+     SS_inOut_all_final_rel = SS_inOut_all_final.loc[:, chip_specs_all.columns]
+     
+     xticks = []
+     for col in chip_specs_all:
+         label = str(int(SS_inOut_all_final.loc["Systolic Array Rows", col])) + " x " + str(int(SS_inOut_all_final.loc["Systolic Array Cols", col]))
+         print(label)
+     
      complete_inOut = SS_inOut_all_final
      complete_inOut = pd.concat([SS_inOut_all_final, chip_specs_all])
+     chip_specs_all.loc["Total Chip Power"].plot(kind = 'bar')
+     #plt.xlabel(["one", "two", "Tree"])
+     plt.xticks(np.arange(3), ["one", "two", "Tree"])
+     plt.show()
      #print("\nfinal result before saving")
      #print(SS_inOut_all_final)
      complete_inOut_file_complete = SS_inOut_file_path + NN_file_path_local + NN_file_name + "_SS_results.csv"
@@ -202,7 +220,7 @@ def main():
           os.remove(complete_inOut_file_complete)
      except:
           x=1
-     complete_inOut.to_csv(complete_inOut_file_complete)
+     SS_inOut_all_final.to_csv(complete_inOut_file_complete)
      #print("currently not saving final csv to make sure we run ss every time")
      
 

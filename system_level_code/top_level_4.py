@@ -12,6 +12,8 @@ base_directory = "/Users/D/Desktop/research/"
 SS_inOut_file_path = base_directory + "onn_arch_system_design/results/"
 config_file_path  = base_directory + "onn_arch_system_design/configs/scale.cfg"
 SS_file_path      = base_directory + "onn_arch_system_design/"
+ghz = 10**9
+
 
 import sys
 sys.path.append(SS_file_path)
@@ -31,32 +33,18 @@ SS_outputs_names = ["SRAM Input Reads", "SRAM Filter Reads", "SRAM Output Writes
 
 chip_specs_names = ["Total Chip Area", "Total Chip Power", "Inferences Per Second", "Inferences Per Second Per Watt"]
 all_names = SS_inputs_names + SS_outputs_names + chip_specs_names
-chip_specs_all = pd.DataFrame(index = chip_specs_names)
 
 
 def load_saved_SS_results(SS_inOut_file_local):
      print("Loading Existing DF")
      SS_inOut_file_complete = SS_inOut_file_path + SS_inOut_file_local
-     #print(SS_inOut_file_complete)
-     #print(SS_inOut_file_complete)
+
      try:
-          #SS_inOut_all = pd.read_csv(SS_inOut_file_complete, skiprows = 3, header =None, index_col=0)#.reset_index()
           SS_inOut_all = pd.read_csv(SS_inOut_file_complete, skiprows = 0, index_col=0)
-          #print(SS_inOut_all.dtypes)
-          #SS_inOut_all = SS_inOut_all.astype(int)
-          #print(SS_inOut_all)
           SS_inputs_all  = SS_inOut_all.loc[SS_inputs_start_row:SS_inputs_end_row]
           SS_inputs_all = SS_inputs_all.astype(int)
-          #print(SS_inputs_all.dtypes)
           SS_outputs_all = SS_inOut_all.loc[SS_outputs_start_row:SS_outputs_end_row]
           SS_outputs_all = SS_outputs_all.astype(int)
-          #print(SS_inputs_all.dtypes)
-          #print(SS_outputs_all)
-          #print(SS_inputs_all)
-          #print("found SS inputs:")
-          #print(SS_inputs_all)
-          #print("found SS outputs:")
-          #print(SS_outputs_all)
      except:
           print("Existing DF empty")
           (SS_inputs_all, SS_outputs_all) = create_SS_inOut()
@@ -69,9 +57,7 @@ def load_saved_SS_results(SS_inOut_file_local):
 def create_SS_inOut():
      print("Creating new empty dataframe")
      SS_inputs_all = pd.DataFrame(index = SS_inputs_names)
-     #SS_inputs_all.index.name = "Parameters"
      SS_outputs_all = pd.DataFrame(index = SS_outputs_names)
-     #SS_outputs_all.index.name = "Parameters"
      return(SS_inputs_all, SS_outputs_all)  
 
 
@@ -81,7 +67,6 @@ def return_SS_inOut(NN_file_name, NN_file_path_local):
      print("searching through all existing files for:", potential_file_name)
 
      for existing_file_name in SS_inOut_names_all:
-          #print(existing_file_name, potential_file_name)
           if (existing_file_name == potential_file_name):
                return load_saved_SS_results(potential_file_name) 
           else:
@@ -109,10 +94,9 @@ def main():
      NN_file_path_local_B = "topologies/ONN/"
 
      (SS_inputs_all, SS_outputs_all) = return_SS_inOut(NN_file_name, NN_file_path_local)
+
      print("inputs we have located:", SS_inputs_all.shape)
-     #print(SS_inputs_all)
      print("outputs we have located:", SS_outputs_all.shape)
-     #print(SS_outputs_all)
      print()
 
      SRAM_input_size  = 64000
@@ -120,11 +104,17 @@ def main():
      SRAM_output_size = 64000
      DRAM_mode = 0
 
-     symbol_rate_options = [1 * 10**9, 10 * 10**9]
+     symbol_rate_options = [1 * 10**9, 5 * 10**9, 10 * 10**9]
      symbol_rate = symbol_rate_options[1]
-     array_size_options = [[8,8], [8,16], [16, 8]]#, [32,64], [64,64]]
-     chip_specs_all_symbol_rates = [0] * len(symbol_rate_options)
-
+     array_size_options = [[8,8], [16, 16], [32,32], [64,64]]
+     
+     # note that for whatever reason if i execute the line below, i get this issue where when i try to 
+     # alter one of the PDs, the rest get altered as well... not sure why...
+     # chip_specs_all_symbol_rates = [pd.DataFrame(index = chip_specs_names)] * len(symbol_rate_options)
+     chip_specs_all_symbol_rates = []
+     for symbol_rate in symbol_rate_options:
+         chip_specs_all_symbol_rates.append(pd.DataFrame(index = chip_specs_names))
+         
      print("will now loop through desired inputs")
      for array_size in array_size_options:
           need_run_SS = 1
@@ -132,7 +122,6 @@ def main():
           SS_inputs = [SS_rows, SS_cols, SRAM_input_size, SRAM_filter_size, SRAM_output_size, DRAM_mode]
           SS_inputs_wanted = pd.DataFrame(SS_inputs, index = SS_inputs_names, columns = [""])
           SS_inputs_wanted.index.name = "Parameters"
-          #print("\nsearching for column of DF with the current desired SS inputs: ", SS_inputs_wanted, "\n")
           print("start of loop. searching for column of DF with the current desired SS inputs, rows:", SS_rows, "cols:", SS_cols)
 
           results_position = 0
@@ -152,61 +141,62 @@ def main():
                     "SRAM Output Size": SRAM_output_size, "DRAM Bandwidth Mode": DRAM_mode}) 
                write_config_file(SS_inputs_dict)
                NN_file_path_complete = SS_file_path + NN_file_path_local_B + NN_file_name + ".csv"
-               #print(NN_file_path_complete)
                SS_outputs_single = run_scale_sim(config_file_path, NN_file_path_complete, SS_file_path + "logs")
                num_entries = SS_inputs_all.shape[1]
-               #print(num_entries)
 
                SS_outputs_all.insert(0, num_entries, SS_outputs_single, allow_duplicates=True)
                SS_inputs_all.insert(0, num_entries, SS_inputs_wanted, allow_duplicates=True)
                results_position = num_entries
+
+
+          print("will now loop through desired symbol rates")
+          for index, symbol_rate in enumerate(symbol_rate_options):
+               print("will now run power and area model using SS inputs, SS outputs, and symbol rate of:", symbol_rate/ghz, "GHz")
+               ## how does chip specs end up getting the right column name? not super sure, w/e 
+               chip_specs = system_specs_6.run_power_area_model(SS_outputs_single, SS_inputs_wanted, symbol_rate)
+               chip_specs_all_symbol_rates[index].insert(0, results_position, chip_specs, allow_duplicates=True)
+               print()
                
-               #print(SS_outputs_single)
-               #SS_outputs_all.insert(0, "hi", SS_outputs_single, allow_duplicates=True)
-               #SS_combined = pd.concat([SS_inputs_wanted, SS_outputs_single], axis = 0)
-               #print(SS_combined)
-               #SS_outputs_all.insert(0, "hi", SS_combined, allow_duplicates= True)
-
-          
-          #print("will now loop through desired symbol rates")
-          #for symbol_rate in symbol_rate_options:
-          print("will now run power and area model using SS inputs, SS outputs, and symbol rate of:", symbol_rate)
-          chip_specs = system_specs_6.run_power_area_model(SS_outputs_single, SS_inputs_wanted, symbol_rate)
-          chip_specs_all.insert(0, results_position, chip_specs, allow_duplicates=True)
-          #print("results returned from system specs")
-          #print(system_specs)
-          print()
 
 
-     filler = pd.DataFrame([[""] * len(SS_inputs_all.columns)], index = [" "])
-     '''
-     print("here")
-     print(SS_inputs_all.shape, filler.shape, SS_outputs_all.shape)
-     print(type(SS_inputs_all), type(filler), type(SS_outputs_all))
-     print("\nSS_inputs_all:")
-     print(SS_inputs_all)
-     print("\nfiller:")
-     print(filler)
-     print("\nSS_outputs_all:")
-     print(SS_outputs_all)
-     '''
-     
-     #chip_specs.plot("Total Chip Power")
-     #chip_specs_all.loc["Total Chip Power"].plot(kind = 'bar')
-     #plt.show()
-     #chip_specs_all.loc["Total Chip Area"].plot(kind = 'bar')
-     #plt.show()
-     
-     
-     #SS_inOut_all_final = pd.concat([SS_inputs_all, filler, SS_outputs_all])
      SS_inOut_all_final = pd.concat([SS_inputs_all, SS_outputs_all]).astype(float)
-     SS_inOut_all_final_rel = SS_inOut_all_final.loc[:, chip_specs_all.columns]
+     #SS_inOut_all_final_rel = SS_inOut_all_final.loc[:, chip_specs_all_symbol_rates[0].columns]
+     
+     plots_to_make = ["Total Chip Power", "Total Chip Area"]
+     #y_labels_plots = ["mW", "mm^2"]
+     #color_options = [["indianred", "brown", "red", "coral", "lightsalmon"], ["forestgreen", "limegreen", "darkgreen", "olivedrab", "mediumseagreen"], ["navy", "royalblue", "dodgerblue", "blue", "cornflowerblue"]]
+     color_options = ["green", "blue", "red", "purple", "black", "orange"]
+     marker_options = ["o", "s", "*", "v"]
+     line_options = ["--", "-.", ":"]
+     opacity_options = [0.5, 0.7, 0.9]
+     #opacity = [0.9, 0.5, 0.1]
+     markersize_options = [4, 6, 8, 10]
      
      xticks = []
-     for col in chip_specs_all:
-         label = str(int(SS_inOut_all_final.loc["Systolic Array Rows", col])) + " x " + str(int(SS_inOut_all_final.loc["Systolic Array Cols", col]))
-         print(label)
-     
+     for col in chip_specs_all_symbol_rates[0]:
+        label = str(int(SS_inOut_all_final.loc["Systolic Array Rows", col])) + " x " + str(int(SS_inOut_all_final.loc["Systolic Array Cols", col]))
+        xticks.append(label)
+
+     legend = []
+     fig, ax = plt.subplots()
+     for index_plot, plot_output in enumerate(plots_to_make):
+          for index_symbol_rate, symbol_rate in enumerate(symbol_rate_options):
+               chip_specs_all_symbol_rates[index_symbol_rate].loc[plot_output].plot(alpha = opacity_options[index_symbol_rate], linestyle = line_options[index_symbol_rate], \
+                              marker = marker_options[index_symbol_rate], linewidth=1, markersize=markersize_options[index_symbol_rate], kind = 'line', ax = ax, color = color_options[index_plot])
+               #chip_specs_all_symbol_rates[index_symbol_rate].loc[plot_output].plot(marker = "o",  mfc='none', linewidth=1, markersize=7, kind = 'line', ax = ax, color = color_options[index_plot][index_symbol_rate])
+               legend.append(plot_output + ", "+ str(symbol_rate/ghz) + " GHz")
+
+     plt.xticks(np.arange(len(xticks)), xticks) 
+     #plt.ylabel(y_labels_plots[index_plot])
+     plt.ylabel("mW")
+     plt.xlabel("Array Size")
+     plt.grid()
+     plt.legend(legend)
+     plt.savefig(SS_inOut_file_path + NN_file_name + ".png", dpi = 700)
+     plt.show()
+          
+
+     '''
      complete_inOut = SS_inOut_all_final
      complete_inOut = pd.concat([SS_inOut_all_final, chip_specs_all])
      chip_specs_all.loc["Total Chip Power"].plot(kind = 'bar')
@@ -222,6 +212,7 @@ def main():
           x=1
      SS_inOut_all_final.to_csv(complete_inOut_file_complete)
      #print("currently not saving final csv to make sure we run ss every time")
+     '''
      
 
 

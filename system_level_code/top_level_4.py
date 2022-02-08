@@ -8,8 +8,8 @@ import numpy as np
 
 
 ## Generic Info
-results_type = "official"
-if results_type not in ["official", "test"]:
+results_type = "untracked"
+if results_type not in ["official", "untracked"]:
      print("WRONG RESULTS DESTINATION")
 
 base_directory = "/Users/D/Desktop/research/onn_arch_system_design/"
@@ -22,6 +22,7 @@ make_plots = 0
 run_system_specs = 0
 make_plots = run_system_specs and make_plots
 save_SS_imm = 1
+SS_print_verbose = 1
 
 import sys
 sys.path.append(base_directory)
@@ -154,7 +155,7 @@ def main():
                     "SRAM Output Size": SRAM_output_size, "DRAM Bandwidth Mode": DRAM_mode}) 
                write_config_file(SS_inputs_dict)
                NN_file_path_complete = base_directory + NN_file_path_local_B + NN_file_name + ".csv"
-               SS_outputs_single = run_scale_sim(config_file_path, NN_file_path_complete, base_directory + "logs")
+               SS_outputs_single = run_scale_sim(config_file_path, NN_file_path_complete, base_directory + "logs", SS_print_verbose)
                num_entries = SS_inputs_all.shape[1]
 
                SS_outputs_all.insert(0, num_entries, SS_outputs_single, allow_duplicates=True)

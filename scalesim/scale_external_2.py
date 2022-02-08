@@ -17,6 +17,7 @@ SS_outputs_data = [0] * len(SS_outputs_names)
 SS_outputs = pd.DataFrame(SS_outputs_data, index = SS_outputs_names, columns = [""])
 
 debugPrint = 0
+memoryPrint = 0
 
 def analyze_memory_writes():
     # here are some magic numbers. they are important!
@@ -56,7 +57,7 @@ def analyze_memory_writes():
         dram_ofmap_writes += row[DRAM_OFMAP_WRITES]
 
     print()
-    if (debugPrint):
+    if (memoryPrint):
         print("SRAM Input Reads:   ", sram_ifmap_reads)
         print("SRAM Filter Reads:  ", sram_filter_reads)
         print("SRAM Output Writes: ", sram_ofmap_writes)
@@ -160,14 +161,17 @@ def post_process():
     analyze_SRAM_usage()
 
 
-def run_scale_sim(config_file_path, NN_file_path, SS_folder_outputs):
+def run_scale_sim(config_file_path, NN_file_path, SS_folder_outputs, SS_print_verbose):
+    global debugPrint
+    debugPrint = SS_print_verbose
+    print("debug print", debugPrint)
     global_vars.initialize()
 
     gemm_input = False
 
     #print("inputted topology file")
     #print(NN_file_path)
-    s = scalesim(save_disk_space=True, verbose=False,
+    s = scalesim(save_disk_space=True, verbose=SS_print_verbose,
                  config=config_file_path,
                  topology=NN_file_path,
                  input_type_gemm=gemm_input
@@ -177,14 +181,13 @@ def run_scale_sim(config_file_path, NN_file_path, SS_folder_outputs):
     #logpath = "../test_runs"
     s.run_scale(top_path=logpath)
     endExecutionTime = time.time()
-    #print("\nTOTAL EXECUTION TIME:", round((endExecutionTime - startExecutionTime), 3))
-    #print()
+    print("\nTOTAL SS EXECUTION TIME:", round((endExecutionTime - startExecutionTime), 3))
+    print()
 
     post_process()
-    #analyze_memory_writes()
-    #analyze_SRAM_usage()
     endPostProcessTime = time.time()
-    #print("\nTOTAL POST PROCESS TIME:", round((endPostProcessTime - endExecutionTime), 3))
+    print("\nTOTAL SS POST PROCESS TIME:", round((endPostProcessTime - endExecutionTime), 3))
+    print("\n")
 
     return(SS_outputs)
 

@@ -14,6 +14,7 @@ config_file_path  = base_directory + "onn_arch_system_design/configs/scale.cfg"
 SS_file_path      = base_directory + "onn_arch_system_design/"
 ghz = 10**9
 
+save_SS_imm = 1
 
 import sys
 sys.path.append(SS_file_path)
@@ -156,6 +157,10 @@ def main():
                chip_specs = system_specs_6.run_power_area_model(SS_outputs_single, SS_inputs_wanted, symbol_rate)
                chip_specs_all_symbol_rates[index].insert(0, results_position, chip_specs, allow_duplicates=True)
                print()
+          if save_SS_imm:
+               saved_specs_file_path = SS_inOut_file_path + NN_file_path_local + NN_file_name + "_SS_results.csv"
+               SS_inOut_all_final = pd.concat([SS_inputs_all, SS_outputs_all]).astype(float)
+               SS_inOut_all_final.to_csv(saved_specs_file_path)
                
 
 

@@ -8,10 +8,10 @@ import numpy as np
 
 
 ## Generic Info
-base_directory = "/Users/D/Desktop/research/"
-SS_inOut_file_path = base_directory + "onn_arch_system_design/results/"
-config_file_path  = base_directory + "onn_arch_system_design/configs/scale.cfg"
-SS_file_path      = base_directory + "onn_arch_system_design/"
+base_directory = "/Users/D/Desktop/research/onn_arch_system_design/"
+SS_inOut_file_path = base_directory + "results/"
+config_file_path  = base_directory + "configs/scale.cfg"
+#SS_file_path      = base_directory + ""
 ghz = 10**9
 make_plots = 0
 run_system_specs = 0
@@ -19,7 +19,8 @@ make_plots = run_system_specs and make_plots
 save_SS_imm = 1
 
 import sys
-sys.path.append(SS_file_path)
+#sys.path.append(SS_file_path)
+sys.path.append(base_directory)
 print(sys.path)
 from scalesim.scale_external_2 import run_scale_sim
 
@@ -148,8 +149,8 @@ def main():
                     "Systolic Array Cols": SS_cols, "SRAM Input Size": SRAM_input_size, "SRAM Filter Size": SRAM_filter_size, \
                     "SRAM Output Size": SRAM_output_size, "DRAM Bandwidth Mode": DRAM_mode}) 
                write_config_file(SS_inputs_dict)
-               NN_file_path_complete = SS_file_path + NN_file_path_local_B + NN_file_name + ".csv"
-               SS_outputs_single = run_scale_sim(config_file_path, NN_file_path_complete, SS_file_path + "logs")
+               NN_file_path_complete = base_directory + NN_file_path_local_B + NN_file_name + ".csv"
+               SS_outputs_single = run_scale_sim(config_file_path, NN_file_path_complete, base_directory + "logs")
                num_entries = SS_inputs_all.shape[1]
 
                SS_outputs_all.insert(0, num_entries, SS_outputs_single, allow_duplicates=True)

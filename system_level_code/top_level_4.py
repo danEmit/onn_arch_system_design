@@ -8,10 +8,15 @@ import numpy as np
 
 
 ## Generic Info
+results_type = "official"
+if results_type not in ["official", "test"]:
+     print("WRONG RESULTS DESTINATION")
+
 base_directory = "/Users/D/Desktop/research/onn_arch_system_design/"
-SS_inOut_file_path = base_directory + "results/"
+SS_inOut_file_path = base_directory + "results/" + results_type + "/"
 config_file_path  = base_directory + "configs/scale.cfg"
-#SS_file_path      = base_directory + ""
+
+
 ghz = 10**9
 make_plots = 0
 run_system_specs = 0
@@ -19,7 +24,6 @@ make_plots = run_system_specs and make_plots
 save_SS_imm = 1
 
 import sys
-#sys.path.append(SS_file_path)
 sys.path.append(base_directory)
 print(sys.path)
 from scalesim.scale_external_2 import run_scale_sim

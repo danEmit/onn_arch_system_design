@@ -14,5 +14,5 @@ topologies/*.zip
 */*/*/.DS_Store
 
 configs/scale.cfg 
-topologies/ONN/*
+#topologies/ONN/*
 Logs/ONN_sim/*

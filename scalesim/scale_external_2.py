@@ -175,7 +175,6 @@ def run_scale_sim(config_file_path, NN_file_path, SS_folder_outputs):
     startExecutionTime = time.time()
     logpath = SS_folder_outputs
     #logpath = "../test_runs"
-    print(logpath)
     s.run_scale(top_path=logpath)
     endExecutionTime = time.time()
     #print("\nTOTAL EXECUTION TIME:", round((endExecutionTime - startExecutionTime), 3))

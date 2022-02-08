@@ -13,7 +13,9 @@ SS_inOut_file_path = base_directory + "onn_arch_system_design/results/"
 config_file_path  = base_directory + "onn_arch_system_design/configs/scale.cfg"
 SS_file_path      = base_directory + "onn_arch_system_design/"
 ghz = 10**9
-
+make_plots = 0
+run_system_specs = 0
+make_plots = run_system_specs and make_plots
 save_SS_imm = 1
 
 import sys
@@ -90,7 +92,7 @@ def write_config_file(config_info):
      
 def main():
      print("\n\n\n\n\n\n\n\n\n\n")
-     NN_file_name = "basic"
+     NN_file_name = "test"
      NN_file_path_local = "topologies:ONN:"
      NN_file_path_local_B = "topologies/ONN/"
 
@@ -108,6 +110,8 @@ def main():
      symbol_rate_options = [1 * 10**9, 5 * 10**9, 10 * 10**9]
      symbol_rate = symbol_rate_options[1]
      array_size_options = [[8,8], [16, 16], [32,32], [64,64]]
+     #array_size_options = [[9,9], [15, 15], [17, 17]]
+     screwup_array = [15, 15]
      
      # note that for whatever reason if i execute the line below, i get this issue where when i try to 
      # alter one of the PDs, the rest get altered as well... not sure why...
@@ -118,6 +122,9 @@ def main():
          
      print("will now loop through desired inputs")
      for array_size in array_size_options:
+          if (array_size == screwup_array):
+               print("reached intentional screwup array size, going to skip this all")
+               break
           need_run_SS = 1
           SS_rows = array_size[0]; SS_cols = array_size[1]
           SS_inputs = [SS_rows, SS_cols, SRAM_input_size, SRAM_filter_size, SRAM_output_size, DRAM_mode]
@@ -148,58 +155,81 @@ def main():
                SS_outputs_all.insert(0, num_entries, SS_outputs_single, allow_duplicates=True)
                SS_inputs_all.insert(0, num_entries, SS_inputs_wanted, allow_duplicates=True)
                results_position = num_entries
-
-
-          print("will now loop through desired symbol rates")
-          for index, symbol_rate in enumerate(symbol_rate_options):
-               print("will now run power and area model using SS inputs, SS outputs, and symbol rate of:", symbol_rate/ghz, "GHz")
-               ## how does chip specs end up getting the right column name? not super sure, w/e 
-               chip_specs = system_specs_6.run_power_area_model(SS_outputs_single, SS_inputs_wanted, symbol_rate)
-               chip_specs_all_symbol_rates[index].insert(0, results_position, chip_specs, allow_duplicates=True)
-               print()
+               
           if save_SS_imm:
                saved_specs_file_path = SS_inOut_file_path + NN_file_path_local + NN_file_name + "_SS_results.csv"
                SS_inOut_all_final = pd.concat([SS_inputs_all, SS_outputs_all]).astype(float)
                SS_inOut_all_final.to_csv(saved_specs_file_path)
+
+          if (run_system_specs):
+               print("will now loop through desired symbol rates")
+               for index, symbol_rate in enumerate(symbol_rate_options):
+                    print("will now run power and area model using SS inputs, SS outputs, and symbol rate of:", symbol_rate/ghz, "GHz")
+                    ## how does chip specs end up getting the right column name? not super sure, w/e 
+                    chip_specs = system_specs_6.run_power_area_model(SS_outputs_single, SS_inputs_wanted, symbol_rate)
+                    chip_specs_all_symbol_rates[index].insert(0, results_position, chip_specs, allow_duplicates=True)
+                    print()
                
 
 
-     SS_inOut_all_final = pd.concat([SS_inputs_all, SS_outputs_all]).astype(float)
      #SS_inOut_all_final_rel = SS_inOut_all_final.loc[:, chip_specs_all_symbol_rates[0].columns]
      
-     plots_to_make = ["Total Chip Power", "Total Chip Area"]
-     #y_labels_plots = ["mW", "mm^2"]
-     #color_options = [["indianred", "brown", "red", "coral", "lightsalmon"], ["forestgreen", "limegreen", "darkgreen", "olivedrab", "mediumseagreen"], ["navy", "royalblue", "dodgerblue", "blue", "cornflowerblue"]]
-     color_options = ["green", "blue", "red", "purple", "black", "orange"]
-     marker_options = ["o", "s", "*", "v"]
-     line_options = ["--", "-.", ":"]
-     opacity_options = [0.5, 0.7, 0.9]
-     #opacity = [0.9, 0.5, 0.1]
-     markersize_options = [4, 6, 8, 10]
-     
-     xticks = []
-     for col in chip_specs_all_symbol_rates[0]:
-        label = str(int(SS_inOut_all_final.loc["Systolic Array Rows", col])) + " x " + str(int(SS_inOut_all_final.loc["Systolic Array Cols", col]))
-        xticks.append(label)
-
-     legend = []
-     fig, ax = plt.subplots()
-     for index_plot, plot_output in enumerate(plots_to_make):
-          for index_symbol_rate, symbol_rate in enumerate(symbol_rate_options):
-               chip_specs_all_symbol_rates[index_symbol_rate].loc[plot_output].plot(alpha = opacity_options[index_symbol_rate], linestyle = line_options[index_symbol_rate], \
-                              marker = marker_options[index_symbol_rate], linewidth=1, markersize=markersize_options[index_symbol_rate], kind = 'line', ax = ax, color = color_options[index_plot])
-               #chip_specs_all_symbol_rates[index_symbol_rate].loc[plot_output].plot(marker = "o",  mfc='none', linewidth=1, markersize=7, kind = 'line', ax = ax, color = color_options[index_plot][index_symbol_rate])
-               legend.append(plot_output + ", "+ str(symbol_rate/ghz) + " GHz")
-
-     plt.xticks(np.arange(len(xticks)), xticks) 
-     #plt.ylabel(y_labels_plots[index_plot])
-     plt.ylabel("mW")
-     plt.xlabel("Array Size")
-     plt.grid()
-     plt.legend(legend)
-     plt.savefig(SS_inOut_file_path + NN_file_name + ".png", dpi = 700)
-     plt.show()
+     if make_plots:
+          plots_to_make = ["Total Chip Power", "Total Chip Area"]
+          #y_labels_plots = ["mW", "mm^2"]
+          #color_options = [["indianred", "brown", "red", "coral", "lightsalmon"], ["forestgreen", "limegreen", "darkgreen", "olivedrab", "mediumseagreen"], ["navy", "royalblue", "dodgerblue", "blue", "cornflowerblue"]]
+          color_options = ["green", "blue", "red", "purple", "black", "orange"]
+          marker_options = ["o", "s", "*", "v"]
+          line_options = ["--", "-.", ":"]
+          opacity_options = [0.5, 0.7, 0.9]
+          #opacity = [0.9, 0.5, 0.1]
+          markersize_options = [4, 6, 8, 10]
           
+          xticks = []
+          for col in chip_specs_all_symbol_rates[0]:
+             label = str(int(SS_inputs_all.loc["Systolic Array Rows", col])) + " x " + str(int(SS_inputs_all.loc["Systolic Array Cols", col]))
+             xticks.append(label)
+     
+          legend = []
+          fig, ax = plt.subplots()
+          for index_plot, plot_output in enumerate(plots_to_make):
+               for index_symbol_rate, symbol_rate in enumerate(symbol_rate_options):
+                    chip_specs_all_symbol_rates[index_symbol_rate].loc[plot_output].plot(alpha = opacity_options[index_symbol_rate], linestyle = line_options[index_symbol_rate], \
+                                   marker = marker_options[index_symbol_rate], linewidth=1, markersize=markersize_options[index_symbol_rate], kind = 'line', ax = ax, color = color_options[index_plot])
+                    #chip_specs_all_symbol_rates[index_symbol_rate].loc[plot_output].plot(marker = "o",  mfc='none', linewidth=1, markersize=7, kind = 'line', ax = ax, color = color_options[index_plot][index_symbol_rate])
+                    legend.append(plot_output + ", "+ str(symbol_rate/ghz) + " GHz")
+     
+          plt.xticks(np.arange(len(xticks)), xticks) 
+          #plt.ylabel(y_labels_plots[index_plot])
+          plt.ylabel("mW")
+          plt.xlabel("Array Size")
+          plt.grid()
+          plt.legend(legend)
+          plt.savefig(SS_inOut_file_path + NN_file_name + ".png", dpi = 700)
+          plt.show()
+    
+     '''
+     else:
+          try:
+               os.remove(SS_inOut_all_final)
+               
+          except:
+               x=1
+               SS_inOut_file_complete = SS_inOut_file_path + NN_file_path_local + NN_file_name + "_SS_results.csv"
+     '''
+               
+     saved_specs_file_path = SS_inOut_file_path + NN_file_path_local + NN_file_name + "_SS_results.csv"
+     SS_inOut_all_final = pd.concat([SS_inputs_all, SS_outputs_all]).astype(float)
+     if (run_system_specs):
+          complete_chip_specs = pd.concat([SS_inOut_all_final, chip_specs_all])
+          complete_chip_specs.to_csv(saved_specs_file_path)
+     else:
+          SS_inOut_all_final.to_csv(saved_specs_file_path)
+          
+          
+
+
+
 
      '''
      complete_inOut = SS_inOut_all_final

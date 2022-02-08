@@ -16,3 +16,4 @@ topologies/*.zip
 configs/scale.cfg 
 #topologies/ONN/*
 Logs/ONN_sim/*
+information_ppt/

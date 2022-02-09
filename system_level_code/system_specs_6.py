@@ -6,7 +6,7 @@ import pandas as pd
 indPrint = 0
 decimalPoints = 3
 summaryPrint = 0
-highestSummaryPrint = 1
+highestSummaryPrint = 0
 mW_adjustment = 1000
 
 # System Info ----------------------------

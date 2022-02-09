@@ -189,7 +189,7 @@ def run_scale_sim(config_file_path, NN_file_path, SS_folder_outputs, SS_print_ve
     print("\nTOTAL SS POST PROCESS TIME:", round((endPostProcessTime - endExecutionTime), 3))
     print("\n")
 
-    return(SS_outputs)
+    return(SS_outputs.copy()
 
 
 

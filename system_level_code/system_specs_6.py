@@ -393,7 +393,7 @@ def run_power_area_model(SS_results, array_params, symbolRate):
 		#	", power:", round(total_power, decimalPoints), "mW", \
 		#	", inf per sec per watt", round(inferences_per_second_per_watt, decimalPoints))
 
-	return overall_specs
+	return overall_specs.copy()
 
 
 

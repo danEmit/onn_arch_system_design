@@ -284,7 +284,7 @@ def electronics_power_analysis(SS_results):
 	clock_power_total + RxAFE_power_total + MRMHeater_power_total + DRAM_power_total_compute 
 	electrical_power_program_total = PCMHeater_power_total + SRAM_power_total_program
 	electrical_power_combined_total = electrical_power_program_total * program_portion + electrical_power_compute_total * compute_portion
-	electrical_power_wall = electrical_power_combined_total / DC_DC_efficiency
+	#electrical_power_wall = electrical_power_combined_total / DC_DC_efficiency
 
 	if (indPrint):
 		print("ADCs total power: ", round(ADC_power_total, decimalPoints))
@@ -307,10 +307,10 @@ def electronics_power_analysis(SS_results):
 		print("Total electrical power compute: ", round(electrical_power_compute_total, decimalPoints), "mW")
 		print("Total electrical power program: ", round(electrical_power_program_total, decimalPoints), "mW")
 		print("Total electrical power combined: ", round(electrical_power_combined_total, decimalPoints), "mW")
-		print("Total electrical power from wall: ", round(electrical_power_wall), "mW")
+		#print("Total electrical power from wall: ", round(electrical_power_wall), "mW")
 		print()
 
-	return(electrical_power_combined_total, electrical_power_wall)
+	return electrical_power_combined_total
 
 def electronics_area_analysis(array_params):
 	#ADC
@@ -370,9 +370,9 @@ def run_power_area_model(SS_results, array_params, symbolRate):
 	time_analysis(SS_results.loc["Total Weights Programming Cycles"].values[0], SS_results.loc["Total Vector Segments Processed"].values[0])
 	(laser_output_power, laser_wall_power) = photonics_power_analysis()
 	photonics_area_total = photonics_area_analysis()
-	(electronics_power_circuit, electronics_power_wall) = electronics_power_analysis(SS_results)
+	(electronics_power_circuit) = electronics_power_analysis(SS_results)
 	electronics_area = electronics_area_analysis(array_params)
-	total_power = electronics_power_wall + laser_wall_power
+	total_power = electronics_power_circuit + laser_wall_power
 	total_area  = electronics_area  + photonics_area_total
 
 	inferences_per_second = 1/total_time
@@ -388,9 +388,10 @@ def run_power_area_model(SS_results, array_params, symbolRate):
 		print("Inferences Per Seconds Per Watt:", round(inferences_per_second_per_watt, decimalPoints))
 		print()
 	if (highestSummaryPrint):
-		print("	inf per sec:", round(inferences_per_second, decimalPoints), \
-			", power:", round(total_power, decimalPoints), "mW", \
-			", inf per sec per watt", round(inferences_per_second_per_watt, decimalPoints))
+         x = 1
+		#print("	inf per sec:", round(inferences_per_second, decimalPoints), \
+		#	", power:", round(total_power, decimalPoints), "mW", \
+		#	", inf per sec per watt", round(inferences_per_second_per_watt, decimalPoints))
 
 	return overall_specs
 

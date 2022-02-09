@@ -13,20 +13,21 @@ if results_type not in ["official", "untracked"]:
      print("WRONG RESULTS DESTINATION")
 
 base_directory = "/Users/D/Desktop/research/onn_arch_system_design/"
+#base_directory = "/homes/dansturm/Desktop/onn_arch_system_design/"
 SS_inOut_file_path = base_directory + "results/" + results_type + "/"
 config_file_path  = base_directory + "configs/scale.cfg"
 
 
 ghz = 10**9
 make_plots = 0
-run_system_specs = 0
+run_system_specs = 1
 make_plots = run_system_specs and make_plots
 save_SS_imm = 1
 SS_print_verbose = 1
 
 import sys
 sys.path.append(base_directory)
-print(sys.path)
+#print(sys.path)
 from scalesim.scale_external_2 import run_scale_sim
 
 import system_specs_6
@@ -115,7 +116,7 @@ def main():
 
      symbol_rate_options = [1 * 10**9, 5 * 10**9, 10 * 10**9]
      symbol_rate = symbol_rate_options[1]
-     array_size_options = [[8,8], [16, 16], [32,32], [64,64]]
+     array_size_options = [[8,8], [64,64]]
      #array_size_options = [[9,9], [15, 15], [17, 17]]
      screwup_array = [15, 15]
      
@@ -174,12 +175,8 @@ def main():
                     ## how does chip specs end up getting the right column name? not super sure, w/e 
                     chip_specs = system_specs_6.run_power_area_model(SS_outputs_single, SS_inputs_wanted, symbol_rate)
                     chip_specs_all_symbol_rates[index].insert(0, results_position, chip_specs, allow_duplicates=True)
-                    print()
-               
-
-
-     #SS_inOut_all_final_rel = SS_inOut_all_final.loc[:, chip_specs_all_symbol_rates[0].columns]
-     
+               print()
+                    
      if make_plots:
           plots_to_make = ["Total Chip Power", "Total Chip Area"]
           #y_labels_plots = ["mW", "mm^2"]

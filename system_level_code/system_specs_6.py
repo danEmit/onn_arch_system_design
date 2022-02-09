@@ -68,25 +68,26 @@ freq_index = 0
 '''
 
 electronic_area_specs_names = ["ADCs Area", "PS Area", "ODAC Drivers Area", "PCM Heaters Area", "MRM Heaters Area",\
-	"SRAM Area", "DRAM Area", "Clock Area", "Rx AFE Area", "Total Electronics Area"]
+	"SRAM Area", "DRAM Area", "Clock Area", "Rx AFE Area"]
 
 electronic_power_specs_names = ["ADCs Power", "PS Power", "ODAC Drivers Power", "PCM Heaters Power", "MRM Heaters Power", \
-	"SRAM Program Power", "SRAM Compute Power", "DRAM Program Power", "DRAM Compute Power", "Clocks Power", "Rx AFE Power", \
-	"Total Electronics Program Power", "Total Electronics Compute Power", "Total Combined Electronics Power"]
+	"SRAM Program Power", "SRAM Compute Power", "DRAM Program Power", "DRAM Compute Power", "Clocks Power", "Rx AFE Power"]
 
-photonic_area_specs_names = ["MRMs Area", "Crossbar Array Area", "Tx Power Splitters Area", "Grating Coupler Area", "Total Photonics Area"]
+photonic_area_specs_names = ["MRMs Area", "Crossbar Array Area", "Tx Power Splitters Area", "Grating Coupler Area"]
 
 photonic_power_specs_names = ["Photonic Power Single PD", "PCM OMA", "MRM Tx OMA", "Power Loss Crossbar Junctions", "Power Loss Crossbar Waveguides", "Power Loss Splitting Tree",\
-	"Power Loss Tx Waveguides", "Power Loss Grating Coupler", "Power Loss Waveguide Power Combining", "Total Photonic Losses and OMA", "Total Photonic Power mW",\
-		"Total Laser Power from Wall mW"]
+	"Power Loss Tx Waveguides", "Power Loss Grating Coupler", "Power Loss Waveguide Power Combining"]
 
 time_specs_names = ["Compute Portion", "Program Portion", "Total Time"]
 
+semi_high_results_names = ["Total Electronics Area", "Total Photonics Area", "Total Electronics Program Power", \
+	"Total Electronics Compute Power", "Total Combined Electronics Power", "Total Photonic Losses and OMA", "Total Photonic Power mW",\
+		"Total Laser Power from Wall mW"]
 
 overall_specs_names = ["Total Chip Area", "Total Chip Power", "Inferences Per Second", "Inferences Per Second Per Watt"]
 
 all_specs_names = electronic_area_specs_names + electronic_power_specs_names + photonic_area_specs_names + photonic_power_specs_names \
-+ time_specs_names + overall_specs_names
++ time_specs_names + semi_high_results_names + overall_specs_names
 
 all_specs_data = [0] * len(all_specs_names)
 all_specs = pd.DataFrame(all_specs_data, index = all_specs_names, columns = [""])

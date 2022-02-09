@@ -211,56 +211,28 @@ def main():
           plt.savefig(SS_inOut_file_path + NN_file_name + ".png", dpi = 700)
           plt.show()
     
-     '''
-     else:
-          try:
-               os.remove(SS_inOut_all_final)
-               
-          except:
-               x=1
-               SS_inOut_file_complete = SS_inOut_file_path + NN_file_path_local + NN_file_name + "_SS_results.csv"
-     '''
                
      saved_specs_file_path = SS_inOut_file_path + NN_file_path_local + NN_file_name + "_SS_results.csv"
-     SS_inOut_all_final = pd.concat([SS_inputs_all, SS_outputs_all]).astype(float)
+     blank_space_data = [" "] * SS_inputs_all.shape[1]
+     blank_space_df = pd.DataFrame(blank_space_data, SS_inputs_all.columns, [""]).T
+     SS_inOut_all_final = pd.concat([SS_inputs_all, blank_space_df, SS_outputs_all]).astype(str)
+
      if (run_system_specs):
-          complete_chip_specs = pd.concat([SS_inOut_all_final, chip_specs_all])
-          complete_chip_specs.to_csv(saved_specs_file_path)
+          chip_specs_all_concat = pd.DataFrame()
+          for index, symbol_rate in enumerate(symbol_rate_options):
+               chip_specs_local = chip_specs_all_symbol_rates[index]
+               symbol_rate_data = [symbol_rate/ghz] * chip_specs_local.shape[1]
+               blank_space_data = [" "] * chip_specs_local.shape[1]
+               blank_space_df = pd.DataFrame(blank_space_data, chip_specs_local.columns, [""]).T
+               symbol_rate_df = pd.DataFrame(symbol_rate_data,  chip_specs_local.columns, ["Symbol Rate (GHz)"]).T
+               chip_specs_all_symbol_rates[index] = pd.concat([blank_space_df, symbol_rate_df, chip_specs_all_symbol_rates[index]])
+               chip_specs_all_concat = pd.concat([chip_specs_all_concat, chip_specs_all_symbol_rates[index]])
+          
+          SS_inOut_chip_specs = SS_inOut_all_final.append(chip_specs_all_concat)
+          SS_inOut_chip_specs.to_csv(saved_specs_file_path)
      else:
           SS_inOut_all_final.to_csv(saved_specs_file_path)
           
-          
-
-
-
-
-     '''
-     complete_inOut = SS_inOut_all_final
-     complete_inOut = pd.concat([SS_inOut_all_final, chip_specs_all])
-     chip_specs_all.loc["Total Chip Power"].plot(kind = 'bar')
-     #plt.xlabel(["one", "two", "Tree"])
-     plt.xticks(np.arange(3), ["one", "two", "Tree"])
-     plt.show()
-     #print("\nfinal result before saving")
-     #print(SS_inOut_all_final)
-     complete_inOut_file_complete = SS_inOut_file_path + NN_file_path_local + NN_file_name + "_SS_results.csv"
-     try:
-          os.remove(complete_inOut_file_complete)
-     except:
-          x=1
-     SS_inOut_all_final.to_csv(complete_inOut_file_complete)
-     #print("currently not saving final csv to make sure we run ss every time")
-     '''
-     
-
-
-
-
-
-
-
-
-
 
 if __name__ == "__main__":    
      print("\n\n\n")

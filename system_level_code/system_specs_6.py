@@ -81,10 +81,12 @@ photonic_power_specs_names = ["Photonic Power Single PD", "PCM OMA", "MRM Tx OMA
 time_specs_names = ["Compute Portion", "Program Portion", "Total Time"]
 
 semi_high_results_names = ["Total Electronics Area", "Total Photonics Area", "Total Electronics Program Power", \
-	"Total Electronics Compute Power", "Total Combined Electronics Power", "Total Photonic Losses and OMA", "Total Photonic Power mW",\
-		"Total Laser Power from Wall mW"]
+	"Total Electronics Compute Power", "Total Combined Electronics Power", "Total Electronics Power dBm", "Total Photonic Losses and OMA", "Total Photonic Power mW",\
+		"Total Laser Power from Wall mW", "Total Laser Power from Wall dBm"]
 
-overall_specs_names = ["Total Chip Area", "Total Chip Power", "Inferences Per Second", "Inferences Per Second Per Watt"]
+overall_specs_names = ["Total Chip Area", "Total Chip Power", "Total Chip Power dBm", "Inferences Per Second", "Inferences Per Second Per Watt"]
+
+
 
 all_specs_names = electronic_area_specs_names + electronic_power_specs_names + photonic_area_specs_names + photonic_power_specs_names \
 + time_specs_names + semi_high_results_names + overall_specs_names
@@ -226,6 +228,7 @@ def photonics_power_analysis():
 	all_specs.at["Total Photonic Losses and OMA"] = total_photonic_loss_OMA
 	all_specs.at["Total Photonic Power mW"] = laser_output_power
 	all_specs.at["Total Laser Power from Wall mW"] = laser_wall_power
+	all_specs.at["Total Laser Power from Wall dBm"] = regular_to_dB(laser_wall_power)
 
 	if (summaryPrint):
 		print("Photonics Power Summary")
@@ -267,7 +270,7 @@ def photonics_area_analysis():
 		print("Total Photonics Area: ", round(photonics_area_total, decimalPoints), "mm^2")
 		print()
 
-	return(summaryPrint)
+	return(photonics_area_total)
 
 '''
 def electronics_component_count():
@@ -340,6 +343,7 @@ def electronics_power_analysis(SS_results):
 	all_specs.at["Total Electronics Program Power"] = electrical_power_program_total
 	all_specs.at["Total Electronics Compute Power"] = electrical_power_compute_total
 	all_specs.at["Total Combined Electronics Power"] = electrical_power_combined_total
+	all_specs.at["Total Electronics Power dBm"] = regular_to_dB(electrical_power_combined_total)
 
 	if (indPrint):
 		print("ADCs total power: ", round(ADC_power_total, decimalPoints))
@@ -441,10 +445,10 @@ def run_power_area_model(SS_results, array_params, symbolRate):
 	total_area  = electronics_area  + photonics_area_total
 
 	inferences_per_second = 1/total_time
-	inferences_per_second_per_watt = inferences_per_second / total_power
+	inferences_per_second_per_watt = 1000 * inferences_per_second / total_power
 
 	all_specs.at["Total Chip Area":"Inferences Per Second Per Watt", ""] = [total_area, \
-	total_power, inferences_per_second, inferences_per_second_per_watt] 
+	total_power, regular_to_dB(total_power), inferences_per_second, inferences_per_second_per_watt] 
 
 	if (summaryPrint): 
 		print("Overall Summary")
@@ -457,8 +461,8 @@ def run_power_area_model(SS_results, array_params, symbolRate):
 			", power:", round(total_power, decimalPoints), "mW", \
 			", inf per sec per watt", round(inferences_per_second_per_watt, decimalPoints))
 
-	print(all_specs)
-	print()
+	#print(all_specs)
+	#print()
 	return all_specs.copy()
 
 

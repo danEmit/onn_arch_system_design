@@ -164,7 +164,7 @@ def post_process():
 def run_scale_sim(config_file_path, NN_file_path, SS_folder_outputs, SS_print_verbose):
     global debugPrint
     debugPrint = SS_print_verbose
-    print("debug print", debugPrint)
+    #print("debug print", debugPrint)
     global_vars.initialize()
 
     gemm_input = False

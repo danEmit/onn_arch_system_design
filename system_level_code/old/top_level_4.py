@@ -6,6 +6,10 @@ import matplotlib.pyplot as plt
 
 import numpy as np
 
+import system_specs_7
+import sys
+import practice_plots_3
+
 
 ## Generic Info
 results_type = "untracked"
@@ -16,6 +20,8 @@ base_directory = "/Users/D/Desktop/research/onn_arch_system_design/"
 #base_directory = "/homes/dansturm/Desktop/onn_arch_system_design/"
 SS_inOut_file_path = base_directory + "results/" + results_type + "/"
 config_file_path  = base_directory + "configs/scale.cfg"
+sys.path.append(base_directory)
+from scalesim.scale_external_2 import run_scale_sim
 
 
 ghz = 10**9
@@ -25,12 +31,8 @@ make_plots = run_system_specs and make_plots
 save_SS_imm = 1
 SS_print_verbose = 1
 
-import sys
-sys.path.append(base_directory)
 #print(sys.path)
-from scalesim.scale_external_2 import run_scale_sim
 
-import system_specs_6
 
 SS_inputs_start_row = "Systolic Array Rows"
 SS_inputs_end_row = "DRAM Bandwidth Mode"
@@ -54,6 +56,9 @@ photonic_area_specs_names = ["MRMs Area", "Crossbar Array Area", "Tx Power Split
 photonic_power_specs_names = ["Photonic Power Single PD", "PCM OMA", "MRM Tx OMA", "Power Loss Crossbar Junctions", "Power Loss Crossbar Waveguides", "Power Loss Splitting Tree",\
      "Power Loss Tx Waveguides", "Power Loss Grating Coupler", "Power Loss Waveguide Power Combining"]
 
+photonic_power_actual_loss_names = ["PCM OMA Actual Loss", "MRM Tx OMA Actual Loss", "Crossbar Junctions Actual Loss", "Crossbar Waveguides Actual Loss", "Splitting Tree Actual Loss",\
+     "Tx Waveguides Actual Loss", "Grating Coupler Actual Loss", "Waveguide Power Combining Actual Loss"]
+
 time_specs_names = ["Compute Portion", "Program Portion", "Total Time"]
 
 semi_high_results_names = ["Total Electronics Area", "Total Photonics Area", "Total Electronics Program Power", \
@@ -64,8 +69,7 @@ overall_specs_names = ["Total Chip Area", "Total Chip Power", "Total Chip Power 
 
 
 chip_specs_names = electronic_area_specs_names + electronic_power_specs_names + photonic_area_specs_names + photonic_power_specs_names \
-+ time_specs_names + semi_high_results_names + overall_specs_names
-
++ photonic_power_actual_loss_names + time_specs_names + semi_high_results_names + overall_specs_names
 
 all_names = SS_inputs_names + SS_outputs_names + chip_specs_names
 
@@ -139,10 +143,11 @@ def main():
      SRAM_output_size = 64000
      DRAM_mode = 0
 
-     symbol_rate_options = [1 * 10**9, 5 * 10**9, 10 * 10**9]
+     symbol_rate_options = [1 * ghz, 5 * ghz, 10 * ghz]
      symbol_rate = symbol_rate_options[1]
-     array_size_options = [[8,8], [64,64]]
+     #array_size_options = [[8,8], [64,64]]
      array_size_options = [[8,8], [16, 16], [32, 32], [64,64]]
+     #array_size_options = [[8,8]]
 
      #array_size_options = [[9,9], [15, 15], [17, 17]]
      screwup_array = [15, 15]
@@ -202,125 +207,18 @@ def main():
                for index, symbol_rate in enumerate(symbol_rate_options):
                     print("will now run power and area model using SS inputs, SS outputs, and symbol rate of:", symbol_rate/ghz, "GHz")
                     ## how does chip specs end up getting the right column name? not super sure, w/e 
-                    chip_specs = system_specs_6.run_power_area_model(SS_outputs_single, SS_inputs_wanted, symbol_rate)
+                    chip_specs = system_specs_7.run_power_area_model(SS_outputs_single, SS_inputs_wanted, symbol_rate)
                     chip_specs_all_symbol_rates[index].insert(0, results_position, chip_specs, allow_duplicates=True)
                print()
                     
      if make_plots:
-          plots_to_make = ["Total Chip Power dBm", "Total Electronics Power dBm", "Total Laser Power from Wall dBm"]
-          #plots_to_make = ["Total Combined Electronics Power"]
-          #y_labels_plots = ["mW", "mm^2"]
-          #color_options = [["indianred", "brown", "red", "coral", "lightsalmon"], ["forestgreen", "limegreen", "darkgreen", "olivedrab", "mediumseagreen"], ["navy", "royalblue", "dodgerblue", "blue", "cornflowerblue"]]
-          color_options = ["green", "blue", "red", "purple", "black", "orange"]
-          marker_options = ["o", "s", "*", "v"]
-          line_options = ["--", "-.", ":"]
-          opacity_options = [0.5, 0.7, 0.9]
-          #opacity = [0.9, 0.5, 0.1]
-          markersize_options = [4, 6, 8, 10]
-          
-          xticks = []
-          for col in chip_specs_all_symbol_rates[0]:
-             label = str(int(SS_inputs_all.loc["Systolic Array Rows", col])) + " x " + str(int(SS_inputs_all.loc["Systolic Array Cols", col]))
-             xticks.append(label)
-     
-          legend = []
-          fig, ax = plt.subplots()
-          for index_plot, plot_output in enumerate(plots_to_make):
-               for index_symbol_rate, symbol_rate in enumerate(symbol_rate_options):
-                    chip_specs_all_symbol_rates[index_symbol_rate].loc[plot_output].plot(alpha = opacity_options[index_symbol_rate], linestyle = line_options[index_symbol_rate], \
-                                   marker = marker_options[index_symbol_rate], linewidth=1, markersize=markersize_options[index_symbol_rate], kind = 'line', ax = ax, color = color_options[index_plot])
-                    #chip_specs_all_symbol_rates[index_symbol_rate].loc[plot_output].plot(marker = "o",  mfc='none', linewidth=1, markersize=7, kind = 'line', ax = ax, color = color_options[index_plot][index_symbol_rate])
-                    legend.append(plot_output + ", "+ str(symbol_rate/ghz) + " GHz")
-     
-          plt.xticks(np.arange(len(xticks)), xticks) 
-          #plt.ylabel(y_labels_plots[index_plot])
-          plt.ylabel("dBm")
-          plt.xlabel("Array Size")
-          plt.grid()
-          plt.legend(legend, prop={"size":6})
-          plt.savefig(SS_inOut_file_path + NN_file_name + "_power.png", dpi = 700)
-          plt.show()
-    
-
-          plots_to_make = ["Total Chip Area", "Total Electronics Area", "Total Photonics Area"]
-          #plots_to_make = ["Total Combined Electronics Power"]
-          #y_labels_plots = ["mW", "mm^2"]
-          #color_options = [["indianred", "brown", "red", "coral", "lightsalmon"], ["forestgreen", "limegreen", "darkgreen", "olivedrab", "mediumseagreen"], ["navy", "royalblue", "dodgerblue", "blue", "cornflowerblue"]]
-          color_options = ["green", "blue", "red", "purple", "black", "orange"]
-          marker_options = ["o", "s", "*", "v"]
-          line_options = ["--", "-.", ":"]
-          opacity_options = [0.5, 0.7, 0.9]
-          #opacity = [0.9, 0.5, 0.1]
-          markersize_options = [4, 6, 8, 10]
-          
-          xticks = []
-          for col in chip_specs_all_symbol_rates[0]:
-             label = str(int(SS_inputs_all.loc["Systolic Array Rows", col])) + " x " + str(int(SS_inputs_all.loc["Systolic Array Cols", col]))
-             xticks.append(label)
-     
-          legend = []
-          fig, ax = plt.subplots()
-          for index_plot, plot_output in enumerate(plots_to_make):
-               for index_symbol_rate, symbol_rate in enumerate(symbol_rate_options):
-                    chip_specs_all_symbol_rates[index_symbol_rate].loc[plot_output].plot(alpha = opacity_options[index_symbol_rate], linestyle = line_options[index_symbol_rate], \
-                                   marker = marker_options[index_symbol_rate], linewidth=1, markersize=markersize_options[index_symbol_rate], kind = 'line', ax = ax, color = color_options[index_plot])
-                    #chip_specs_all_symbol_rates[index_symbol_rate].loc[plot_output].plot(marker = "o",  mfc='none', linewidth=1, markersize=7, kind = 'line', ax = ax, color = color_options[index_plot][index_symbol_rate])
-                    legend.append(plot_output + ", "+ str(symbol_rate/ghz) + " GHz")
-     
-          plt.xticks(np.arange(len(xticks)), xticks) 
-          #plt.ylabel(y_labels_plots[index_plot])
-          plt.ylabel("mm^2")
-          plt.xlabel("Array Size")
-          plt.grid()
-          plt.legend(legend, prop={"size":6})
-          plt.savefig(SS_inOut_file_path + NN_file_name + "_area.png", dpi = 700)
-          plt.show()
-          
-          
-          plots_to_make = ["Inferences Per Second", "Inferences Per Second Per Watt"]
-          #plots_to_make = ["Total Combined Electronics Power"]
-          #y_labels_plots = ["mW", "mm^2"]
-          #color_options = [["indianred", "brown", "red", "coral", "lightsalmon"], ["forestgreen", "limegreen", "darkgreen", "olivedrab", "mediumseagreen"], ["navy", "royalblue", "dodgerblue", "blue", "cornflowerblue"]]
-          color_options = ["green", "blue", "red", "purple", "black", "orange"]
-          marker_options = ["o", "s", "*", "v"]
-          line_options = ["--", "-.", ":"]
-          opacity_options = [0.5, 0.7, 0.9]
-          #opacity = [0.9, 0.5, 0.1]
-          markersize_options = [4, 6, 8, 10]
-          
-          xticks = []
-          for col in chip_specs_all_symbol_rates[0]:
-             label = str(int(SS_inputs_all.loc["Systolic Array Rows", col])) + " x " + str(int(SS_inputs_all.loc["Systolic Array Cols", col]))
-             xticks.append(label)
-     
-          legend_items = []
-          legend_items_2 = []
-          fig, ax = plt.subplots()
-          ax2 = ax.twinx()
-          for index_plot, plot_output in enumerate(plots_to_make):
-               if index_plot == 0:
-                    rel_ax = ax
-               else:
-                    rel_ax = ax2
-               for index_symbol_rate, symbol_rate in enumerate(symbol_rate_options):
-                    chip_specs_all_symbol_rates[index_symbol_rate].loc[plot_output].plot(alpha = opacity_options[index_symbol_rate], linestyle = line_options[index_symbol_rate], \
-                                   marker = marker_options[index_symbol_rate], linewidth=1, markersize=markersize_options[index_symbol_rate], kind = 'line', ax = rel_ax, color = color_options[index_plot])
-                    #chip_specs_all_symbol_rates[index_symbol_rate].loc[plot_output].plot(marker = "o",  mfc='none', linewidth=1, markersize=7, kind = 'line', ax = ax, color = color_options[index_plot][index_symbol_rate])
-                    if (index_plot == 0):
-                         legend_items.append(plot_output + ", "+ str(symbol_rate/ghz) + " GHz")
-                    else:
-                         legend_items_2.append(plot_output + ", "+ str(symbol_rate/ghz) + " GHz")
-     
-          plt.xticks(np.arange(len(xticks)), xticks) 
-          #plt.ylabel(y_labels_plots[index_plot])
-          plt.ylabel("")
-          plt.xlabel("Array Size")
-          plt.grid()
-          print("legend", legend_items, legend_items_2)
-          ax.legend(legend_items, prop={"size":6})
-          ax2.legend(legend_items_2, prop={"size":6})
-          plt.savefig(SS_inOut_file_path + NN_file_name + "_inferences.png", dpi = 700)
-          plt.show() 
+              params_interest = [["ADCs Power"], ["MRM Tx OMA Actual Loss", "Crossbar Junctions Actual Loss"]]
+              params_total_quantities = ["Total Combined Electronics Power", "Total Laser Power from Wall mW"]
+              params_other_names = ["Other Electrical Power", "Other Photonic Power"]
+              repeat_tick_labels = [str(x / ghz) + " GHz" for x in symbol_rate_options]
+              array_configs = [str(x[0]) + " x " + str(x[1]) for x in array_size_options]
+              fig = practice_plots_3.make_stacked_bar_plot(chip_specs_all_symbol_rates, params_interest, params_total_quantities, params_other_names, repeat_tick_labels, array_configs, "mW")
+              plt.show()
 
 
               

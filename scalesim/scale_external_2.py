@@ -14,7 +14,7 @@ SS_results_file_global = ""
 SS_outputs_names = ["SRAM Input Reads", "SRAM Filter Reads", "SRAM Output Writes", "DRAM Input Reads", "DRAM Filter Reads", "DRAM Output Writes", \
           "Total Weights Programming Cycles", "Total Vector Segments Processed"]
 SS_outputs_data = [0] * len(SS_outputs_names)
-SS_outputs = pd.DataFrame(SS_outputs_data, index = SS_outputs_names, columns = [""])
+SS_outputs = pd.DataFrame(SS_outputs_data, index = SS_outputs_names, columns = ["0"])
 
 debugPrint = 0
 memoryPrint = 0
@@ -67,7 +67,7 @@ def analyze_memory_writes():
         print("DRAM Output Writes: ", dram_ofmap_writes)
         print()
 
-    SS_outputs.at["SRAM Input Reads":"DRAM Output Writes", ""] = [sram_ifmap_reads, sram_filter_reads, sram_ofmap_writes, \
+    SS_outputs.at["SRAM Input Reads":"DRAM Output Writes", "0"] = [sram_ifmap_reads, sram_filter_reads, sram_ofmap_writes, \
         dram_ifmap_reads, dram_filter_reads, dram_ofmap_writes]
 
 
@@ -153,7 +153,7 @@ def analyze_SRAM_usage():
         print("TOTAL VECTOR SEGMENTS PROCESSED IN ARRAY:", num_input_compute_vector_segments_total)
     #print()
 
-    SS_outputs.at["Total Weights Programming Cycles":"Total Vector Segments Processed", ""] = [num_compute_cycles_total, num_input_compute_vector_segments_total]
+    SS_outputs.at["Total Weights Programming Cycles":"Total Vector Segments Processed", "0"] = [num_compute_cycles_total, num_input_compute_vector_segments_total]
 
 def post_process():
     #print("\n**** Will now do post-processing ****")

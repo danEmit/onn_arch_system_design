@@ -6,6 +6,8 @@ from scalesim.topology_utils import topologies as topoutil
 from scalesim.scale_config import scale_config as cfg
 
 
+batch_size = 1
+
 # This class defines data types for operand matrices
 class operand_matrix(object):
     def __init__(self):
@@ -252,6 +254,7 @@ class operand_matrix(object):
         end_row = start_row + num_rows
         end_col = start_col + num_cols
         ret_mat = self.ifmap_addr_matrix[start_row: end_row, start_col: end_col]
+        ret_mat = np.repeat(ret_mat, batch_size, axis = 0)
         return 0, ret_mat
 
     def get_ifmap_matrix(self):
@@ -326,7 +329,7 @@ class operand_matrix(object):
         # Anand: ISSUE #7. Patch
         #ret_mat = self.filter_addr_matrix[start_row: end_row, start_col: end_col]
         ret_mat = self.ofmap_addr_matrix[start_row: end_row, start_col: end_col]
-
+        ret_mat = np.repeat(ret_mat, batch_size, axis = 0)
         return 0, ret_mat
 
     def get_ofmap_matrix(self):

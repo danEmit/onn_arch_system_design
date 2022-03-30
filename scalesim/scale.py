@@ -14,7 +14,8 @@ sys.path.append(content_path)
 from scalesim.scale_sim import scalesim
 import scalesim.global_vars as global_vars
 
-global_vars.initialize()
+batch_size = 2
+global_vars.initialize(batch_size)
 
 logpath = ""
 

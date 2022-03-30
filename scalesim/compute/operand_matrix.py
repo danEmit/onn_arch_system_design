@@ -5,8 +5,9 @@ from tqdm import tqdm
 from scalesim.topology_utils import topologies as topoutil
 from scalesim.scale_config import scale_config as cfg
 
+import scalesim.global_vars as global_vars
 
-batch_size = 10
+batch_size = 0
 
 # This class defines data types for operand matrices
 class operand_matrix(object):
@@ -22,7 +23,6 @@ class operand_matrix(object):
         self.filter_rows, self.filter_cols = 1, 1
         self.num_input_channels, self.num_filters = 1, 1
         self.row_stride, self.col_stride = 1, 1
-        self.batch_size = 1
 
         #  Derived hyper parameters
         self.ofmap_px_per_filt, self.conv_window_size = 1, 1
@@ -41,6 +41,8 @@ class operand_matrix(object):
         self.params_set_flag = False
         self.matrices_ready_flag = False
 
+        global batch_size
+        batch_size = global_vars.batch_size 
     #
     def set_params(self,
                    config_obj,
@@ -64,11 +66,12 @@ class operand_matrix(object):
         #    return -1
 
         self.ifmap_rows, self.ifmap_cols = self.topoutil.get_layer_ifmap_dims(self.layer_id)
-        self.ifmap_elements = self.ifmap_rows * self.ifmap_cols
         self.filter_rows, self.filter_cols = self.topoutil.get_layer_filter_dims(self.layer_id)
         self.num_input_channels = self.topoutil.get_layer_num_channels(self.layer_id)
         self.num_filters = self.topoutil.get_layer_num_filters(self.layer_id)
         self.row_stride, self.col_stride = self.topoutil.get_layer_strides(self.layer_id)
+        self.ifmap_elements = self.ifmap_rows * self.ifmap_cols * self.num_input_channels
+
         # TODO: Marked for cleanup
         #self.row_stride = layer_hyper_param_arr[6]
         #if len(layer_hyper_param_arr) == 8:

@@ -161,11 +161,11 @@ def post_process():
     analyze_SRAM_usage()
 
 
-def run_scale_sim(config_file_path, NN_file_path, SS_folder_outputs, SS_print_verbose):
+def run_scale_sim(config_file_path, NN_file_path, SS_folder_outputs, SS_print_verbose, batch_size):
     global debugPrint
     debugPrint = SS_print_verbose
     #print("debug print", debugPrint)
-    global_vars.initialize()
+    global_vars.initialize(batch_size)
 
     gemm_input = False
 
@@ -174,7 +174,7 @@ def run_scale_sim(config_file_path, NN_file_path, SS_folder_outputs, SS_print_ve
     s = scalesim(save_disk_space=True, verbose=SS_print_verbose,
                  config=config_file_path,
                  topology=NN_file_path,
-                 input_type_gemm=gemm_input
+                 input_type_gemm=gemm_input,
                  )
     startExecutionTime = time.time()
     logpath = SS_folder_outputs

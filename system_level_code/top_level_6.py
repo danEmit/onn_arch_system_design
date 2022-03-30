@@ -39,7 +39,7 @@ SS_inputs_end_row = "DRAM Bandwidth Mode"
 SS_outputs_start_row = "SRAM Input Reads"
 SS_outputs_end_row = "Total Vector Segments Processed"
 
-SS_inputs_names = ["Systolic Array Rows", "Systolic Array Cols", "SRAM Input Size", "SRAM Filter Size", "SRAM Output Size", "DRAM Bandwidth Mode"]
+SS_inputs_names = ["Systolic Array Rows", "Systolic Array Cols", "SRAM Input Size", "SRAM Filter Size", "SRAM Output Size", "DRAM Bandwidth Mode", "Batch Size"]
 SS_outputs_names = ["SRAM Input Reads", "SRAM Filter Reads", "SRAM Output Writes", "DRAM Input Reads", "DRAM Filter Reads", "DRAM Output Writes", \
           "Total Weights Programming Cycles", "Total Vector Segments Processed"]
 SS_in_out_names = SS_inputs_names + SS_outputs_names
@@ -143,6 +143,7 @@ def main():
      SRAM_filter_size = 64000
      SRAM_output_size = 64000
      DRAM_mode = 0
+     batch_size = 10
 
      #symbol_rate_options = [1 * ghz, 5 * ghz, 10 * ghz]
      symbol_rate_options = [1, 5, 10]
@@ -176,7 +177,7 @@ def main():
      print("will now loop through desired inputs")
      for (array_size_idx, array_size) in enumerate(array_size_options):
           SS_rows = array_size[0]; SS_cols = array_size[1]
-          SS_inputs = [SS_rows, SS_cols, SRAM_input_size, SRAM_filter_size, SRAM_output_size, DRAM_mode]
+          SS_inputs = [SS_rows, SS_cols, SRAM_input_size, SRAM_filter_size, SRAM_output_size, DRAM_mode, batch_size]
           #SS_outputs = [0] * len(SS_outputs_names)
           SS_inputs_wanted_single = pd.DataFrame(SS_inputs, index = SS_inputs_names, columns = ["0"])
           print("start of loop. searching for column of DF with the current desired SS inputs, rows:", SS_rows, "cols:", SS_cols)
@@ -197,7 +198,7 @@ def main():
                write_config_file(SS_inputs_dict)
                NN_file_path_complete = base_directory + NN_file_path_local_B + NN_file_name + ".csv"
 
-               SS_outputs_single = run_scale_sim(config_file_path, NN_file_path_complete, base_directory + "logs", SS_print_verbose)
+               SS_outputs_single = run_scale_sim(config_file_path, NN_file_path_complete, base_directory + "logs", SS_print_verbose, batch_size)
                SS_in_out_wanted.insert(SS_in_out_wanted.shape[1], "filler name", pd.concat([SS_inputs_wanted_single, SS_outputs_single]), allow_duplicates=True)
                SS_in_out_saved.insert(SS_in_out_saved.shape[1], "filler name", pd.concat([SS_inputs_wanted_single, SS_outputs_single]), allow_duplicates=True)
               # SS_in_out_wanted[array_size_idx].at[SS_outputs_names] = SS_outputs_single
@@ -221,17 +222,7 @@ def main():
      complete_final_specs.to_csv(saved_specs_file_path)
      #practice_plots_4.make_stacked_bar_plot() 
 
-     ''' 
-     params_interest = [["ADCs Power"], ["MRM Tx OMA Actual Loss", "Crossbar Junctions Actual Loss"]]
-     params_interest = [["ADCs Power", "DRAM Program Power", "DRAM Compute Power"], []]
-     params_total_quantities = ["Total Combined Electronics Power", "Total Laser Power from Wall mW"]
-     params_other_names = ["Other Electrical Power", "Other Photonic Power"]
-     params_other_names = ["Other Electrical Power"]
-     #repeat_tick_labels = [str(x) + " GHz" for x in symbol_rate_options]
-     array_configs = [str(x[0]) + " x " + str(x[1]) for x in array_size_options]
-     fig = practice_plots_5.make_stacked_bar_plot(chip_specs, params_interest, params_total_quantities, params_other_names, symbol_rate_options, array_configs, "mW")
      '''
-     
      practice_plots_6.prepare_plot_specs(symbol_rate_options, array_size_options)
      practice_plots_6.prepare_chip_specs(chip_specs)
      practice_plots_6.plot_power(chip_specs)
@@ -242,6 +233,7 @@ def main():
      params_total_quantities = ["Total Combined Electronics Power", "Total Laser Power from Wall mW"]
      params_other_names = ["Other Electrical Power"]
      practice_plots_6.power_breakdown(chip_specs, params_interest, params_total_quantities, params_other_names)
+     '''
 
            
            

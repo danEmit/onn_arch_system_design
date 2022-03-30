@@ -1,4 +1,4 @@
-def initialize():
+def initialize(batch_size_input):
 	#print("\nInitializing Globals\n")
 	global memoryAccess 
 	#global SRAM_demand_mat
@@ -6,6 +6,8 @@ def initialize():
 	global filter_demand_mat
 	global ofmap_demand_mat
 	global ifmap_demand_mat_non_skew
+
+	global batch_size 
 
 
 	ifmap_demand_mat = []
@@ -15,6 +17,7 @@ def initialize():
 
 	memoryAccess = []
 	#SRAM_demand_mat = []
+	batch_size = batch_size_input
 
 
 

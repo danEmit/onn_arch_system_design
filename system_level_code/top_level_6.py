@@ -17,7 +17,6 @@ if results_type not in ["official", "untracked"]:
      print("WRONG RESULTS DESTINATION")
 
 base_directory = "/Users/D/Desktop/research/onn_arch_system_design/"
-#base_directory = "/homes/dansturm/Desktop/onn_arch_system_design/"
 SS_inOut_file_path = base_directory + "results/" + results_type + "/"
 config_file_path  = base_directory + "configs/scale.cfg"
 sys.path.append(base_directory)
@@ -30,8 +29,6 @@ run_system_specs = 1
 make_plots = run_system_specs and make_plots
 save_SS_imm = 1
 SS_print_verbose = 0
-
-#print(sys.path)
 
 
 SS_inputs_start_row = "Systolic Array Rows"
@@ -81,23 +78,17 @@ def load_saved_SS_results(SS_inOut_file_local):
      try:
           SS_in_out_info = pd.read_csv(SS_inOut_file_complete, skiprows = 0, index_col=0)
           SS_in_out_info = SS_in_out_info.loc[SS_in_out_names].astype(int)
-          #SS_inputs_all  = SS_inOut_all.loc[SS_inputs_start_row:SS_inputs_end_row]
-          #SS_inputs_all = SS_inputs_all.astype(int)
-          #SS_outputs_all = SS_inOut_all.loc[SS_outputs_start_row:SS_outputs_end_row]
-          #SS_outputs_all = SS_outputs_all.astype(int)
+
      except:
           print("Existing DF empty")
           SS_in_out_info = create_SS_inOut()
 
-     #SS_inputs_all.index.name = "Parameters"
-     #SS_outputs_all.index.name = "Parameters"
      return (SS_in_out_info)
 
 
 def create_SS_inOut():
      print("Creating new empty dataframe")
      SS_in_out_info = pd.DataFrame(index = SS_in_out_names)
-     #SS_outputs_all = pd.DataFrame(index = SS_outputs_names)
      return(SS_in_out_info)  
 
 
@@ -129,15 +120,11 @@ def write_config_file(config_info):
      
 def main():
      print("\n\n\n\n\n\n\n\n\n\n")
-     NN_file_name = "Resnet50"
+     NN_file_name = "test"
      NN_file_path_local = "topologies:ONN:"
      NN_file_path_local_B = "topologies/ONN/"
 
      SS_in_out_saved = return_SS_inOut(NN_file_name, NN_file_path_local)
-
-     #print("inputs we have located:", SS_inputs_saved.shape)
-     #print("outputs we have located:", SS_outputs_saved.shape)
-     #print()
 
      SRAM_input_size  = 64000
      SRAM_filter_size = 64000
@@ -145,32 +132,12 @@ def main():
      DRAM_mode = 0
      batch_size = 10
 
-     #symbol_rate_options = [1 * ghz, 5 * ghz, 10 * ghz]
      symbol_rate_options = [1, 5, 10]
      base_SR = symbol_rate_options[0]
-     #symbol_rate = symbol_rate_options[1]
-     #array_size_options = [[8,8], [64,64]]
      array_size_options = [[8,8], [16, 16], [32, 32], [64,64]]
      #array_size_options = [[8,8], [16, 16]]
      #array_size_options = [[8, 8]]
-      
-     #array_size_options = [[9,9], [15, 15], [17, 17]]
-     screwup_array = [15, 15]
-     
-     # note that for whatever reason if i execute the line below, i get this issue where when i try to 
-     # alter one of the PDs, the rest get altered as well... not sure why...
-     # chip_specs_all_symbol_rates = [pd.DataFrame(index = chip_specs_names)] * len(symbol_rate_options)
-     
-     '''
-     chip_specs_all_symbol_rates = []
-     for symbol_rate in symbol_rate_options:
-         chip_specs_all_symbol_rates.append(pd.DataFrame(index = chip_specs_names))
-     '''
-     #SS_inputs_wanted = [pd.DataFrame(index = SS_inputs_names)] * len(array_size_options)
-     #SS_output_wanted = [pd.DataFrame(index = SS_inputs_names)] * len(array_size_options)
-     
-     #SS_in_out_wanted  = [0] * len(array_size_options)
-     #chip_specs        = [0] * len(array_size_options)
+
      SS_in_out_wanted = pd.DataFrame(index = SS_in_out_names)
      chip_specs = pd.DataFrame(index = chip_specs_names)
      
@@ -178,14 +145,13 @@ def main():
      for (array_size_idx, array_size) in enumerate(array_size_options):
           SS_rows = array_size[0]; SS_cols = array_size[1]
           SS_inputs = [SS_rows, SS_cols, SRAM_input_size, SRAM_filter_size, SRAM_output_size, DRAM_mode, batch_size]
-          #SS_outputs = [0] * len(SS_outputs_names)
           SS_inputs_wanted_single = pd.DataFrame(SS_inputs, index = SS_inputs_names, columns = ["0"])
-          print("start of loop. searching for column of DF with the current desired SS inputs, rows:", SS_rows, "cols:", SS_cols)
+          print("start of loop. searching for column of DF with the current desired SS inputs, rows:", SS_rows, "cols:", SS_cols, "batch size:", batch_size)
 
           need_run_SS = 1
           for column_name in SS_in_out_saved:
                if (SS_inputs_wanted_single.iloc[:, 0].equals(SS_in_out_saved.loc[SS_inputs_names, column_name])):
-                    print("found matching SS inputs at column", column_name, ",will now load corresponding outputs")
+                    print("found matching SS inputs at column \"", column_name, "\", will now load corresponding outputs")
                     need_run_SS = 0
                     SS_in_out_wanted.insert(SS_in_out_wanted.shape[1], "filler name", SS_in_out_saved.loc[SS_in_out_names, column_name], allow_duplicates=True)
                     break
@@ -201,8 +167,6 @@ def main():
                SS_outputs_single = run_scale_sim(config_file_path, NN_file_path_complete, base_directory + "logs", SS_print_verbose, batch_size)
                SS_in_out_wanted.insert(SS_in_out_wanted.shape[1], "filler name", pd.concat([SS_inputs_wanted_single, SS_outputs_single]), allow_duplicates=True)
                SS_in_out_saved.insert(SS_in_out_saved.shape[1], "filler name", pd.concat([SS_inputs_wanted_single, SS_outputs_single]), allow_duplicates=True)
-              # SS_in_out_wanted[array_size_idx].at[SS_outputs_names] = SS_outputs_single
-               #SS_in_out_saved.insert(SS_in_out_saved.shape[1], SS_in_out_saved.shape[1], SS_in_out_wanted[array_size_idx]) 
      
      saved_specs_file_path = SS_inOut_file_path + NN_file_path_local + NN_file_name + "_SS_results.csv"
      SS_in_out_saved.to_csv(saved_specs_file_path)

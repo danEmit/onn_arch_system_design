@@ -6,7 +6,7 @@ from scalesim.topology_utils import topologies as topoutil
 from scalesim.scale_config import scale_config as cfg
 
 
-batch_size = 1
+batch_size = 10
 
 # This class defines data types for operand matrices
 class operand_matrix(object):
@@ -18,6 +18,7 @@ class operand_matrix(object):
         # Layer hyper parameters
         self.layer_id = 0
         self.ifmap_rows, self.ifmap_cols = 1, 1
+        self.ifmap_elements = 1
         self.filter_rows, self.filter_cols = 1, 1
         self.num_input_channels, self.num_filters = 1, 1
         self.row_stride, self.col_stride = 1, 1
@@ -63,6 +64,7 @@ class operand_matrix(object):
         #    return -1
 
         self.ifmap_rows, self.ifmap_cols = self.topoutil.get_layer_ifmap_dims(self.layer_id)
+        self.ifmap_elements = self.ifmap_rows * self.ifmap_cols
         self.filter_rows, self.filter_cols = self.topoutil.get_layer_filter_dims(self.layer_id)
         self.num_input_channels = self.topoutil.get_layer_num_channels(self.layer_id)
         self.num_filters = self.topoutil.get_layer_num_filters(self.layer_id)
@@ -253,8 +255,13 @@ class operand_matrix(object):
         #ret_mat = self.ifmap_addr_matrix[start_row: end_row][start_col: end_col]
         end_row = start_row + num_rows
         end_col = start_col + num_cols
-        ret_mat = self.ifmap_addr_matrix[start_row: end_row, start_col: end_col]
-        ret_mat = np.repeat(ret_mat, batch_size, axis = 0)
+        ret_mat_og = self.ifmap_addr_matrix[start_row: end_row, start_col: end_col]
+        ret_mat = ret_mat_og
+        #ret_mat = np.repeat(ret_mat, batch_size, axis = 0)
+        for batch in range(1, batch_size):
+             offset = batch * self.ifmap_elements
+             ret_mat = np.vstack([ret_mat, ret_mat_og + offset])
+      #ret_mat = np.vstack([ret_mat, ret_mat + offset])
         return 0, ret_mat
 
     def get_ifmap_matrix(self):
@@ -328,8 +335,12 @@ class operand_matrix(object):
         end_col = start_col + num_cols
         # Anand: ISSUE #7. Patch
         #ret_mat = self.filter_addr_matrix[start_row: end_row, start_col: end_col]
-        ret_mat = self.ofmap_addr_matrix[start_row: end_row, start_col: end_col]
-        ret_mat = np.repeat(ret_mat, batch_size, axis = 0)
+        ret_mat_og = self.ofmap_addr_matrix[start_row: end_row, start_col: end_col]
+        ret_mat = ret_mat_og
+        offset_delta = np.max(ret_mat_og)
+        for batch in range(1, batch_size):
+             offset = batch * offset_delta
+             ret_mat = np.vstack([ret_mat, ret_mat_og + offset])
         return 0, ret_mat
 
     def get_ofmap_matrix(self):

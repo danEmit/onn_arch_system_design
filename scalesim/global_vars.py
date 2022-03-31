@@ -8,7 +8,7 @@ def initialize(batch_size_input):
 	global ifmap_demand_mat_non_skew
 
 	global batch_size 
-
+	global num_program
 
 	ifmap_demand_mat = []
 	filter_demand_mat = []
@@ -18,7 +18,9 @@ def initialize(batch_size_input):
 	memoryAccess = []
 	#SRAM_demand_mat = []
 	batch_size = batch_size_input
+	num_program = []
 
+	
 
 
 	'''

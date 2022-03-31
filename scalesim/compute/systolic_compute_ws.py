@@ -3,6 +3,7 @@ import numpy as np
 from tqdm import tqdm
 from scalesim.scale_config import scale_config as cfg
 
+import scalesim.global_vars as global_vars
 
 class systolic_compute_ws:
     def __init__(self):
@@ -74,6 +75,8 @@ class systolic_compute_ws:
 
         self.row_fold = math.ceil(self.Sr / self.arr_row)
         self.col_fold = math.ceil(self.Sc / self.arr_col)
+
+        global_vars.num_program.append(self.row_fold * self.col_fold)
 
         self.params_set_flag = True
 

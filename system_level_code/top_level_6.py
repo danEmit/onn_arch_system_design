@@ -171,33 +171,33 @@ def main():
      saved_specs_file_path = SS_inOut_file_path + NN_file_path_local + NN_file_name + "_SS_results.csv"
      SS_in_out_saved.to_csv(saved_specs_file_path)
 
-     col_repeat_idxs = np.repeat(range(len(array_size_options)), len(symbol_rate_options))
-     SS_in_out_wanted = SS_in_out_wanted.iloc[:, col_repeat_idxs]
-     symbol_rate_df = pd.DataFrame(symbol_rate_options * len(array_size_options), ["filler name"] * len(array_size_options) * len(symbol_rate_options), ["Symbol Rate (GHz)"]).T
-     SS_in_out_wanted = pd.concat([symbol_rate_df, SS_in_out_wanted])
-     
-     chip_specs = pd.DataFrame(index = chip_specs_names)
-     for  (columnName, SS_in_out_single) in SS_in_out_wanted.iteritems():
-           chip_specs_single = system_specs_9.run_power_area_model(SS_in_out_single[SS_outputs_names], SS_in_out_single[SS_inputs_names], SS_in_out_single["Symbol Rate (GHz)"] * ghz)
-           chip_specs.insert(chip_specs.shape[1], "filler name", chip_specs_single, allow_duplicates = True)     
+     if (run_system_specs):
+          col_repeat_idxs = np.repeat(range(len(array_size_options)), len(symbol_rate_options))
+          SS_in_out_wanted = SS_in_out_wanted.iloc[:, col_repeat_idxs]
+          symbol_rate_df = pd.DataFrame(symbol_rate_options * len(array_size_options), ["filler name"] * len(array_size_options) * len(symbol_rate_options), ["Symbol Rate (GHz)"]).T
+          SS_in_out_wanted = pd.concat([symbol_rate_df, SS_in_out_wanted])
+          
+          chip_specs = pd.DataFrame(index = chip_specs_names)
+          for  (columnName, SS_in_out_single) in SS_in_out_wanted.iteritems():
+               chip_specs_single = system_specs_9.run_power_area_model(SS_in_out_single[SS_outputs_names], SS_in_out_single[SS_inputs_names], SS_in_out_single["Symbol Rate (GHz)"] * ghz)
+               chip_specs.insert(chip_specs.shape[1], "filler name", chip_specs_single, allow_duplicates = True)     
 
-     saved_specs_file_path = SS_inOut_file_path + NN_file_path_local + NN_file_name + "_SS_results_and_chip_specs.csv"
-     complete_final_specs = pd.concat([SS_in_out_wanted, chip_specs])
-     complete_final_specs.to_csv(saved_specs_file_path)
-     #practice_plots_4.make_stacked_bar_plot() 
+          saved_specs_file_path = SS_inOut_file_path + NN_file_path_local + NN_file_name + "_SS_results_and_chip_specs.csv"
+          complete_final_specs = pd.concat([SS_in_out_wanted, chip_specs])
+          complete_final_specs.to_csv(saved_specs_file_path)
 
-     '''
-     practice_plots_6.prepare_plot_specs(symbol_rate_options, array_size_options)
-     practice_plots_6.prepare_chip_specs(chip_specs)
-     practice_plots_6.plot_power(chip_specs)
-     practice_plots_6.plot_area(chip_specs)
-     practice_plots_6.plot_inf_specs(chip_specs)
+     if (make_plots):
+          practice_plots_6.prepare_plot_specs(symbol_rate_options, array_size_options)
+          practice_plots_6.prepare_chip_specs(chip_specs)
+          practice_plots_6.plot_power(chip_specs)
+          practice_plots_6.plot_area(chip_specs)
+          practice_plots_6.plot_inf_specs(chip_specs)
+          
+          params_interest = [["ADCs Power", "DRAM Program Power", "DRAM Compute Power", "PCM Heaters Power"], []]
+          params_total_quantities = ["Total Combined Electronics Power", "Total Laser Power from Wall mW"]
+          params_other_names = ["Other Electrical Power"]
+          practice_plots_6.power_breakdown(chip_specs, params_interest, params_total_quantities, params_other_names)
      
-     params_interest = [["ADCs Power", "DRAM Program Power", "DRAM Compute Power", "PCM Heaters Power"], []]
-     params_total_quantities = ["Total Combined Electronics Power", "Total Laser Power from Wall mW"]
-     params_other_names = ["Other Electrical Power"]
-     practice_plots_6.power_breakdown(chip_specs, params_interest, params_total_quantities, params_other_names)
-     '''
 
            
            

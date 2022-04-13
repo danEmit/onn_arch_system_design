@@ -173,10 +173,9 @@ if __name__ == '__main__':
                         help="Type of input topology, gemm: MNK, conv: conv"
                         )
 
-    batchSize = 10
-
     args = parser.parse_args()
     topology = args.t
+    topology = "../topologies/ONN/test.csv"
     config = args.c
     logpath = args.p
     inp_type = args.i

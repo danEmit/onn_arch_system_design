@@ -141,6 +141,8 @@ def main():
 
      SS_in_out_wanted = pd.DataFrame(index = SS_in_out_names)
      chip_specs = pd.DataFrame(index = chip_specs_names)
+
+     saved_specs_file_path = SS_inOut_file_path + NN_file_path_local + NN_file_name + "_SS_results.csv"
      
      print("will now loop through desired inputs")
      for batch_size in batch_size_options:
@@ -170,8 +172,10 @@ def main():
                     SS_in_out_wanted.insert(SS_in_out_wanted.shape[1], "filler name", pd.concat([SS_inputs_wanted_single, SS_outputs_single]), allow_duplicates=True)
                     SS_in_out_saved.insert(SS_in_out_saved.shape[1], "filler name", pd.concat([SS_inputs_wanted_single, SS_outputs_single]), allow_duplicates=True)
           
-     
-     saved_specs_file_path = SS_inOut_file_path + NN_file_path_local + NN_file_name + "_SS_results.csv"
+                    SS_in_out_saved.to_csv(saved_specs_file_path)
+
+
+     #saved_specs_file_path = SS_inOut_file_path + NN_file_path_local + NN_file_name + "_SS_results.csv"
      SS_in_out_saved.to_csv(saved_specs_file_path)
 
      if (run_system_specs):

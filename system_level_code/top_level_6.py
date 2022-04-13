@@ -26,7 +26,7 @@ from scalesim.scale_external_2 import run_scale_sim
 
 ghz = 10**9
 make_plots = 0
-run_system_specs = 1
+run_system_specs = 0
 make_plots = run_system_specs and make_plots
 save_SS_imm = 1
 SS_print_verbose = 0

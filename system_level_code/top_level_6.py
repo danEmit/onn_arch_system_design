@@ -139,10 +139,24 @@ def main():
      #array_size_options = [[8,8], [16, 16]]
      #array_size_options = [[8, 8]]
 
+
      SS_in_out_wanted = pd.DataFrame(index = SS_in_out_names)
      chip_specs = pd.DataFrame(index = chip_specs_names)
 
-     saved_specs_file_path = SS_inOut_file_path + NN_file_path_local + NN_file_name + "_SS_results.csv"
+     if (1):
+          batch_size_options_options = [[1], [32]]
+          BSO_index = int(sys.argv[1])
+          batch_size_options = batch_size_options_options[BSO_index]     
+          array_size_options_options = [[[8,8]], [[16, 16]], [[32, 32]], [[64,64]], [[128, 128]]]
+          ASO_index = int(sys.argv[2])
+          print("Batch Size Index:", BSO_index, "Array Size Index:", ASO_index)
+          array_size_options = array_size_options_options[ASO_index]
+
+          saved_specs_file_path = SS_inOut_file_path + NN_file_path_local + NN_file_name 
+          saved_specs_file_path += "_BSO_" + str(BSO_index) + "_ASO_" + str(ASO_index)
+          saved_specs_file_path += "_SS_results.csv"
+     else:
+          saved_specs_file_path = SS_inOut_file_path + NN_file_path_local + NN_file_name + "_SS_results.csv"
      
      print("will now loop through desired inputs")
      for batch_size in batch_size_options:

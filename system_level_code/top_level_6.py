@@ -17,6 +17,7 @@ if results_type not in ["official", "untracked"]:
      print("WRONG RESULTS DESTINATION")
 
 base_directory = "/Users/D/Desktop/research/onn_arch_system_design/"
+base_directory = "/Users/d/Desktop/onn_arch_system_design/"
 SS_inOut_file_path = base_directory + "results/" + results_type + "/"
 config_file_path  = base_directory + "configs/scale.cfg"
 sys.path.append(base_directory)
@@ -24,7 +25,7 @@ from scalesim.scale_external_2 import run_scale_sim
 
 
 ghz = 10**9
-make_plots = 1
+make_plots = 0
 run_system_specs = 1
 make_plots = run_system_specs and make_plots
 save_SS_imm = 1
@@ -130,11 +131,11 @@ def main():
      SRAM_filter_size = 64000
      SRAM_output_size = 64000
      DRAM_mode = 0
-     batch_size = 10
+     batch_size_options = [8, 32, 128]
 
      symbol_rate_options = [1, 5, 10]
      base_SR = symbol_rate_options[0]
-     array_size_options = [[8,8], [16, 16], [32, 32], [64,64]]
+     array_size_options = [[8,8], [16, 16], [32, 32], [64,64], [128, 128]]
      #array_size_options = [[8,8], [16, 16]]
      #array_size_options = [[8, 8]]
 
@@ -142,39 +143,42 @@ def main():
      chip_specs = pd.DataFrame(index = chip_specs_names)
      
      print("will now loop through desired inputs")
-     for (array_size_idx, array_size) in enumerate(array_size_options):
-          SS_rows = array_size[0]; SS_cols = array_size[1]
-          SS_inputs = [SS_rows, SS_cols, SRAM_input_size, SRAM_filter_size, SRAM_output_size, DRAM_mode, batch_size]
-          SS_inputs_wanted_single = pd.DataFrame(SS_inputs, index = SS_inputs_names, columns = ["0"])
-          print("start of loop. searching for column of DF with the current desired SS inputs, rows:", SS_rows, "cols:", SS_cols, "batch size:", batch_size)
+     for batch_size in batch_size_options:
+          for (array_size_idx, array_size) in enumerate(array_size_options):
+               SS_rows = array_size[0]; SS_cols = array_size[1]
+               SS_inputs = [SS_rows, SS_cols, SRAM_input_size, SRAM_filter_size, SRAM_output_size, DRAM_mode, batch_size]
+               SS_inputs_wanted_single = pd.DataFrame(SS_inputs, index = SS_inputs_names, columns = ["0"])
+               print("start of loop. searching for column of DF with the current desired SS inputs, rows:", SS_rows, "cols:", SS_cols, "batch size:", batch_size)
 
-          need_run_SS = 1
-          for column_name in SS_in_out_saved:
-               if (SS_inputs_wanted_single.iloc[:, 0].equals(SS_in_out_saved.loc[SS_inputs_names, column_name])):
-                    print("found matching SS inputs at column \"", column_name, "\", will now load corresponding outputs")
-                    need_run_SS = 0
-                    SS_in_out_wanted.insert(SS_in_out_wanted.shape[1], "filler name", SS_in_out_saved.loc[SS_in_out_names, column_name], allow_duplicates=True)
-                    break
+               need_run_SS = 1
+               for column_name in SS_in_out_saved:
+                    if (SS_inputs_wanted_single.iloc[:, 0].equals(SS_in_out_saved.loc[SS_inputs_names, column_name])):
+                         print("found matching SS inputs at column \"", column_name, "\", will now load corresponding outputs")
+                         need_run_SS = 0
+                         SS_in_out_wanted.insert(SS_in_out_wanted.shape[1], "filler name", SS_in_out_saved.loc[SS_in_out_names, column_name], allow_duplicates=True)
+                         break
+               
+               if need_run_SS:
+                    print("did not find matching SS inputs. will now run scale sim with current desired inputs")
+                    SS_inputs_dict = dict({"NN Model Name": NN_file_name, "NN Model Filepath": NN_file_path_local, "Systolic Array Rows": SS_rows, \
+                         "Systolic Array Cols": SS_cols, "SRAM Input Size": SRAM_input_size, "SRAM Filter Size": SRAM_filter_size, \
+                         "SRAM Output Size": SRAM_output_size, "DRAM Bandwidth Mode": DRAM_mode}) 
+                    write_config_file(SS_inputs_dict)
+                    NN_file_path_complete = base_directory + NN_file_path_local_B + NN_file_name + ".csv"
+
+                    SS_outputs_single = run_scale_sim(config_file_path, NN_file_path_complete, base_directory + "logs", SS_print_verbose, batch_size)
+                    SS_in_out_wanted.insert(SS_in_out_wanted.shape[1], "filler name", pd.concat([SS_inputs_wanted_single, SS_outputs_single]), allow_duplicates=True)
+                    SS_in_out_saved.insert(SS_in_out_saved.shape[1], "filler name", pd.concat([SS_inputs_wanted_single, SS_outputs_single]), allow_duplicates=True)
           
-          if need_run_SS:
-               print("did not find matching SS inputs. will now run scale sim with current desired inputs")
-               SS_inputs_dict = dict({"NN Model Name": NN_file_name, "NN Model Filepath": NN_file_path_local, "Systolic Array Rows": SS_rows, \
-                    "Systolic Array Cols": SS_cols, "SRAM Input Size": SRAM_input_size, "SRAM Filter Size": SRAM_filter_size, \
-                    "SRAM Output Size": SRAM_output_size, "DRAM Bandwidth Mode": DRAM_mode}) 
-               write_config_file(SS_inputs_dict)
-               NN_file_path_complete = base_directory + NN_file_path_local_B + NN_file_name + ".csv"
-
-               SS_outputs_single = run_scale_sim(config_file_path, NN_file_path_complete, base_directory + "logs", SS_print_verbose, batch_size)
-               SS_in_out_wanted.insert(SS_in_out_wanted.shape[1], "filler name", pd.concat([SS_inputs_wanted_single, SS_outputs_single]), allow_duplicates=True)
-               SS_in_out_saved.insert(SS_in_out_saved.shape[1], "filler name", pd.concat([SS_inputs_wanted_single, SS_outputs_single]), allow_duplicates=True)
      
      saved_specs_file_path = SS_inOut_file_path + NN_file_path_local + NN_file_name + "_SS_results.csv"
      SS_in_out_saved.to_csv(saved_specs_file_path)
 
      if (run_system_specs):
-          col_repeat_idxs = np.repeat(range(len(array_size_options)), len(symbol_rate_options))
+          num_batch_array = len(array_size_options) * len(batch_size_options)
+          col_repeat_idxs = np.repeat(range(num_batch_array), len(symbol_rate_options))
           SS_in_out_wanted = SS_in_out_wanted.iloc[:, col_repeat_idxs]
-          symbol_rate_df = pd.DataFrame(symbol_rate_options * len(array_size_options), ["filler name"] * len(array_size_options) * len(symbol_rate_options), ["Symbol Rate (GHz)"]).T
+          symbol_rate_df = pd.DataFrame(symbol_rate_options * num_batch_array, ["filler name"] * len(symbol_rate_options) * num_batch_array, ["Symbol Rate (GHz)"]).T
           SS_in_out_wanted = pd.concat([symbol_rate_df, SS_in_out_wanted])
           
           chip_specs = pd.DataFrame(index = chip_specs_names)

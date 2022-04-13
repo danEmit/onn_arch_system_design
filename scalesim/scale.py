@@ -14,7 +14,7 @@ sys.path.append(content_path)
 from scalesim.scale_sim import scalesim
 import scalesim.global_vars as global_vars
 
-batch_size = 2
+batch_size = 1
 global_vars.initialize(batch_size)
 
 logpath = ""
@@ -119,23 +119,9 @@ def analyze_SRAM_usage():
     np.savetxt(logpath + "/output_SRAM_mat.csv", output_demand_mat[0], delimiter = ",")
     np.savetxt(logpath + "/input_unskew_SRAM_mat.csv", input_demand_mat_non_skew[0], delimiter = ",")
 
-    filter_SRAM_cycles = analyze_SRAM_trace(filter_demand_mat)
-    num_weight_programming_cycles_total = 0
-    num_weight_programming_ind_total = 0
-    print("\nWeights programming stats by NN layer:")
-    for layerNum in range(len(filter_SRAM_cycles)):
-        num_weight_programming_cycles_layer = filter_SRAM_cycles[layerNum].shape[0]
-        num_weight_programming_cycles_total += num_weight_programming_cycles_layer
-        
-        num_weight_programming_ind_layer = sum(filter_SRAM_cycles[layerNum][:, 2])
-        num_weight_programming_ind_total += num_weight_programming_ind_layer
-        
-        print("layer:",layerNum)
-        print("# programming cycles:",num_weight_programming_cycles_layer, "------- # ind weights programmed:",num_weight_programming_ind_layer)
-        #print("Details on weights programming cycles - rows, columns, total weights:")
-        #print(filter_SRAM_cycles[layerNum])
+    num_weight_programming_cycles_total = sum(global_vars.num_program)
     print("\nTOTAL WEIGHTS PROGRAMMING CYCLES:", num_weight_programming_cycles_total)
-    print("TOTAL INDIVIDUAL WEIGHTS PRORGRAMMED:", num_weight_programming_ind_total)
+    print("TOTAL INDIVIDUAL WEIGHTS PRORGRAMMED:", "not precisely known")
     print()
     
     
@@ -152,9 +138,13 @@ def analyze_SRAM_usage():
         
         print("layer:", layerNum)
         print("# compute cycles:", num_compute_cycles_layer, "------- # ind input vector SEGMENTS processed:", num_input_compute_vector_segments_layer)
-    
+        print(" # ind input vector SEGMENTS processed method two:", global_vars.compute_clock_cycles[layerNum])
+
+
     print("\nTOTAL COMPUTE CYCLES:", num_compute_cycles_total)
     print("TOTAL VECTOR SEGMENTS PROCESSED IN ARRAY:", num_input_compute_vector_segments_total)
+    print("TOTAL VECTOR SEGMENTS PROCESSED IN ARRAY method two:", sum(global_vars.compute_clock_cycles))
+
     print()
 
 

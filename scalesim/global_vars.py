@@ -9,6 +9,7 @@ def initialize(batch_size_input):
 
 	global batch_size 
 	global num_program
+	global compute_clock_cycles
 
 	ifmap_demand_mat = []
 	filter_demand_mat = []
@@ -19,7 +20,7 @@ def initialize(batch_size_input):
 	#SRAM_demand_mat = []
 	batch_size = batch_size_input
 	num_program = []
-
+	compute_clock_cycles = []
 	
 
 

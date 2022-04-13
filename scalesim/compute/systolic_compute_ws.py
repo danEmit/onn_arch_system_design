@@ -77,6 +77,7 @@ class systolic_compute_ws:
         self.col_fold = math.ceil(self.Sc / self.arr_col)
 
         global_vars.num_program.append(self.row_fold * self.col_fold)
+        global_vars.compute_clock_cycles.append(self.row_fold * self.col_fold * self.ifmap_op_mat.shape[0])
 
         self.params_set_flag = True
 

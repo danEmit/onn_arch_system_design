@@ -1,0 +1,16 @@
+,filler name
+Systolic Array Rows,64
+Systolic Array Cols,64
+SRAM Input Size,64000
+SRAM Filter Size,64000
+SRAM Output Size,64000
+DRAM Bandwidth Mode,0
+Batch Size,1
+SRAM Input Reads,54368524
+SRAM Filter Reads,25502912
+SRAM Output Writes,54912256
+DRAM Input Reads,8030208
+DRAM Filter Reads,25502912
+DRAM Output Writes,54912256
+Total Weights Programming Cycles,13239
+Total Vector Segments Processed,841386

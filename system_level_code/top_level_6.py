@@ -18,7 +18,7 @@ if results_type not in ["official", "untracked"]:
      print("WRONG RESULTS DESTINATION")
 
 base_directory = "/Users/D/Desktop/research/onn_arch_system_design/"
-base_directory = "/Users/d/Desktop/onn_arch_system_design/"
+#base_directory = "/Users/d/Desktop/onn_arch_system_design/"
 SS_inOut_file_path = base_directory + "results/" + results_type + "/"
 config_file_path  = base_directory + "configs/scale.cfg"
 sys.path.append(base_directory)
@@ -103,7 +103,7 @@ def main():
 
      symbol_rate_options = [1, 5, 10]
      base_SR = symbol_rate_options[0]
-     array_size_options = [[8,8], [16, 16], [32, 32], [64,64], [128, 128]]
+     array_size_options = [[8,8], [15, 16], [32, 32], [64,64], [128, 128]]
      #array_size_options = [[8,8], [16, 16]]
      #array_size_options = [[8, 8]]
 
@@ -111,7 +111,7 @@ def main():
      SS_in_out_wanted = pd.DataFrame(index = SS_in_out_names)
      chip_specs = pd.DataFrame(index = chip_specs_names)
 
-     if (1):
+     if (0):
           batch_size_options_options = [[1], [32]]
           BSO_index = int(sys.argv[1])
           batch_size_options = batch_size_options_options[BSO_index]     

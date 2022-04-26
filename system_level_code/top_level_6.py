@@ -13,10 +13,7 @@ import specs_info
 import sim_params
 
 
-base_directory = sim_params.base_directory
-SS_inOut_file_path = sim_params.SS_inOut_file_path
-config_file_path = sim_params.config_file_path
-sys.path.append(base_directory)
+sys.path.append(sim_params.base_directory)
 from scalesim.scale_external_2 import run_scale_sim
 
 SS_inputs_names = specs_info.SS_inputs_names
@@ -53,20 +50,7 @@ def write_config_file(config_info):
      file.write(total_text)
      file.close()
 
-     
-def main():
-     print("\n\n\n\n\n\n\n\n\n\n")
-     NN_file_name = "test"
-     NN_file_path_local = "topologies/ONN/"
-     NN_file_path_name = sim_params.base_directory + NN_file_path_local + NN_file_name + ".csv"
-
-     NN_file_path_local = NN_file_path_local.replace("/", "_") 
-
-     NN_file_path_local_name = NN_file_path_local + NN_file_name
-     SS_results_file_base_folder = SS_inOut_file_path + NN_file_path_local_name
-     SS_results_file_path_name = SS_inOut_file_path + NN_file_path_local_name + "/" + NN_file_path_local_name + "__SS_results.csv"
-     chip_specs_file_path_name = SS_inOut_file_path + NN_file_path_local_name + "/" + NN_file_path_local_name + "__SS_results_chip_specs.csv"
-
+def manage_saved_data(SS_results_file_base_folder, SS_results_file_path_name):
      if not os.path.isdir(SS_results_file_base_folder):
           os.mkdir(SS_results_file_base_folder)
 
@@ -74,12 +58,22 @@ def main():
           SS_in_out_saved = load_saved_SS_results(SS_results_file_path_name)
      else:
           SS_in_out_saved = create_SS_inOut() 
+     return SS_in_out_saved
+     
+def main():
+     print("\n\n\n\n\n\n\n\n\n\n")
+
+     SS_results_file_path_name = sim_params.SS_results_file_path_name
+     SS_in_out_saved = manage_saved_data(sim_params.SS_results_file_base_folder, SS_results_file_path_name)
+
+
 
      SRAM_input_size  = 64000
      SRAM_filter_size = 64000
      SRAM_output_size = 64000
      DRAM_mode = 0
      batch_size_options = [8, 32, 128]
+
 
      symbol_rate_options = [1, 5, 10]
      base_SR = symbol_rate_options[0]
@@ -124,12 +118,12 @@ def main():
                
                if need_run_SS:
                     print("did not find matching SS inputs. will now run scale sim with current desired inputs")
-                    SS_inputs_dict = dict({"NN Model Name": NN_file_name, "NN Model Filepath": NN_file_path_local, "Systolic Array Rows": SS_rows, \
+                    SS_inputs_dict = dict({"NN Model Name": sim_params.NN_file_name, "NN Model Filepath": sim_params.NN_file_path_local, "Systolic Array Rows": SS_rows, \
                          "Systolic Array Cols": SS_cols, "SRAM Input Size": SRAM_input_size, "SRAM Filter Size": SRAM_filter_size, \
                          "SRAM Output Size": SRAM_output_size, "DRAM Bandwidth Mode": DRAM_mode}) 
                     write_config_file(SS_inputs_dict)
 
-                    SS_outputs_single = run_scale_sim(sim_params.config_file_path, NN_file_path_name, base_directory + "logs", sim_params.SS_print_verbose, batch_size)
+                    SS_outputs_single = run_scale_sim(sim_params.config_file_path, sim_params.NN_file_path_name, sim_params.base_directory + "logs", sim_params.SS_print_verbose, batch_size)
                     SS_in_out_wanted.insert(SS_in_out_wanted.shape[1], "filler name", pd.concat([SS_inputs_wanted_single, SS_outputs_single]), allow_duplicates=True)
                     SS_in_out_saved.insert(SS_in_out_saved.shape[1], "filler name", pd.concat([SS_inputs_wanted_single, SS_outputs_single]), allow_duplicates=True)
           
@@ -151,7 +145,7 @@ def main():
                chip_specs.insert(chip_specs.shape[1], "filler name", chip_specs_single, allow_duplicates = True)     
 
           complete_final_specs = pd.concat([SS_in_out_wanted, chip_specs])
-          complete_final_specs.to_csv(chip_specs_file_path_name)
+          complete_final_specs.to_csv(sim_params.chip_specs_file_path_name)
 
      if (sim_params.make_plots):
           practice_plots_6.prepare_plot_specs(symbol_rate_options, array_size_options)

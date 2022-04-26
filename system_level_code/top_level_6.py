@@ -120,11 +120,11 @@ def main():
           print("Batch Size Index:", BSO_index, "Array Size Index:", ASO_index)
           array_size_options = array_size_options_options[ASO_index]
 
-          saved_specs_file_path = SS_inOut_file_path + NN_file_path_local + NN_file_name 
-          saved_specs_file_path += "_BSO_" + str(BSO_index) + "_ASO_" + str(ASO_index)
-          saved_specs_file_path += "_SS_results.csv"
+          saved_SS_results_file_path = SS_inOut_file_path + NN_file_path_local + NN_file_name 
+          saved_SS_results_file_path += "_BSO_" + str(BSO_index) + "_ASO_" + str(ASO_index)
+          saved_SS_results_file_path += "_SS_results.csv"
      else:
-          saved_specs_file_path = SS_inOut_file_path + NN_file_path_local + NN_file_name + "_SS_results.csv"
+          saved_SS_results_file_path = SS_inOut_file_path + NN_file_path_local + NN_file_name + "_SS_results.csv"
      
      print("will now loop through desired inputs")
      for batch_size in batch_size_options:
@@ -154,11 +154,10 @@ def main():
                     SS_in_out_wanted.insert(SS_in_out_wanted.shape[1], "filler name", pd.concat([SS_inputs_wanted_single, SS_outputs_single]), allow_duplicates=True)
                     SS_in_out_saved.insert(SS_in_out_saved.shape[1], "filler name", pd.concat([SS_inputs_wanted_single, SS_outputs_single]), allow_duplicates=True)
           
-                    SS_in_out_saved.to_csv(saved_specs_file_path)
+                    SS_in_out_saved.to_csv(saved_SS_results_file_path)
 
 
-     #saved_specs_file_path = SS_inOut_file_path + NN_file_path_local + NN_file_name + "_SS_results.csv"
-     SS_in_out_saved.to_csv(saved_specs_file_path)
+     SS_in_out_saved.to_csv(saved_SS_results_file_path)
 
      if (run_system_specs):
           num_batch_array = len(array_size_options) * len(batch_size_options)

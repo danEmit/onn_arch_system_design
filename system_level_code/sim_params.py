@@ -43,13 +43,13 @@ array_size_options_index = []
 
 if distributed_computing:
     computer_name = platform.node()
-    computer_name = computer_name[0:5]
+    computer_name = computer_name[0:7]
     SS_results_file_path_name_write = SS_inOut_file_path + NN_file_path_local_name + "/" + NN_file_path_local_name + "__" + computer_name + "__SS_results.csv"
     run_system_specs = 0
     make_plots = 0
 
-    batch_size_options_index = [0, 3]
-    array_size_options_index = [0, 3, 2]
+    batch_size_options_index = [0]
+    array_size_options_index = [0]
 
 else:
     batch_size_options_index = [x for x in range(len(batch_size_options_overall))]

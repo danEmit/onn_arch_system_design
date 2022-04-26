@@ -104,6 +104,7 @@ def main():
      symbol_rate_options = [1, 5, 10]
      base_SR = symbol_rate_options[0]
      array_size_options = [[8,8], [15, 16], [32, 32], [64,64], [128, 128]]
+     array_size_options = [[8, 8]]
      #array_size_options = [[8,8], [16, 16]]
      #array_size_options = [[8, 8]]
 
@@ -112,7 +113,7 @@ def main():
      chip_specs = pd.DataFrame(index = chip_specs_names)
 
      if (0):
-          batch_size_options_options = [[1], [32]]
+          batch_size_options_options = [[1]]
           BSO_index = int(sys.argv[1])
           batch_size_options = batch_size_options_options[BSO_index]     
           array_size_options_options = [[[8,8]], [[16, 16]], [[32, 32]], [[64,64]], [[128, 128]]]
@@ -186,23 +187,6 @@ def main():
           params_total_quantities = ["Total Combined Electronics Power", "Total Laser Power from Wall mW"]
           params_other_names = ["Other Electrical Power"]
           practice_plots_6.power_breakdown(chip_specs, params_interest, params_total_quantities, params_other_names)
-     
-
-           
-           
-
-     
-     
-     x = 1
-          
-          
-          
-          
-          
-     
-
-     
-               
 
 
 if __name__ == "__main__":    

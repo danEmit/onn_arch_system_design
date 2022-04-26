@@ -26,11 +26,10 @@ chip_specs_names = specs_info.all_specs_names
 
 all_names = SS_inputs_names + SS_outputs_names + chip_specs_names
 
-def load_saved_SS_results(SS_inOut_file_local):
+def load_saved_SS_results(SS_results_file_path_name):
      print("Loading Existing DF")
-     SS_inOut_file_complete = SS_inOut_file_path + SS_inOut_file_local
      try:
-          SS_in_out_info = pd.read_csv(SS_inOut_file_complete, skiprows = 0, index_col=0)
+          SS_in_out_info = pd.read_csv(SS_results_file_path_name, skiprows = 0, index_col=0)
           SS_in_out_info = SS_in_out_info.loc[SS_in_out_names].astype(int)
      except:
           print("Existing DF empty")
@@ -42,21 +41,6 @@ def create_SS_inOut():
      print("Creating new empty dataframe")
      SS_in_out_info = pd.DataFrame(index = SS_in_out_names)
      return(SS_in_out_info)  
-
-
-def return_SS_inOut(NN_file_name, NN_file_path_local):
-     SS_inOut_names_all = listdir(SS_inOut_file_path) 
-     potential_file_name = NN_file_path_local + NN_file_name + "_SS_results.csv"
-     print("searching through all existing files for:", potential_file_name)
-
-     for existing_file_name in SS_inOut_names_all:
-          if (existing_file_name == potential_file_name):
-               return load_saved_SS_results(potential_file_name) 
-          else:
-               continue
-     print("could not find file for current NN")
-     return create_SS_inOut()
-
 
 def write_config_file(config_info):
      generic_info_top = "[general]\nrun_name = ONN_sim\n\n[architecture_presets]"
@@ -73,10 +57,23 @@ def write_config_file(config_info):
 def main():
      print("\n\n\n\n\n\n\n\n\n\n")
      NN_file_name = "test"
-     NN_file_path_local = "topologies:ONN:"
-     NN_file_path_local_B = "topologies/ONN/"
+     NN_file_path_local = "topologies/ONN/"
+     NN_file_path_name = sim_params.base_directory + NN_file_path_local + NN_file_name + ".csv"
 
-     SS_in_out_saved = return_SS_inOut(NN_file_name, NN_file_path_local)
+     NN_file_path_local = NN_file_path_local.replace("/", "_") 
+
+     NN_file_path_local_name = NN_file_path_local + NN_file_name
+     SS_results_file_base_folder = SS_inOut_file_path + NN_file_path_local_name
+     SS_results_file_path_name = SS_inOut_file_path + NN_file_path_local_name + "/" + NN_file_path_local_name + "__SS_results.csv"
+     chip_specs_file_path_name = SS_inOut_file_path + NN_file_path_local_name + "/" + NN_file_path_local_name + "__SS_results_chip_specs.csv"
+
+     if not os.path.isdir(SS_results_file_base_folder):
+          os.mkdir(SS_results_file_base_folder)
+
+     if os.path.isfile(SS_results_file_path_name):
+          SS_in_out_saved = load_saved_SS_results(SS_results_file_path_name)
+     else:
+          SS_in_out_saved = create_SS_inOut() 
 
      SRAM_input_size  = 64000
      SRAM_filter_size = 64000
@@ -104,11 +101,10 @@ def main():
           print("Batch Size Index:", BSO_index, "Array Size Index:", ASO_index)
           array_size_options = array_size_options_options[ASO_index]
 
-          saved_SS_results_file_path = SS_inOut_file_path + NN_file_path_local + NN_file_name 
-          saved_SS_results_file_path += "_BSO_" + str(BSO_index) + "_ASO_" + str(ASO_index)
-          saved_SS_results_file_path += "_SS_results.csv"
-     else:
-          saved_SS_results_file_path = SS_inOut_file_path + NN_file_path_local + NN_file_name + "_SS_results.csv"
+          SS_results_file_path_name = SS_inOut_file_path + NN_file_path_local + NN_file_name 
+          SS_results_file_path_name += "_BSO_" + str(BSO_index) + "_ASO_" + str(ASO_index)
+          SS_results_file_path_name += "_SS_results.csv"
+
      
      print("will now loop through desired inputs")
      for batch_size in batch_size_options:
@@ -132,16 +128,15 @@ def main():
                          "Systolic Array Cols": SS_cols, "SRAM Input Size": SRAM_input_size, "SRAM Filter Size": SRAM_filter_size, \
                          "SRAM Output Size": SRAM_output_size, "DRAM Bandwidth Mode": DRAM_mode}) 
                     write_config_file(SS_inputs_dict)
-                    NN_file_path_complete = base_directory + NN_file_path_local_B + NN_file_name + ".csv"
 
-                    SS_outputs_single = run_scale_sim(sim_params.config_file_path, NN_file_path_complete, base_directory + "logs", sim_params.SS_print_verbose, batch_size)
+                    SS_outputs_single = run_scale_sim(sim_params.config_file_path, NN_file_path_name, base_directory + "logs", sim_params.SS_print_verbose, batch_size)
                     SS_in_out_wanted.insert(SS_in_out_wanted.shape[1], "filler name", pd.concat([SS_inputs_wanted_single, SS_outputs_single]), allow_duplicates=True)
                     SS_in_out_saved.insert(SS_in_out_saved.shape[1], "filler name", pd.concat([SS_inputs_wanted_single, SS_outputs_single]), allow_duplicates=True)
           
-                    SS_in_out_saved.to_csv(saved_SS_results_file_path)
+                    SS_in_out_saved.to_csv(SS_results_file_path_name)
 
 
-     SS_in_out_saved.to_csv(saved_SS_results_file_path)
+     SS_in_out_saved.to_csv(SS_results_file_path_name)
 
      if (sim_params.run_system_specs):
           num_batch_array = len(array_size_options) * len(batch_size_options)
@@ -155,9 +150,8 @@ def main():
                chip_specs_single = system_specs_9.run_power_area_model(SS_in_out_single[SS_outputs_names], SS_in_out_single[SS_inputs_names], SS_in_out_single["Symbol Rate (GHz)"] * 10**9)
                chip_specs.insert(chip_specs.shape[1], "filler name", chip_specs_single, allow_duplicates = True)     
 
-          saved_specs_file_path = SS_inOut_file_path + NN_file_path_local + NN_file_name + "_SS_results_and_chip_specs.csv"
           complete_final_specs = pd.concat([SS_in_out_wanted, chip_specs])
-          complete_final_specs.to_csv(saved_specs_file_path)
+          complete_final_specs.to_csv(chip_specs_file_path_name)
 
      if (sim_params.make_plots):
           practice_plots_6.prepare_plot_specs(symbol_rate_options, array_size_options)

@@ -9,10 +9,10 @@ import scalesim.global_vars as global_vars
 
 
 from scalesim.scale_sim import scalesim
-SS_results_file_global = ""
 
-SS_outputs_names = ["SRAM Input Reads", "SRAM Filter Reads", "SRAM Output Writes", "DRAM Input Reads", "DRAM Filter Reads", "DRAM Output Writes", \
-          "Total Weights Programming Cycles", "Total Vector Segments Processed"]
+import system_level_code.specs_info as specs_info
+
+SS_outputs_names = specs_info.SS_outputs_names
 SS_outputs_data = [0] * len(SS_outputs_names)
 SS_outputs = pd.DataFrame(SS_outputs_data, index = SS_outputs_names, columns = ["0"])
 

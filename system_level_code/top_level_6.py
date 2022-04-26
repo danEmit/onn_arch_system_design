@@ -64,6 +64,7 @@ def main():
      print("\n\n\n\n\n\n\n\n\n\n")
 
      SS_results_file_path_name = sim_params.SS_results_file_path_name
+     SS_results_file_path_name_write = sim_params.SS_results_file_path_name_write
      SS_in_out_saved = manage_saved_data(sim_params.SS_results_file_base_folder, SS_results_file_path_name)
 
      SS_in_out_wanted = pd.DataFrame(index = SS_in_out_names)
@@ -99,10 +100,10 @@ def main():
                     SS_in_out_wanted.insert(SS_in_out_wanted.shape[1], "filler name", pd.concat([SS_inputs_wanted_single, SS_outputs_single]), allow_duplicates=True)
                     SS_in_out_saved.insert(SS_in_out_saved.shape[1], "filler name", pd.concat([SS_inputs_wanted_single, SS_outputs_single]), allow_duplicates=True)
           
-                    SS_in_out_saved.to_csv(SS_results_file_path_name)
+                    SS_in_out_saved.to_csv(SS_results_file_path_name_write)
 
 
-     SS_in_out_saved.to_csv(SS_results_file_path_name)
+     SS_in_out_saved.to_csv(SS_results_file_path_name_write)
 
      if (sim_params.run_system_specs):
           num_batch_array = len(sim_params.array_size_options) * len(sim_params.batch_size_options)

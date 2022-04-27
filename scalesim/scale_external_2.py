@@ -16,8 +16,11 @@ SS_outputs_names = specs_info.SS_outputs_names
 SS_outputs_data = [0] * len(SS_outputs_names)
 SS_outputs = pd.DataFrame(SS_outputs_data, index = SS_outputs_names, columns = ["0"])
 
+SS_outputs_by_layer = pd.DataFrame(index = SS_outputs_names)
+
 debugPrint = 0
 memoryPrint = 0
+results_by_layer = 0
 
 def analyze_memory_writes():
     # here are some magic numbers. they are important!
@@ -42,19 +45,26 @@ def analyze_memory_writes():
     dram_filter_reads = 0
     dram_ofmap_writes = 0
 
-    for row in global_vars.memoryAccess:
-        sram_reads  += row[SRAM_IFMAP_READS] + row[SRAM_FILTER_READS]
-        sram_writes += row[SRAM_OFMAP_WRITES]
-        dram_reads  += row[DRAM_IFMAP_READS] + row[DRAM_FILTER_READS]
-        dram_writes += row[DRAM_OFMAP_WRITES]
+    for index, row in enumerate(global_vars.memoryAccess):
+        sram_ifmap_reads_layer  = row[SRAM_IFMAP_READS]
+        sram_filter_reads_layer = row[SRAM_FILTER_READS]
+        sram_ofmap_writes_layer  = row[SRAM_OFMAP_WRITES]
 
-        sram_ifmap_reads  += row[SRAM_IFMAP_READS]
-        sram_filter_reads += row[SRAM_FILTER_READS]
-        sram_ofmap_writes += row[SRAM_OFMAP_WRITES]
+        dram_ifmap_reads_layer  = row[DRAM_IFMAP_READS] 
+        dram_filter_reads_layer = row[DRAM_FILTER_READS]
+        dram_ofmap_writes_layer = row[DRAM_OFMAP_WRITES]
 
-        dram_ifmap_reads  += row[DRAM_IFMAP_READS]
-        dram_filter_reads += row[DRAM_FILTER_READS]
-        dram_ofmap_writes += row[DRAM_OFMAP_WRITES]
+        sram_ifmap_reads  += sram_ifmap_reads_layer
+        sram_filter_reads += sram_filter_reads_layer
+        sram_ofmap_writes += sram_ofmap_writes_layer
+
+        dram_ifmap_reads  += dram_ifmap_reads_layer
+        dram_filter_reads += dram_filter_reads_layer
+        dram_ofmap_writes += dram_ofmap_writes_layer
+
+        SS_outputs_by_layer.at["SRAM Input Reads":"DRAM Output Writes", "SS " + str(index)] = [sram_ifmap_reads_layer, sram_filter_reads_layer, sram_ofmap_writes_layer, \
+        dram_ifmap_reads_layer, dram_filter_reads_layer, dram_ofmap_writes_layer]
+
 
     print()
     if (memoryPrint):
@@ -68,6 +78,9 @@ def analyze_memory_writes():
         print()
 
     SS_outputs.at["SRAM Input Reads":"DRAM Output Writes", "0"] = [sram_ifmap_reads, sram_filter_reads, sram_ofmap_writes, \
+        dram_ifmap_reads, dram_filter_reads, dram_ofmap_writes]
+
+    SS_outputs_by_layer.at["SRAM Input Reads":"DRAM Output Writes", "SS total"] = [sram_ifmap_reads, sram_filter_reads, sram_ofmap_writes, \
         dram_ifmap_reads, dram_filter_reads, dram_ofmap_writes]
 
 
@@ -137,7 +150,7 @@ def analyze_SRAM_usage():
     num_input_compute_vector_segments_total = 0
     if (debugPrint):
         print("\nInput computation vectors stats by NN layer:")
-    for layerNum in range(len(input_SRAM_cycles)):
+    for index, layerNum in enumerate(range(len(input_SRAM_cycles))):
         num_compute_cycles_layer = input_SRAM_cycles[layerNum].shape[0]
         num_compute_cycles_total += num_compute_cycles_layer
         
@@ -148,12 +161,17 @@ def analyze_SRAM_usage():
             print("layer:", layerNum)
             print("# compute cycles:", num_compute_cycles_layer, "------- # ind input vector SEGMENTS processed:", num_input_compute_vector_segments_layer)
     
+
+        SS_outputs_by_layer.at["Total Weights Programming Cycles":"Total Vector Segments Processed", "SS " + str(index)] = [num_compute_cycles_layer, num_input_compute_vector_segments_layer]
+
     if (debugPrint):
         print("\nTOTAL COMPUTE CYCLES:", num_compute_cycles_total)
         print("TOTAL VECTOR SEGMENTS PROCESSED IN ARRAY:", num_input_compute_vector_segments_total)
     #print()
 
     SS_outputs.at["Total Weights Programming Cycles":"Total Vector Segments Processed", "0"] = [num_compute_cycles_total, num_input_compute_vector_segments_total]
+    SS_outputs_by_layer.at["Total Weights Programming Cycles":"Total Vector Segments Processed", "SS total"] = [num_compute_cycles_total, num_input_compute_vector_segments_total]
+
 
 def post_process():
     #print("\n**** Will now do post-processing ****")
@@ -168,6 +186,8 @@ def run_scale_sim(config_file_path, NN_file_path, SS_folder_outputs, SS_print_ve
     global_vars.initialize(batch_size)
 
     gemm_input = False
+    global results_by_layer
+    results_by_layer = results_by_layer
 
     #print("inputted topology file")
     #print(NN_file_path)
@@ -189,7 +209,7 @@ def run_scale_sim(config_file_path, NN_file_path, SS_folder_outputs, SS_print_ve
     print("\nTOTAL SS POST PROCESS TIME:", round((endPostProcessTime - endExecutionTime), 3))
     print("\n")
 
-    return(SS_outputs.copy())
+    return(SS_outputs.copy(), SS_outputs_by_layer.copy())
 
 
 

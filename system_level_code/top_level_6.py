@@ -6,11 +6,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 import sys
 
-
+import analytical_modeling
 import system_specs_9
 import practice_plots_6
 import specs_info
 import sim_params
+#import analytical_modeling
 
 
 sys.path.append(sim_params.base_directory)
@@ -60,6 +61,17 @@ def manage_saved_data(SS_results_file_base_folder, SS_results_file_path_name):
           SS_in_out_saved = create_SS_inOut() 
      return SS_in_out_saved
      
+def mix_model_results(analytical_model, SS_outputs_by_layer, SS_results_file_path_name_write_layers):
+     combined_models = pd.DataFrame(index = SS_outputs_names)
+     num_layers = analytical_model.shape[1]
+     if (num_layers != SS_outputs_by_layer.shape[1]):
+          print("two models have different shapes, problem")
+     for layer in range(num_layers):
+          combined_models.insert(combined_models.shape[1], SS_outputs_by_layer.columns[layer], SS_outputs_by_layer.iloc[:, layer])
+          combined_models.insert(combined_models.shape[1], analytical_model.columns[layer],    analytical_model.iloc[:, layer])
+     x = 1
+     combined_models.to_csv(SS_results_file_path_name_write_layers)
+
 def main():
      print("\n\n\n\n\n\n\n\n\n\n")
 
@@ -91,12 +103,17 @@ def main():
                
                if need_run_SS:
                     print("did not find matching SS inputs. will now run scale sim with current desired inputs")
-                    SS_inputs_dict = dict({"NN Model Name": sim_params.NN_file_name, "NN Model Filepath": sim_params.NN_file_path_local, "Systolic Array Rows": SS_rows, \
+                    SS_inputs_dict = dict({"Systolic Array Rows": SS_rows, \
                          "Systolic Array Cols": SS_cols, "SRAM Input Size": sim_params.SRAM_input_size, "SRAM Filter Size": sim_params.SRAM_filter_size, \
                          "SRAM Output Size": sim_params.SRAM_output_size, "DRAM Bandwidth Mode": sim_params.DRAM_mode}) 
                     write_config_file(SS_inputs_dict)
 
-                    SS_outputs_single = run_scale_sim(sim_params.config_file_path, sim_params.NN_file_path_name, sim_params.base_directory + "logs", sim_params.SS_print_verbose, batch_size)
+                    (SS_outputs_single, SS_outputs_by_layer) = run_scale_sim(sim_params.config_file_path, sim_params.NN_file_path_name, sim_params.base_directory + "logs", sim_params.SS_print_verbose, batch_size)
+                    layer_filename_addition = "_BS_" + str(batch_size) + "_AS_" + str(SS_rows) + "_" + str(SS_cols) + "_SRAM_" + str(sim_params.SRAM_input_size) + "_" + str(sim_params.SRAM_filter_size) + "_" + str(sim_params.SRAM_output_size)
+                    SS_results_file_path_name_write_layers = SS_results_file_path_name_write[0: -4] + layer_filename_addition + ".csv"
+                    analytical_model = analytical_modeling.make_analytical_model(SS_inputs_dict, batch_size, sim_params.NN_file_path_name)
+                    mix_model_results(analytical_model, SS_outputs_by_layer, SS_results_file_path_name_write_layers)
+
                     SS_in_out_wanted.insert(SS_in_out_wanted.shape[1], "filler name", pd.concat([SS_inputs_wanted_single, SS_outputs_single]), allow_duplicates=True)
                     SS_in_out_saved.insert(SS_in_out_saved.shape[1], "filler name", pd.concat([SS_inputs_wanted_single, SS_outputs_single]), allow_duplicates=True)
           

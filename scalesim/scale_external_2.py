@@ -162,15 +162,15 @@ def analyze_SRAM_usage():
             print("# compute cycles:", num_compute_cycles_layer, "------- # ind input vector SEGMENTS processed:", num_input_compute_vector_segments_layer)
     
 
-        SS_outputs_by_layer.at["Total Weights Programming Cycles":"Total Vector Segments Processed", "SS " + str(index)] = [num_compute_cycles_layer, num_input_compute_vector_segments_layer]
+        SS_outputs_by_layer.at["Total Weights Programming Cycles":"Total Vector Segments Processed", "SS " + str(index)] = [num_weight_programming_cycles_layer, num_input_compute_vector_segments_layer]
 
     if (debugPrint):
-        print("\nTOTAL COMPUTE CYCLES:", num_compute_cycles_total)
+        print("\nTOTAL COMPUTE CYCLES:.... note I realized this was wrong, no longer using", num_compute_cycles_total)
         print("TOTAL VECTOR SEGMENTS PROCESSED IN ARRAY:", num_input_compute_vector_segments_total)
     #print()
 
-    SS_outputs.at["Total Weights Programming Cycles":"Total Vector Segments Processed", "0"] = [num_compute_cycles_total, num_input_compute_vector_segments_total]
-    SS_outputs_by_layer.at["Total Weights Programming Cycles":"Total Vector Segments Processed", "SS total"] = [num_compute_cycles_total, num_input_compute_vector_segments_total]
+    SS_outputs.at["Total Weights Programming Cycles":"Total Vector Segments Processed", "0"] = [num_weight_programming_cycles_total, num_input_compute_vector_segments_total]
+    SS_outputs_by_layer.at["Total Weights Programming Cycles":"Total Vector Segments Processed", "SS total"] = [num_weight_programming_cycles_total, num_input_compute_vector_segments_total]
 
 
 def post_process():

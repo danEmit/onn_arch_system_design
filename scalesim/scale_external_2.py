@@ -121,6 +121,12 @@ def analyze_SRAM_usage():
     output_demand_mat = global_vars.ofmap_demand_mat
     input_demand_mat_non_skew = global_vars.ifmap_demand_mat_non_skew
 
+    np.savetxt("/Users/d/Desktop/onn_arch_system_design/logs/input.csv", input_demand_mat[0], delimiter = ",")
+    np.savetxt("/Users/d/Desktop/onn_arch_system_design/logs/filter.csv", filter_demand_mat[0], delimiter = ",")
+    np.savetxt("/Users/d/Desktop/onn_arch_system_design/logs/output.csv", output_demand_mat[0], delimiter = ",")
+    np.savetxt("/Users/d/Desktop/onn_arch_system_design/logs/input_non_skew.csv", input_demand_mat_non_skew[0], delimiter = ",")
+
+
     filter_SRAM_cycles = analyze_SRAM_trace(filter_demand_mat)
     num_weight_programming_cycles_total = 0
     num_weight_programming_ind_total = 0

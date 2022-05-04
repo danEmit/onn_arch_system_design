@@ -4,6 +4,9 @@ SS_inputs_names = ["Systolic Array Rows", "Systolic Array Cols", "SRAM Input Siz
 SS_outputs_names = ["SRAM Input Reads", "SRAM Filter Reads", "SRAM Output Writes", "DRAM Input Reads", "DRAM Filter Reads", "DRAM Output Writes", \
           "Total Weights Programming Cycles", "Total Vector Segments Processed"]
 
+analytical_model_names = ["Systolic Array Rows", "Systolic Array Cols", "SRAM Input Size", "SRAM Filter Size", "SRAM Output Size", "Batch Size", "Accumulator Total Size"]
+
+
 
 electronic_area_specs_names = ["ADCs Area", "PS Area", "ODAC Drivers Area", "PCM Heaters Area", "MRM Heaters Area",\
 	"SRAM Area", "DRAM Area", "Clock Area", "Rx AFE Area"]

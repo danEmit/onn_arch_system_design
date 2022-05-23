@@ -18,3 +18,4 @@ configs/scale.cfg
 Logs/ONN_sim/*
 information_ppt/
 results/untracked/*
+AM.csv

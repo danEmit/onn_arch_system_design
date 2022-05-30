@@ -52,15 +52,12 @@ else:
     batch_size_options_index = [x for x in range(len(batch_size_options_overall))]
     array_size_options_index = [x for x in range(len(array_size_options_overall))]
 
-    batch_size_options_index = [0, 1]
+    batch_size_options_index = [0, 1, 2, 3]
     array_size_options_index = [0, 1]
 
     SS_results_file_path_name_write = SS_inOut_file_path + NN_file_path_local_name + "/" + NN_file_path_local_name + "__SS_results.csv"
 
 batch_size_options = [batch_size_options_overall[x] for x in batch_size_options_index]
 array_size_options = [array_size_options_overall[x] for x in array_size_options_index]
-
-
-x = 1
 
 

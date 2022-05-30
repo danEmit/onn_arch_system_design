@@ -154,18 +154,20 @@ def analyze_SRAM_usage():
     input_SRAM_cycles = analyze_SRAM_trace(input_demand_mat_non_skew)
     num_compute_cycles_total = 0
     num_input_compute_vector_segments_total = 0
-    if (debugPrint):
-        print("\nInput computation vectors stats by NN layer:")
+    #if (debugPrint):
+    #    print("\nInput computation vectors stats by NN layer:")
     for index, layerNum in enumerate(range(len(input_SRAM_cycles))):
-        num_compute_cycles_layer = input_SRAM_cycles[layerNum].shape[0]
-        num_compute_cycles_total += num_compute_cycles_layer
+        # for some reason i think the below calculations aren't accurate so i'm just 
+        # going to comment them out and make sure we don't actually use them for anything later
+        #num_compute_cycles_layer = input_SRAM_cycles[layerNum].shape[0]
+        #num_compute_cycles_total += num_compute_cycles_layer
         
         num_input_compute_vector_segments_layer = sum(input_SRAM_cycles[layerNum][:, 0])
         num_input_compute_vector_segments_total += num_input_compute_vector_segments_layer
         
-        if (debugPrint):
-            print("layer:", layerNum)
-            print("# compute cycles:", num_compute_cycles_layer, "------- # ind input vector SEGMENTS processed:", num_input_compute_vector_segments_layer)
+        #if (debugPrint):
+        #    print("layer:", layerNum)
+        #    print("# compute cycles:", num_compute_cycles_layer, "------- # ind input vector SEGMENTS processed:", num_input_compute_vector_segments_layer)
     
 
         SS_outputs_by_layer.at["Total Weights Programming Cycles":"Total Vector Segments Processed", "SS " + str(index)] = [num_weight_programming_cycles_layer, num_input_compute_vector_segments_layer]

@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import sys
 
-import analytical_modeling
+import analytical_modeling_SS_integrated
 import system_specs_9
 import practice_plots_6
 import specs_info
@@ -110,8 +110,9 @@ def main():
 
                     (SS_outputs_single, SS_outputs_by_layer) = run_scale_sim(sim_params.config_file_path, sim_params.NN_file_path_name, sim_params.base_directory + "logs", sim_params.SS_print_verbose, batch_size)
                     layer_filename_addition = "_BS_" + str(batch_size) + "_AS_" + str(SS_rows) + "_" + str(SS_cols) + "_SRAM_" + str(sim_params.SRAM_input_size) + "_" + str(sim_params.SRAM_filter_size) + "_" + str(sim_params.SRAM_output_size)
+                    
                     SS_results_file_path_name_write_layers = SS_results_file_path_name_write[0: -4] + layer_filename_addition + ".csv"
-                    analytical_model = analytical_modeling.make_analytical_model(SS_inputs_dict, batch_size, sim_params.NN_file_path_name)
+                    analytical_model = analytical_modeling_SS_integrated.make_analytical_model(SS_inputs_dict, batch_size, sim_params.NN_file_path_name)
                     mix_model_results(analytical_model, SS_outputs_by_layer, SS_results_file_path_name_write_layers)
 
                     SS_in_out_wanted.insert(SS_in_out_wanted.shape[1], "filler name", pd.concat([SS_inputs_wanted_single, SS_outputs_single]), allow_duplicates=True)

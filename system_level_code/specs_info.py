@@ -4,8 +4,13 @@ SS_inputs_names = ["Systolic Array Rows", "Systolic Array Cols", "SRAM Input Siz
 SS_outputs_names = ["SRAM Input Reads", "SRAM Filter Reads", "SRAM Output Writes", "DRAM Input Reads", "DRAM Filter Reads", "DRAM Output Writes", \
           "Total Weights Programming Cycles", "Total Vector Segments Processed"]
 
-analytical_model_names = ["Systolic Array Rows", "Systolic Array Cols", "SRAM Input Size", "SRAM Filter Size", "SRAM Output Size", "Batch Size", "Accumulator Total Size"]
+#analytical_model_acc_names = ["Systolic Array Rows", "Systolic Array Cols", "SRAM Input Size", "SRAM Filter Size", "SRAM Output Size", "Batch Size", "Accumulator Total Size"]
 
+extra_specs_basic = ["Natural Row Fold", "Natural Col Fold", "Natural Num Programs", "Num Conv in Input (for batch 1)", "Num Conv in Input (Batch)"]
+extra_specs_adv = ["Necessary Accumulator Depth for Batch 1, \nno Col ReProgram", "Necessary Accumulator Depth for Batch 1, \nFull Col ReProgram", \
+     "Col Fold * Batch Product, \nGiven Accumulator Size", "Needed SRAM Input Size \nGiven the Accumulator Size \n(Function of Allowed Batch Size with No Col ReProgram)", \
+          "Needed SRAM Input Size \nGiven the Accumulator Size \n(Function of Allowed Batch Size with Full Col ReProgram)"]
+acc_related_specs = [""]
 
 
 electronic_area_specs_names = ["ADCs Area", "PS Area", "ODAC Drivers Area", "PCM Heaters Area", "MRM Heaters Area",\

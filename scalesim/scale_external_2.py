@@ -132,19 +132,21 @@ def analyze_SRAM_usage():
     num_weight_programming_ind_total = 0
     if (debugPrint):
         print("\nWeights programming stats by NN layer:")
-    for layerNum in range(len(filter_SRAM_cycles)):
+    for (index, layerNum) in enumerate(range(len(filter_SRAM_cycles))):
         num_weight_programming_cycles_layer = filter_SRAM_cycles[layerNum].shape[0]
         num_weight_programming_cycles_total += num_weight_programming_cycles_layer
         
         num_weight_programming_ind_layer = sum(filter_SRAM_cycles[layerNum][:, 2])
         num_weight_programming_ind_total += num_weight_programming_ind_layer
         
+        SS_outputs_by_layer.at["Total Weights Programming Cycles", "SS " + str(index)] = num_weight_programming_cycles_layer
+
         if (debugPrint):
             print("layer:",layerNum)
             print("# programming cycles:",num_weight_programming_cycles_layer, "------- # ind weights programmed:",num_weight_programming_ind_layer)
         #print("Details on weights programming cycles - rows, columns, total weights:")
         #print(filter_SRAM_cycles[layerNum])
-    
+
     if (debugPrint):
         print("\nTOTAL WEIGHTS PROGRAMMING CYCLES:", num_weight_programming_cycles_total)
         print("TOTAL INDIVIDUAL WEIGHTS PRORGRAMMED:", num_weight_programming_ind_total)
@@ -168,9 +170,9 @@ def analyze_SRAM_usage():
         #if (debugPrint):
         #    print("layer:", layerNum)
         #    print("# compute cycles:", num_compute_cycles_layer, "------- # ind input vector SEGMENTS processed:", num_input_compute_vector_segments_layer)
-    
-
-        SS_outputs_by_layer.at["Total Weights Programming Cycles":"Total Vector Segments Processed", "SS " + str(index)] = [num_weight_programming_cycles_layer, num_input_compute_vector_segments_layer]
+        
+        SS_outputs_by_layer.at["Total Vector Segments Processed", "SS " + str(index)] = num_input_compute_vector_segments_layer
+        #SS_outputs_by_layer.at["Total Weights Programming Cycles":"Total Vector Segments Processed", "SS " + str(index)] = [num_weight_programming_cycles_layer, num_input_compute_vector_segments_layer]
 
     if (debugPrint):
         print("\nTOTAL COMPUTE CYCLES:.... note I realized this was wrong, no longer using", num_compute_cycles_total)

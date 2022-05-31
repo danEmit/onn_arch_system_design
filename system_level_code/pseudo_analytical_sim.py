@@ -51,34 +51,20 @@ class hardware_state():
           self.DRAM_filter_reads = [0] * self.num_NN_layers
           self.DRAM_output_writes = [0] * self.num_NN_layers
           self.accumulator_dumps = [0] * self.num_NN_layers
- 
-     # this function probably useless
-     def set_NN_layer(self, NN_layer):
-          self.input_rows  = NN_layer["Input Height"]
-          self.input_cols  = NN_layer["Input Width"]
-          self.filter_rows = NN_layer["Filter Height"]
-          self.filter_cols = NN_layer["Filter Width"]
-          self.channels    = NN_layer["Channels"]
-          self.num_filter  = NN_layer["Num Filter"]
-          self.stride      = NN_layer["Strides"]
-
-          print("Input Rows:   ", self.input_rows)
-          print("Input Height: ", self.input_cols)
-          print("Filter Rows:  ", self.filter_rows)
-          print("Filter Cols:  ", self.filter_cols)
-          print("Channels:     ", self.channels)
-          print("Num Filter:   ", self.num_filter)
-          print("Stride:       ", self.stride)
-          print()
-
 
      def run_all_layers(self):
           for index, layer in enumerate(self.NN_layers_all):
-               #self.set_NN_layer(self, layer)
                print("\n********* Now simulating layer", index, "***********")
+               if index == 3:
+                    x = 1
                self.current_layer = index
-               self.single_layer_set_params(layer)
-               self.print_results()
+               status = self.single_layer_set_params(layer)
+               if (status == -1):
+                    return
+               self.print_layer_results()
+          self.access_SRAM_data()
+          self.calculate_NN_totals()
+          self.print_NN_results()
 
      def single_layer_set_params(self, NN_layer):
           input_rows  = NN_layer["Input Height"]
@@ -105,15 +91,19 @@ class hardware_state():
           global num_conv_in_input_delete 
           num_conv_in_input_delete = num_conv_in_input
           batch_col_fold_product_allowed = self.accumulator_elements / num_conv_in_input # what can fit onto accumulator
-          batch_col_fold_product_theory  = overall_batch_fold * overall_col_fold
-          if batch_col_fold_product_allowed > batch_col_fold_product_theory:
-               #batch_col_fold_product_allowed = batch_col_fold_product_theory
-               minor_col_fold = overall_col_fold
+          if (batch_col_fold_product_allowed < 1):
+               print("CANNOT DO SIMULATION B/C ACCUMULATOR NOT BIG ENOUGH FOR ONE BATCH WITH ONE COL FOLD")
+               print("Current Layer: ", self.current_layer)
+               return(-1)
+
+          minor_col_fold = 1
+          minor_batch_fold = math.floor(batch_col_fold_product_allowed / minor_col_fold)
+          if minor_batch_fold > overall_batch_fold:
                minor_batch_fold = overall_batch_fold
-          else:
-               minor_col_fold = 1
-               minor_batch_fold = math.floor(batch_col_fold_product_allowed / minor_col_fold)
-          
+               minor_col_fold = math.floor(batch_col_fold_product_allowed / minor_batch_fold)
+               if minor_col_fold > overall_col_fold:
+                    minor_col_fold = overall_col_fold
+
           minor_row_fold = 1
 
           major_col_fold = math.ceil(overall_col_fold / minor_col_fold)
@@ -134,15 +124,19 @@ class hardware_state():
 
           self.input_SRAM.new_layer(single_input_size, self.batch_size, SRAM_input_output_crossover_data)
           self.filter_SRAM.new_layer(self.array_cols * self.array_rows, overall_row_fold * overall_col_fold, 0)
-          self.run_single_layer(major_col_fold, minor_col_fold, major_batch_fold, minor_batch_fold, major_row_fold, minor_row_fold)
+          self.run_single_layer(major_col_fold, minor_col_fold, overall_col_fold, \
+               major_batch_fold, minor_batch_fold, overall_batch_fold,\
+                     major_row_fold, minor_row_fold, overall_row_fold)
           self.input_SRAM.conclude_layer()
           self.filter_SRAM.conclude_layer()
 
 
 
-     def run_single_layer(self, major_col_fold, minor_col_fold, major_batch_fold, minor_batch_fold, major_row_fold, minor_row_fold):     
+     def run_single_layer(self, major_col_fold, minor_col_fold, overall_col_fold,\
+           major_batch_fold, minor_batch_fold, overall_batch_fold,\
+               major_row_fold, minor_row_fold, overall_row_fold):     
           self.num_programming_practice[self.current_layer] = 0
-          self.num_programming_theory[self.current_layer] = major_col_fold * minor_col_fold * major_row_fold * minor_row_fold * major_batch_fold
+          self.num_programming_theory[self.current_layer] = overall_col_fold * overall_row_fold * major_batch_fold
 
           old_col_group = -1
           old_row_group = -1
@@ -160,6 +154,13 @@ class hardware_state():
                                         current_col_group = major_col_group * minor_col_fold + minor_col_group
                                         current_row_group = major_row_group * minor_row_fold + minor_row_group
                                         current_batch = major_batch_group * minor_batch_fold + minor_batch_group
+
+                                        if current_col_group >= overall_col_fold:
+                                             continue # could probably be "break" but just to play it safe do this
+                                        if current_row_group >= overall_row_fold:
+                                             continue
+                                        if current_batch >= overall_batch_fold:
+                                             continue
 
                                         if (old_col_group != current_col_group) or (old_row_group != current_row_group):
                                              self.num_programming_practice[self.current_layer] += 1
@@ -185,7 +186,37 @@ class hardware_state():
           self.DRAM_input_reads  = self.input_SRAM.DRAM_reads
           self.DRAM_filter_reads = self.filter_SRAM.DRAM_reads
 
-     def print_results(self):
+     def calculate_NN_totals(self):
+          self.num_programming_practice_total    = sum(self.num_programming_practice)
+          self.num_programming_theory_total      = sum(self.num_programming_theory)
+          self.num_compute_cycles_practice_total = sum(self.num_compute_cycles_practice)
+          self.num_compute_cycles_theory_total   = sum(self.num_compute_cycles_theory)
+
+          self.SRAM_input_reads_total   = sum(self.SRAM_input_reads)
+          self.SRAM_filter_reads_total  = sum(self.SRAM_filter_reads)
+          self.SRAM_output_writes_total = sum(self.SRAM_output_writes)
+          self.DRAM_input_reads_total   = sum(self.DRAM_input_reads)
+          self.DRAM_filter_reads_total  = sum(self.DRAM_filter_reads)
+          self.DRAM_output_writes_total = sum(self.DRAM_output_writes)
+          self.accumulator_dumps_total  = sum(self.accumulator_dumps)
+          
+     def print_NN_results(self):
+          print("\n-----------Total Results Across all Layers-----------")
+          print("Num Programming Practice: ", self.num_programming_practice_total)
+          print("Num Programming Theory:  ", self.num_programming_theory_total)  
+          print("Num Compute Cycles Practice: ", self.num_compute_cycles_practice_total)
+          print("Num Compute Cycles Theory: ", self.num_compute_cycles_theory_total)
+
+          print("SRAM Input Reads: ", self.SRAM_input_reads_total)
+          print("SRAM Filter Reads: ", self.SRAM_filter_reads_total)
+          print("SRAM Output Writes: ", self.SRAM_output_writes_total)
+          print("DRAM Input Reads: ", self.DRAM_input_reads_total)
+          print("DRAM Filter Reads: ", self.DRAM_filter_reads_total)
+          print("DRAM Output Writes: ", self.DRAM_output_writes_total)
+          print("Accumulator Dumps: ", self.accumulator_dumps_total)
+
+
+     def print_layer_results(self):
           print("\n-----------Results-----------")
           for layer_num in range(self.current_layer, self.current_layer + 1):
           #for layer_num in range(self.num_NN_layers):

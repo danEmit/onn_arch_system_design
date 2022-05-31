@@ -61,8 +61,8 @@ def make_analytical_model(SS_inputs_dict, batch_size, NN_file_path_name):
           conv_rows = math.ceil((input_rows[layer] - filter_rows[layer]) / strides[layer]) + 1
           conv_cols = math.ceil((input_cols[layer] - filter_cols[layer]) / strides[layer]) + 1
           
-          #convRows = math.ceil(input_rows[layer] / strides[layer])
-          #convCols = math.ceil(input_cols[layer] / strides[layer])
+          conv_rows = math.ceil(input_rows[layer] / strides[layer])
+          conv_cols = math.ceil(input_cols[layer] / strides[layer])
 
           num_conv_in_input = conv_rows * conv_cols 
           num_conv_in_input_batch = num_conv_in_input * batch_size

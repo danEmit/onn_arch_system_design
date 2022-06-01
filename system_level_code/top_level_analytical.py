@@ -1,12 +1,8 @@
 import sim_params_analytical
 import pseudo_analytical_sim
 import pprint
-
-
-
-def single_hardware_config_sweep_layer(hardware_state, batch_size):
-     for NN_layer in sim_params_analytical.all_layers:
-          pseudo_analytical_sim.single_layer_set_params(hardware_state, NN_layer, batch_size)
+import pandas as pd
+import specs_info
 
 def sweep_hardware_configs(simulator):
      #hardware = pseudo_analytical_sim.hardware_state()
@@ -26,11 +22,18 @@ def sweep_hardware_configs(simulator):
                          for SRAM_output_size in SRAM_output_size_options:
                               for accumulator_elements in accumulator_elements_options:
                                    simulator.set_batch(batch_size)
-                                   hardware_state = {"Array Rows": array_size[0], "Array Cols": array_size[1], "SRAM Input Size": SRAM_input_size,\
-                                        "SRAM Filter Size": SRAM_filter_size, "SRAM Output Size": SRAM_filter_size, "Accumulator Elements":accumulator_elements}
+
+                                   #hardware_state = {"Array Rows": array_size[0], "Array Cols": array_size[1], "SRAM Input Size": SRAM_input_size,\
+                                   #     "SRAM Filter Size": SRAM_filter_size, "SRAM Output Size": SRAM_output_size, "Accumulator Elements":accumulator_elements}
+                                   hardware_state = pd.DataFrame([array_size[0], array_size[1], SRAM_input_size,\
+                                         SRAM_filter_size, SRAM_output_size, accumulator_elements], specs_info.hardware_specs_names)
+                                   
+                                   
                                    simulator.set_hardware(hardware_state)
                                    simulator.set_results_vars()
-                                   simulator.run_all_layers()
+                                   sim_results = simulator.run_all_layers()
+                                   x  =1
+                                   
      x = 1
 
 def main():

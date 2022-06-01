@@ -1,20 +1,23 @@
 import math
+import time
+#from regex import B
 import SRAM_model
-
+import pandas as pd
 num_conv_in_input_delete = 0
-
+import sim_params_analytical
+import specs_info
 
 class hardware_state():
      def __init__(self):
           x = 1
 
      def set_hardware(self, hardware_state_info):
-          self.array_rows = hardware_state_info["Array Rows"]
-          self.array_cols = hardware_state_info["Array Cols"]
-          self.SRAM_input_size = hardware_state_info["SRAM Input Size"]
-          self.SRAM_filter_size = hardware_state_info["SRAM Filter Size"]
-          self.SRAM_output_size = hardware_state_info["SRAM Output Size"]
-          self.accumulator_elements = hardware_state_info["Accumulator Elements"]
+          self.array_rows = hardware_state_info.loc["Array Rows"].item()
+          self.array_cols = hardware_state_info.loc["Array Cols"].item()
+          self.SRAM_input_size = hardware_state_info.loc["SRAM Input Size"].item()
+          self.SRAM_filter_size = hardware_state_info.loc["SRAM Filter Size"].item()
+          self.SRAM_output_size = hardware_state_info.loc["SRAM Output Size"].item()
+          self.accumulator_elements = hardware_state_info.loc["Accumulator Elements"].item()
 
           print("---------------------------------")
           print("Hardware state set to:")
@@ -26,8 +29,8 @@ class hardware_state():
           print("---------------------------------")
           print()
 
-          self.input_SRAM  = SRAM_model.SRAM_model(self.SRAM_input_size)
-          self.filter_SRAM = SRAM_model.SRAM_model(self.SRAM_filter_size)
+          self.input_SRAM  = SRAM_model.SRAM_model(self.SRAM_input_size, "input")
+          self.filter_SRAM = SRAM_model.SRAM_model(self.SRAM_filter_size, "filter")
 
 
      def set_batch(self, batch_size):
@@ -50,21 +53,26 @@ class hardware_state():
           self.DRAM_input_reads = [0] * self.num_NN_layers
           self.DRAM_filter_reads = [0] * self.num_NN_layers
           self.DRAM_output_writes = [0] * self.num_NN_layers
+          self.SRAM_DRAM_input_misses = [0] * self.num_NN_layers
+          self.SRAM_DRAM_filter_misses = [0] * self.num_NN_layers
           self.accumulator_dumps = [0] * self.num_NN_layers
 
      def run_all_layers(self):
+          start_time = time.time()
           for index, layer in enumerate(self.NN_layers_all):
-               print("\n********* Now simulating layer", index, "***********")
-               if index == 3:
-                    x = 1
+               print("********* Now simulating layer", index, "***********")
                self.current_layer = index
                status = self.single_layer_set_params(layer)
                if (status == -1):
                     return
-               self.print_layer_results()
+          end_time = time.time()
+          print("Simulation took", round((end_time - start_time) / 60, 2), " minutes")
           self.access_SRAM_data()
           self.calculate_NN_totals()
+          self.print_layer_results()
           self.print_NN_results()
+          self.save_all_layers_csv()
+          return(self.return_specs())
 
      def single_layer_set_params(self, NN_layer):
           input_rows  = NN_layer["Input Height"]
@@ -84,8 +92,8 @@ class hardware_state():
 
           conv_rows = math.ceil((input_rows - filter_rows) / stride) + 1
           conv_cols = math.ceil((input_cols - filter_cols) / stride) + 1
-          conv_rows = math.ceil(input_rows / stride)
-          conv_cols = math.ceil(input_cols / stride)
+          #conv_rows = math.ceil(input_rows / stride)
+          #conv_cols = math.ceil(input_cols / stride)
 
           num_conv_in_input = conv_rows * conv_cols 
           global num_conv_in_input_delete 
@@ -96,6 +104,7 @@ class hardware_state():
                print("Current Layer: ", self.current_layer)
                return(-1)
 
+
           minor_col_fold = 1
           minor_batch_fold = math.floor(batch_col_fold_product_allowed / minor_col_fold)
           if minor_batch_fold > overall_batch_fold:
@@ -103,7 +112,12 @@ class hardware_state():
                minor_col_fold = math.floor(batch_col_fold_product_allowed / minor_batch_fold)
                if minor_col_fold > overall_col_fold:
                     minor_col_fold = overall_col_fold
-
+          '''
+          minor_batch_fold = 1
+          minor_col_fold = math.floor(batch_col_fold_product_allowed / minor_batch_fold)
+          if minor_col_fold > overall_col_fold:
+               minor_col_fold = overall_col_fold
+          '''
           minor_row_fold = 1
 
           major_col_fold = math.ceil(overall_col_fold / minor_col_fold)
@@ -115,15 +129,22 @@ class hardware_state():
           self.SRAM_input_reads[self.current_layer] = num_conv_in_input * self.batch_size * filter_size * overall_col_fold
           self.SRAM_filter_reads[self.current_layer] = filter_size * num_filter * major_batch_fold
           self.SRAM_output_writes[self.current_layer] = num_conv_in_input * self.batch_size * num_filter
-          self.DRAM_output_writes[self.current_layer] = max(self.SRAM_output_writes[self.current_layer] - self.SRAM_output_size, 0)
+          if self.current_layer == (self.num_NN_layers - 1):
+               self.DRAM_output_writes[self.current_layer] = self.SRAM_output_writes[self.current_layer]
+          else:
+               self.DRAM_output_writes[self.current_layer] = max(self.SRAM_output_writes[self.current_layer] - self.SRAM_output_size, 0)
 
           if self.current_layer == 0:
                SRAM_input_output_crossover_data = 0
           else:
                SRAM_input_output_crossover_data = min(self.SRAM_output_size, self.SRAM_output_writes[self.current_layer - 1])
 
-          self.input_SRAM.new_layer(single_input_size, self.batch_size, SRAM_input_output_crossover_data)
-          self.filter_SRAM.new_layer(self.array_cols * self.array_rows, overall_row_fold * overall_col_fold, 0)
+          new_mem = self.input_SRAM.new_layer(single_input_size, self.batch_size, SRAM_input_output_crossover_data)
+          if new_mem == -1:
+               return -1
+          new_mem = self.filter_SRAM.new_layer(self.array_cols * self.array_rows, overall_row_fold * overall_col_fold, 0)
+          if new_mem == -1:
+               return -1
           self.run_single_layer(major_col_fold, minor_col_fold, overall_col_fold, \
                major_batch_fold, minor_batch_fold, overall_batch_fold,\
                      major_row_fold, minor_row_fold, overall_row_fold)
@@ -186,6 +207,9 @@ class hardware_state():
           self.DRAM_input_reads  = self.input_SRAM.DRAM_reads
           self.DRAM_filter_reads = self.filter_SRAM.DRAM_reads
 
+          self.SRAM_DRAM_input_misses  = self.input_SRAM.component_misses
+          self.SRAM_DRAM_filter_misses = self.filter_SRAM.component_misses
+
      def calculate_NN_totals(self):
           self.num_programming_practice_total    = sum(self.num_programming_practice)
           self.num_programming_theory_total      = sum(self.num_programming_theory)
@@ -199,7 +223,10 @@ class hardware_state():
           self.DRAM_filter_reads_total  = sum(self.DRAM_filter_reads)
           self.DRAM_output_writes_total = sum(self.DRAM_output_writes)
           self.accumulator_dumps_total  = sum(self.accumulator_dumps)
-          
+
+          self.SRAM_DRAM_input_misses_total  = sum(self.SRAM_DRAM_input_misses)
+          self.SRAM_DRAM_filter_misses_total = sum(self.SRAM_DRAM_filter_misses)
+
      def print_NN_results(self):
           print("\n-----------Total Results Across all Layers-----------")
           print("Num Programming Practice: ", self.num_programming_practice_total)
@@ -215,21 +242,50 @@ class hardware_state():
           print("DRAM Output Writes: ", self.DRAM_output_writes_total)
           print("Accumulator Dumps: ", self.accumulator_dumps_total)
 
+          print("SRAM DRAM Input  Misses (Batch): ", self.SRAM_DRAM_input_misses_total)
+          print("SRAM DRAM Filter Misses (Batch): ", self.SRAM_DRAM_filter_misses_total)
 
      def print_layer_results(self):
-          print("\n-----------Results-----------")
-          for layer_num in range(self.current_layer, self.current_layer + 1):
-          #for layer_num in range(self.num_NN_layers):
-               print("Layer Number: ", layer_num)
-               print("Num Programming Practice: ", self.num_programming_practice[self.current_layer])
-               print("Num Programming Theory:  ", self.num_programming_theory[self.current_layer])  
-               print("Num Compute Cycles Practice: ", self.num_compute_cycles_practice[self.current_layer])
-               print("Num Compute Cycles Theory: ", self.num_compute_cycles_theory[self.current_layer])
+          for layer_num in range(self.num_NN_layers):
+               print("\n----Results for layer", str(layer_num), "----")
+               print("Num Programming Practice: ", self.num_programming_practice[layer_num])
+               print("Num Programming Theory:  ", self.num_programming_theory[layer_num])  
+               print("Num Compute Cycles Practice: ", self.num_compute_cycles_practice[layer_num])
+               print("Num Compute Cycles Theory: ", self.num_compute_cycles_theory[layer_num])
 
-               print("SRAM Input Reads: ", self.SRAM_input_reads[self.current_layer])
-               print("SRAM Filter Reads: ", self.SRAM_filter_reads[self.current_layer])
-               print("SRAM Output Writes: ", self.SRAM_output_writes[self.current_layer])
-               print("DRAM Input Reads: ", self.DRAM_input_reads[self.current_layer])
-               print("DRAM Filter Reads: ", self.DRAM_filter_reads[self.current_layer])
-               print("DRAM Output Writes: ", self.DRAM_output_writes[self.current_layer])
-               print("Accumulator Dumps: ", self.accumulator_dumps[self.current_layer])
+               print("SRAM Input Reads: ", self.SRAM_input_reads[layer_num])
+               print("SRAM Filter Reads: ", self.SRAM_filter_reads[layer_num])
+               print("SRAM Output Writes: ", self.SRAM_output_writes[layer_num])
+               print("DRAM Input Reads: ", self.DRAM_input_reads[layer_num])
+               print("DRAM Filter Reads: ", self.DRAM_filter_reads[layer_num])
+               print("DRAM Output Writes: ", self.DRAM_output_writes[layer_num])
+               print("Accumulator Dumps: ", self.accumulator_dumps[layer_num])
+
+               print("SRAM DRAM Input  Misses (Batch): ", self.SRAM_DRAM_input_misses[layer_num])
+               print("SRAM DRAM Filter Misses (Batch): ", self.SRAM_DRAM_filter_misses[layer_num])
+
+     def save_all_layers_csv(self):
+          data_together = [self.num_programming_practice, self.num_programming_theory, self.num_compute_cycles_practice, \
+               self.num_compute_cycles_theory, self.SRAM_input_reads, self.SRAM_filter_reads, self.SRAM_output_writes, \
+                    self.DRAM_input_reads, self.DRAM_filter_reads, self.DRAM_output_writes, self.accumulator_dumps, \
+                         self.SRAM_DRAM_input_misses, self.SRAM_DRAM_filter_misses]
+          classes = ["Num Programming Practice", "Num Programming Theory", "Num Compute Cycles Practice", \
+               "Num Compute Cycles Theory", "SRAM Input Reads", "SRAM Filter Reads", "SRAM Output Writes", \
+                    "DRAM Input Reads", "DRAM Filter Reads", "DRAM Output Writes", "Accumulator Dumps", \
+                         "SRAM DRAM Input  Misses (Batch)", "SRAM DRAM Filter Misses (Batch)"]
+
+          totals = [self.num_programming_practice_total, self.num_programming_theory_total, self.num_compute_cycles_practice_total, \
+               self.num_compute_cycles_theory_total, self.SRAM_input_reads_total, self.SRAM_filter_reads_total, self.SRAM_output_writes_total, \
+                    self.DRAM_input_reads_total, self.DRAM_filter_reads_total, self.DRAM_output_writes_total, self.accumulator_dumps_total, \
+                         self.SRAM_DRAM_input_misses_total, self.SRAM_DRAM_filter_misses_total]
+          df = pd.DataFrame(data_together, classes)
+          df.insert(df.shape[1], "totals", totals)
+          df.to_csv(sim_params_analytical.detailed_results_folder_complete + "hi.csv")
+
+     def return_specs(self):
+          totals = [self.SRAM_input_reads_total, self.SRAM_filter_reads_total, self.SRAM_output_writes_total, \
+                    self.DRAM_input_reads_total, self.DRAM_filter_reads_total, self.DRAM_output_writes_total, \
+                    self.num_programming_theory_total, self.num_compute_cycles_theory_total, self.accumulator_dumps_total]
+
+          return(pd.DataFrame(totals, specs_info.mid_level_specs_names))
+          x= 2

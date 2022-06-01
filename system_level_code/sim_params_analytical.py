@@ -9,9 +9,9 @@ results_file_path = base_directory + "results/" + "analytical_standalone" + "/"
 NN_file_name = "a"
 NN_file_folder = "topologies/ONN/"
 NN_file_folder_mod = NN_file_folder.replace("/", "_") 
-results_file_base_folder = results_file_path + NN_file_folder_mod + NN_file_name
-sim_results_file_path_name = results_file_base_folder + "/" + NN_file_name + "__model_results.csv"
-chip_specs_file_path_name = results_file_base_folder + "/" + NN_file_name + "__model_results_chip_specs.csv"
+results_file_base_folder = results_file_path + NN_file_folder_mod + NN_file_name + "/"
+sim_results_file_path_name = results_file_base_folder + NN_file_name + "__model_results.csv"
+chip_specs_file_path_name = results_file_base_folder + NN_file_name + "__model_results_chip_specs.csv"
 
 
 SRAM_input_size_options  = [64000]

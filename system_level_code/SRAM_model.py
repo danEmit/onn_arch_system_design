@@ -69,3 +69,6 @@ class SRAM_model():
      def conclude_layer(self):
           self.DRAM_reads.append(self.DRAM_reads_layer)
           self.component_misses.append(self.component_misses_layer)
+
+     def conclude_NN(self):
+          self.DRAM_reads = []

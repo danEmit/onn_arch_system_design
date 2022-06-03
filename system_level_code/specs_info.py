@@ -4,9 +4,9 @@ SS_inputs_names = ["Systolic Array Rows", "Systolic Array Cols", "SRAM Input Siz
 SS_outputs_names = ["SRAM Input Reads", "SRAM Filter Reads", "SRAM Output Writes", "DRAM Input Reads", "DRAM Filter Reads", "DRAM Output Writes", \
           "Total Weights Programming Cycles", "Total Vector Segments Processed"]
 
-mid_level_specs_names = ["SRAM Input Reads", "SRAM Filter Reads", "SRAM Output Writes", "DRAM Input Reads", "DRAM Filter Reads", "DRAM Output Writes", \
+runspecs_names = ["SRAM Input Reads", "SRAM Filter Reads", "SRAM Output Writes", "DRAM Input Reads", "DRAM Filter Reads", "DRAM Output Writes", \
           "Total Weights Programming Cycles", "Total Vector Segments Processed", "Accumulator Dumps"]
-hardware_specs_names = ["Array Rows", "Array Cols", "SRAM Input Size", "SRAM Filter Size", "SRAM Output Size", "Accumulator Elements"]
+hardware_specs_names = ["Systolic Array Rows", "Systolic Array Cols", "SRAM Input Size", "SRAM Filter Size", "SRAM Output Size", "Accumulator Elements", "Batch Size"]
 
 
 #analytical_model_acc_names = ["Systolic Array Rows", "Systolic Array Cols", "SRAM Input Size", "SRAM Filter Size", "SRAM Output Size", "Batch Size", "Accumulator Total Size"]

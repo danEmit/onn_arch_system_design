@@ -12,12 +12,13 @@ class hardware_state():
           x = 1
 
      def set_hardware(self, hardware_state_info):
-          self.array_rows = hardware_state_info.loc["Array Rows"].item()
-          self.array_cols = hardware_state_info.loc["Array Cols"].item()
+          self.array_rows = hardware_state_info.loc["Systolic Array Rows"].item()
+          self.array_cols = hardware_state_info.loc["Systolic Array Cols"].item()
           self.SRAM_input_size = hardware_state_info.loc["SRAM Input Size"].item()
           self.SRAM_filter_size = hardware_state_info.loc["SRAM Filter Size"].item()
           self.SRAM_output_size = hardware_state_info.loc["SRAM Output Size"].item()
           self.accumulator_elements = hardware_state_info.loc["Accumulator Elements"].item()
+          self.batch_size = hardware_state_info.loc["Batch Size"].item()
 
           print("---------------------------------")
           print("Hardware state set to:")
@@ -33,9 +34,9 @@ class hardware_state():
           self.filter_SRAM = SRAM_model.SRAM_model(self.SRAM_filter_size, "filter")
 
 
-     def set_batch(self, batch_size):
-          self.batch_size = batch_size
-          print("Batch set to: ", batch_size, "\n")
+     #def set_batch(self, batch_size):
+     #     self.batch_size = batch_size
+     #     print("Batch set to: ", batch_size, "\n")
      
      def set_NN(self, NN_layers_all):
           self.NN_layers_all = NN_layers_all
@@ -58,6 +59,7 @@ class hardware_state():
           self.accumulator_dumps = [0] * self.num_NN_layers
 
      def run_all_layers(self):
+          self.set_results_vars()
           start_time = time.time()
           for index, layer in enumerate(self.NN_layers_all):
                print("********* Now simulating layer", index, "***********")
@@ -69,7 +71,7 @@ class hardware_state():
           print("Simulation took", round((end_time - start_time) / 60, 2), " minutes")
           self.access_SRAM_data()
           self.calculate_NN_totals()
-          self.print_layer_results()
+          #self.print_layer_results()
           self.print_NN_results()
           self.save_all_layers_csv()
           return(self.return_specs())
@@ -210,6 +212,9 @@ class hardware_state():
           self.SRAM_DRAM_input_misses  = self.input_SRAM.component_misses
           self.SRAM_DRAM_filter_misses = self.filter_SRAM.component_misses
 
+          self.input_SRAM.conclude_NN()
+          self.filter_SRAM.conclude_NN()
+
      def calculate_NN_totals(self):
           self.num_programming_practice_total    = sum(self.num_programming_practice)
           self.num_programming_theory_total      = sum(self.num_programming_theory)
@@ -280,12 +285,20 @@ class hardware_state():
                          self.SRAM_DRAM_input_misses_total, self.SRAM_DRAM_filter_misses_total]
           df = pd.DataFrame(data_together, classes)
           df.insert(df.shape[1], "totals", totals)
-          df.to_csv(sim_params_analytical.detailed_results_folder_complete + "hi.csv")
+          name_add_on = self.hardware_name()
+          df.to_csv(sim_params_analytical.detailed_results_folder_complete + name_add_on)
+          x = 1
+
+     def hardware_name(self):
+          name = "_BS_" + str(self.batch_size) + "_AS_" + str(self.array_rows) + "_" + str(self.array_cols) +\
+                "_SRAM_" + str(self.SRAM_input_size) + "_" + str(self.SRAM_filter_size) + "_" + str(self.SRAM_output_size) + \
+                "_ACC_" + str(self.accumulator_elements) + ".csv"
+          return(name)
 
      def return_specs(self):
           totals = [self.SRAM_input_reads_total, self.SRAM_filter_reads_total, self.SRAM_output_writes_total, \
                     self.DRAM_input_reads_total, self.DRAM_filter_reads_total, self.DRAM_output_writes_total, \
                     self.num_programming_theory_total, self.num_compute_cycles_theory_total, self.accumulator_dumps_total]
 
-          return(pd.DataFrame(totals, specs_info.mid_level_specs_names))
+          return(pd.DataFrame(totals, specs_info.runspecs_names))
           x= 2

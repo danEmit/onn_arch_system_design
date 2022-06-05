@@ -7,6 +7,11 @@ num_conv_in_input_delete = 0
 import sim_params_analytical
 import specs_info
 
+
+print_string = 0
+input_sram_time = 0
+filter_sram_time = 0
+
 class hardware_state():
      def __init__(self):
           x = 1
@@ -20,23 +25,20 @@ class hardware_state():
           self.accumulator_elements = hardware_state_info.loc["Accumulator Elements"].item()
           self.batch_size = hardware_state_info.loc["Batch Size"].item()
 
-          print("---------------------------------")
-          print("Hardware state set to:")
+          '''
+          print("\n---------------------------------")
+          print("Now setting hardware to:")
           print("Array Size:       ", self.array_rows, "x", self.array_cols)
           print("SRAM Input Size:  ", self.SRAM_input_size)
           print("SRAM Filter Size: ", self.SRAM_filter_size)
           print("SRAM Output Size: ", self.SRAM_output_size)
           print("Accumulator Elements per Col: ", self.accumulator_elements)
+          print("Batch Size: ", self.batch_size)
           print("---------------------------------")
           print()
-
+          '''
           self.input_SRAM  = SRAM_model.SRAM_model(self.SRAM_input_size, "input")
           self.filter_SRAM = SRAM_model.SRAM_model(self.SRAM_filter_size, "filter")
-
-
-     #def set_batch(self, batch_size):
-     #     self.batch_size = batch_size
-     #     print("Batch set to: ", batch_size, "\n")
      
      def set_NN(self, NN_layers_all):
           self.NN_layers_all = NN_layers_all
@@ -61,18 +63,29 @@ class hardware_state():
      def run_all_layers(self):
           self.set_results_vars()
           start_time = time.time()
+          global print_string
+          print_string_base = "Now simulating layer "
+          print_string = print_string_base
           for index, layer in enumerate(self.NN_layers_all):
-               print("********* Now simulating layer", index, "***********")
+               print_string += str(index)
+               print_string = print_string_base + str(index)
+               print(print_string, end="\r", flush=True)
+               print_string += ", "
                self.current_layer = index
+               global input_sram_time
+               global filter_sram_time
+               input_sram_time = 0
+               filter_sram_time = 0
                status = self.single_layer_set_params(layer)
                if (status == -1):
                     return
+          #print()
           end_time = time.time()
-          print("Simulation took", round((end_time - start_time) / 60, 2), " minutes")
+          print("Done with single simulation, it took", round((end_time - start_time) / 60, 2), " minutes                          ")
           self.access_SRAM_data()
           self.calculate_NN_totals()
           #self.print_layer_results()
-          self.print_NN_results()
+          #self.print_NN_results()
           self.save_all_layers_csv()
           return(self.return_specs())
 
@@ -161,16 +174,30 @@ class hardware_state():
           self.num_programming_practice[self.current_layer] = 0
           self.num_programming_theory[self.current_layer] = overall_col_fold * overall_row_fold * major_batch_fold
 
+          global print_string
           old_col_group = -1
           old_row_group = -1
           current_col_group = -1
           current_row_group = -1
+          num_loop_iterations = overall_col_fold * overall_row_fold * overall_batch_fold
+          current_loop_iteration = 0
+          target_inc = 10
+          target = target_inc
           for major_col_group in range(major_col_fold):
                for major_batch_group in range(major_batch_fold):
                     for minor_col_group in range(minor_col_fold):
                          for major_row_group in range(major_row_fold):
                               for minor_row_group in range(minor_row_fold):
                                    for minor_batch_group in range(minor_batch_fold):
+                                        current_loop_iteration += 1
+                                        percent_done = 100 * current_loop_iteration / num_loop_iterations
+                                        if percent_done >= target:
+                                             addon = "percent done: "+ str(round(percent_done)) + "  "
+                                             print_string += addon
+                                             print(print_string, end="\r", flush=True)
+                                             print_string = print_string[0:len(print_string) - len(addon)]
+                                             target += target_inc
+
                                         old_col_group = current_col_group
                                         old_row_group = current_row_group
 
@@ -202,8 +229,14 @@ class hardware_state():
           
 
      def manage_SRAM_DRAM_access(self, current_batch, filter_index):
+          start_time = time.time()
           self.input_SRAM.access_component(current_batch)
+          med_time = time.time()
           self.filter_SRAM.access_component(filter_index)
+          end_time = time.time()
+          global input_sram_time, filter_sram_time
+          input_sram_time += med_time - start_time
+          filter_sram_time += end_time - med_time
 
      def access_SRAM_data(self):
           self.DRAM_input_reads  = self.input_SRAM.DRAM_reads

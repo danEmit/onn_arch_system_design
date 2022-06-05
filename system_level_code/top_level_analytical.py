@@ -16,23 +16,25 @@ chip_specs_names = specs_info.all_specs_names
 all_names = hardware_names + runspecs_names + chip_specs_names
 
 def load_saved_hardware_runspecs_results(results_file_path_name):
-     print("Loading Existing DF")
+     print("Loading existing results file")
      try:
           hardware_runspecs_info = pd.read_csv(results_file_path_name, skiprows = 0, index_col=0)
           hardware_runspecs_info = hardware_runspecs_info.loc[hardware_runspecs_names].astype(int)
      except:
-          print("Existing DF empty")
+          print("Existing results file empty")
           hardware_runspecs_info = create_hardware_runspecs_info()
      return (hardware_runspecs_info)
 
 def create_hardware_runspecs_info():
-     print("Creating new empty dataframe")
+     print("Cannot find useful results file, creating new empty dataframe")
      hardware_runspecs_info = pd.DataFrame(index = hardware_runspecs_names)
      return(hardware_runspecs_info)  
 
 def manage_saved_data(hardware_runspecs_results_folder, hardware_runspecs_path_name):
      if not os.path.isdir(hardware_runspecs_results_folder):
           os.mkdir(hardware_runspecs_results_folder)
+          os.mkdir(hardware_runspecs_results_folder + sim_params_analytical.detailed_results_folder)
+          os.mkdir(hardware_runspecs_results_folder + sim_params_analytical.plots_folder)
 
      if os.path.isfile(hardware_runspecs_path_name):
           hardware_runspecs_info = load_saved_hardware_runspecs_results(hardware_runspecs_path_name)
@@ -56,6 +58,16 @@ def sweep_hardware_configs(simulator):
                                    num_hardware += 1
                                    hardware_wanted_single = [array_size[0], array_size[1], SRAM_input_size, SRAM_filter_size, SRAM_output_size, accumulator_elements, batch_size]
                                    hardware_wanted_single = pd.DataFrame(hardware_wanted_single, index = hardware_names)
+                                   
+                                   print("\n---------------------------------")
+                                   print("Searching for results with desired hardware state:")
+                                   print("     Array Size:       ", array_size[0], "x", array_size[1])
+                                   print("     SRAM Input Size:  ", SRAM_input_size)
+                                   print("     SRAM Filter Size: ", SRAM_filter_size)
+                                   print("     SRAM Output Size: ", SRAM_output_size)
+                                   print("     Accumulator Elements per Col: ", accumulator_elements)
+                                   print("     Batch Size: ", batch_size)
+                                   #print("---------------------------------")
 
                                    need_run_sim = 1
                                    for existing_result in hardware_runspecs_existing:
@@ -63,19 +75,22 @@ def sweep_hardware_configs(simulator):
                                              need_run_sim = 0
                                              hardware_runspecs_wanted.insert(hardware_runspecs_wanted.shape[1], "filler name", \
                                                   hardware_runspecs_existing.loc[hardware_runspecs_names, existing_result], allow_duplicates=True)
+                                             print("Found existing results for this hardware state")
                                              break
 
-                                   if (need_run_sim):           
-                                        hardware_state = pd.DataFrame([array_size[0], array_size[1], SRAM_input_size,\
-                                         SRAM_filter_size, SRAM_output_size, accumulator_elements, batch_size], specs_info.hardware_specs_names)
-                                        simulator.set_hardware(hardware_state)   
+                                   if (need_run_sim):       
+                                        print("\nDid not find existing results for this hardware state, will now run simulation")    
+                                        simulator.set_hardware(hardware_wanted_single)   
                                         midlevel_specs_single = simulator.run_all_layers()
                                         hardware_runspecs_wanted.insert(hardware_runspecs_wanted.shape[1], \
                                              "filler name", pd.concat([hardware_wanted_single, midlevel_specs_single]), allow_duplicates=True)
-                                        hardware_runspecs_wanted.to_csv(sim_params_analytical.sim_results_file_path_name)
+                                        hardware_runspecs_existing.insert(hardware_runspecs_wanted.shape[1], \
+                                             "filler name", pd.concat([hardware_wanted_single, midlevel_specs_single]), allow_duplicates=True)                                             
+                                        hardware_runspecs_existing.to_csv(sim_params_analytical.sim_results_file_path_name)
+                                   print("---------------------------------")
 
-
-     hardware_runspecs_wanted.to_csv(sim_params_analytical.sim_results_file_path_name)
+     hardware_runspecs_existing.to_csv(sim_params_analytical.sim_results_file_path_name)
+     print("\nDone running simulator on for all hardware states")
      if (sim_params_analytical.run_system_specs):
           (chip_specs, complete_final_specs) = run_system_specs(num_hardware, hardware_runspecs_wanted)
      if (sim_params_analytical.make_plots):
@@ -95,11 +110,16 @@ def make_plots(chip_specs, hardware_runspecs_wanted, complete_final_specs):
      params_other_names = ["Other Electrical Power"]
      practice_plots_6.power_breakdown(chip_specs, params_interest, params_total_quantities, params_other_names)
      '''
+     '''
      practice_plots_7.setup_plots(sim_params_analytical.NN_file_name, 1, sim_params_analytical.plots_folder_complete)
      practice_plots_7.variable_batch(complete_final_specs, sim_params_analytical.symbol_rate_options, \
           sim_params_analytical.array_size_options, sim_params_analytical.batch_size_options)  
      practice_plots_7.variable_array(complete_final_specs, sim_params_analytical.symbol_rate_options, \
           sim_params_analytical.array_size_options, sim_params_analytical.batch_size_options)  
+     '''
+     practice_plots_7.setup_plots(sim_params_analytical.NN_file_name, 1, sim_params_analytical.plots_folder_complete)
+     practice_plots_7.row_col_trends(complete_final_specs)
+
 
 def run_system_specs(num_hardware, hardware_runspecs_wanted):
      col_repeat_idxs = np.repeat(range(num_hardware), len(sim_params_analytical.symbol_rate_options))

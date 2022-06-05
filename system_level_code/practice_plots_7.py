@@ -1,7 +1,12 @@
+import array
+from isort import file
 import pandas as pd
 import matplotlib.pyplot as plt
 import itertools
 import numpy as np
+from soupsieve import select
+import specs_info
+import math
 
 a100_throughput = 30000
 a100_power_eff = 78
@@ -11,6 +16,14 @@ a100_area = 826
 NN_name = ""
 include_nvidia = 0
 plots_folder = ""
+
+# Helper Functions --------
+def regular_to_dB(non_dB_val):
+	return (10*math.log10(non_dB_val))
+
+def dB_to_regular(dB_val):
+	return (10 ** (dB_val / 10))
+
 
 def setup_plots(name, nvidia, folder):
      global NN_name, include_nvidia, plots_folder
@@ -193,3 +206,114 @@ def variable_array(complete_specs, symbol_rate_options, array_size_options, batc
      plt.title("Batch, Accumulutor, and SRAM Sizes Held Constant", fontsize = 8)
      plt.savefig(plots_folder + "IPS_IPSW_with_variable_array", dpi = 300, bbox_inches = "tight")
      plt.close()
+
+# note assuming only one batch and symbol rate size
+# also just one memory size, accumulator, etc
+def row_col_trends(chip_specs):
+     for rows_constant in [0, 1]:
+          if rows_constant:
+               selector = "Systolic Array Rows"
+               variable = "Systolic Array Cols"
+               file_term = "constant_rows"
+          else:
+               selector = "Systolic Array Cols"
+               variable = "Systolic Array Rows"
+               file_term = "constant_cols"
+          fixed_spec = 8
+
+          chip_specs_cols = chip_specs.loc[selector] == fixed_spec
+          select_specs = chip_specs.iloc[:,[x for x in chip_specs_cols]]
+
+          array_param = select_specs.loc[variable]
+          combining_loss = select_specs.loc["Power Loss Waveguide Power Combining"]
+          crossbar_loss = select_specs.loc["Power Loss Crossbar Junctions"]
+          spliting_tree_loss = select_specs.loc["Power Loss Splitting Tree"]
+          total_photonic_loss_OMA = select_specs.loc["Total Photonic Losses and OMA"]
+
+
+          plt.plot(array_param, combining_loss, "-o")
+          plt.plot(array_param, crossbar_loss,"o-")
+          plt.plot(array_param, spliting_tree_loss, "o-")
+          plt.plot(array_param, total_photonic_loss_OMA, "o-" )
+          plt.legend(["Power Loss Waveguide Power Combining", "Power Loss Crossbar Junctions", "Power Loss Splitting Tree", "Total Photonic Losses and OMA"])
+          plt.grid("minor")
+          plt.xlabel(variable)
+          plt.ylabel("Loss [dB]")
+          plt.xscale("log")
+          plt.yscale("linear")
+          plt.suptitle("Effect of " + variable + " on Different Photonic Losses")
+          plt.title(selector + " and other Features Held Constant", fontsize = 8)
+          plt.savefig(plots_folder + file_term + "_photonic_losses", dpi = 300, bbox_inches = "tight")   
+          plt.close()
+
+
+          total_time = select_specs.loc["Total Time"]
+          compute_time = select_specs.loc["Compute Portion"] * total_time 
+          program_time = select_specs.loc["Program Portion"] * total_time
+
+          plt.plot(array_param, total_time, "-o")
+          plt.plot(array_param, compute_time,"o-")
+          plt.plot(array_param, program_time, "o-")
+          plt.legend(["Total Time", "Compute Time", "Program Time"])
+          plt.grid("minor")
+          plt.xlabel(variable)
+          plt.ylabel("Time [us]")
+          plt.xscale("log")
+          plt.yscale("log")
+          plt.suptitle("Effect of " + variable + " on Inference Time")
+          plt.title(selector + " and other Features Held Constant", fontsize = 8)
+          plt.savefig(plots_folder + file_term + "_time", dpi = 300, bbox_inches = "tight")  
+          plt.close()
+
+
+          IPS = select_specs.loc["Inferences Per Second"]
+          total_laser_power_dbm = select_specs.loc["Total Laser Power from Wall dBm"]
+          total_laser_power     = select_specs.loc["Total Laser Power from Wall mW"]
+          PD_power_total_dBm = total_laser_power_dbm + total_photonic_loss_OMA
+          total_laser_power_waveguide_combining_dbm = PD_power_total_dBm - combining_loss
+          total_laser_power_waveguide_combining = dB_to_regular(total_laser_power_waveguide_combining_dbm)     
+          IPSW_laser_combining = IPS / total_laser_power_waveguide_combining
+          IPSW_laser = IPS / total_laser_power
+
+          plt.plot(array_param, IPSW_laser, "o-")
+          plt.plot(array_param, IPSW_laser_combining, "o-")
+          plt.legend(["IPS per watt of laser power", "IPS per watt of laser power\n if the only loss comes from \n1/n waveguide combining"], fontsize = 10)
+          plt.xlabel(variable)
+          plt.yscale("log")
+          plt.ylabel("Inferences per second per watt")
+          plt.grid("minor")
+          plt.title("Effect of " + variable + " on IPSW")     
+          plt.savefig(plots_folder + file_term + "_IPSW_photonics", dpi = 300, bbox_inches = "tight")   
+          plt.close()
+
+
+
+          electronics_program_power = select_specs.loc["Total Electronics Program Power"]
+          electronics_compute_power = select_specs.loc["Total Electronics Compute Power"]
+
+          plt.plot(array_param, electronics_program_power, "-o")
+          plt.plot(array_param, electronics_compute_power,"o-")
+          plt.legend(["Total Electronics Program Power", "Total Electronics Compute Power"])
+          plt.grid("minor")
+          plt.xlabel(variable)
+          plt.ylabel("Power [mW]")
+          plt.xscale("linear")
+          plt.yscale("linear")
+          plt.suptitle("Effect of " + variable + " on Electronic Power Consumption")
+          plt.title(selector + " and other Features Held Constant", fontsize = 8)
+          plt.savefig(plots_folder + file_term + "_electronic_losses", dpi = 300, bbox_inches = "tight")   
+          plt.close()
+
+
+          IPSW_electronics_program = IPS / electronics_program_power
+          IPSW_electronic_compute = IPS / electronics_compute_power
+          plt.plot(array_param, IPSW_laser, "o-")
+          plt.plot(array_param, IPSW_laser_combining, "o-")
+          plt.legend(["IPS per watt of electronics programming", "IPS per watt of electronic compute"], fontsize = 10)
+          plt.xlabel(variable)
+          plt.yscale("log")
+          plt.ylabel("Inferences per second per watt")
+          plt.grid("minor")
+          plt.title("Effect of " + variable + " on IPSW")     
+          plt.savefig(plots_folder + file_term + "_IPSW_electronics", dpi = 300, bbox_inches = "tight")   
+          plt.close()

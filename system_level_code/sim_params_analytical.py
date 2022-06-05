@@ -1,12 +1,12 @@
 import csv
 
-make_plots = 0
+make_plots = 1
 run_system_specs = 1
 make_plots = run_system_specs and make_plots
 
 base_directory = "/Users/d/Desktop/onn_arch_system_design/"
 results_file_path = base_directory + "results/" + "analytical_standalone" + "/"
-NN_file_name = "a"
+NN_file_name = "Resnet50"
 NN_file_folder = "topologies/ONN/"
 NN_file_folder_mod = NN_file_folder.replace("/", "_") 
 results_file_base_folder = results_file_path + NN_file_folder_mod + NN_file_name + "/"
@@ -22,7 +22,7 @@ SRAM_input_size_options  = [23868]
 SRAM_input_size_options  = [23868 * 2 - 1]
 SRAM_input_size_options = [802816]
 #SRAM_input_size_options = [64000]
-SRAM_filter_size_options = [64000]
+SRAM_filter_size_options = [300000]
 SRAM_output_size_options = [300000]
 #SRAM_output_size_options = [64000]
 
@@ -39,16 +39,19 @@ array_size_options = [[8, 16], [8, 32], [8, 64]]
 array_size_options = [[16, 1], [32, 1], [64, 1], [128, 1], [256, 1]]
 array_rows_options = [4, 8, 16, 32, 64, 128, 256]
 array_cols_options = [4, 8, 16, 32, 64, 128, 256]
+
+
+#array_rows_options = [12]
+#array_cols_options = [12]
+
 array_size_options = []
 for array_rows in array_rows_options:
      for array_cols in array_cols_options:
           array_size_options.append([array_rows, array_cols])
 
-x = 1
-
 
 symbol_rate_options = [1, 5, 10]
-symbol_rate_options = [2]
+symbol_rate_options = [10]
 all_layers = []
 
 if (0):

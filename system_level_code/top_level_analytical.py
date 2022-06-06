@@ -49,6 +49,12 @@ def sweep_hardware_configs(simulator):
      hardware_runspecs_wanted = pd.DataFrame(index = hardware_runspecs_names)
 
      num_hardware = 0
+     print("batch size options: ", sim_params_analytical.batch_size_options)
+     print("array size options: ", sim_params_analytical.array_size_options)
+     print("input SRAM  size options: ", sim_params_analytical.SRAM_input_size_options)
+     print("filter SRAM size options: ", sim_params_analytical.SRAM_filter_size_options)
+     print("output SRAM size options: ", sim_params_analytical.SRAM_output_size_options)
+     print("accumulator size options: ", sim_params_analytical.accumulator_elements_options)
      for batch_size in sim_params_analytical.batch_size_options:
           for array_size in sim_params_analytical.array_size_options:
                for SRAM_input_size in sim_params_analytical.SRAM_input_size_options:

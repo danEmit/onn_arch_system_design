@@ -19,3 +19,6 @@ Logs/ONN_sim/*
 information_ppt/
 results/untracked/*
 AM.csv
+results
+logs
+topologies

@@ -17,41 +17,24 @@ detailed_results_folder_complete = results_file_base_folder + detailed_results_f
 plots_folder = "plots/"
 plots_folder_complete = results_file_base_folder + plots_folder
 
-SRAM_input_size_options  = [23868]
-#SRAM_input_size_options  = [100000]
-SRAM_input_size_options  = [23868 * 2 - 1]
-SRAM_input_size_options = [802816]
-#SRAM_input_size_options = [64000]
-SRAM_filter_size_options = [300000]
-SRAM_output_size_options = [300000]
-#SRAM_output_size_options = [64000]
-
+SRAM_input_size_options  = [1000000, 2000000, 5000000, 10000000]
+SRAM_filter_size_options = [ 500000, 1000000, 2000000,  5000000]
+SRAM_output_size_options = [ 300000, 1000000, 2000000,  5000000]
 
 batch_size_options_overall = [1, 8, 16, 32, 64, 128]
-array_size_options_overall = [[8, 8], [16, 16], [32, 32], [64, 64], [128, 128]]
-accumulator_elements_options = [50000]
-batch_size_options_index = [0]
-array_size_options_index = [0]
+accumulator_elements_options = [50000, 100000, 500000]
+batch_size_options_index = [0, 1, 2, 3, 4, 5]
 batch_size_options = [batch_size_options_overall[x] for x in batch_size_options_index]
-array_size_options = [array_size_options_overall[x] for x in array_size_options_index]
 
-array_size_options = [[8, 16], [8, 32], [8, 64]]
-array_size_options = [[16, 1], [32, 1], [64, 1], [128, 1], [256, 1]]
+
 array_rows_options = [4, 8, 16, 32, 64, 128, 256]
 array_cols_options = [4, 8, 16, 32, 64, 128, 256]
-
-
-#array_rows_options = [12]
-#array_cols_options = [12]
-
 array_size_options = []
 for array_rows in array_rows_options:
      for array_cols in array_cols_options:
           array_size_options.append([array_rows, array_cols])
 
-
-symbol_rate_options = [1, 5, 10]
-symbol_rate_options = [10]
+symbol_rate_options = [2]
 all_layers = []
 
 if (0):

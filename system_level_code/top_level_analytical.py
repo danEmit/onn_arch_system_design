@@ -90,7 +90,7 @@ def sweep_hardware_configs(simulator):
                                         midlevel_specs_single = simulator.run_all_layers()
                                         hardware_runspecs_wanted.insert(hardware_runspecs_wanted.shape[1], \
                                              "filler name", pd.concat([hardware_wanted_single, midlevel_specs_single]), allow_duplicates=True)
-                                        hardware_runspecs_existing.insert(hardware_runspecs_wanted.shape[1], \
+                                        hardware_runspecs_existing.insert(hardware_runspecs_existing.shape[1], \
                                              "filler name", pd.concat([hardware_wanted_single, midlevel_specs_single]), allow_duplicates=True)                                             
                                         hardware_runspecs_existing.to_csv(sim_params_analytical.sim_results_file_path_name)
                                    print("---------------------------------")

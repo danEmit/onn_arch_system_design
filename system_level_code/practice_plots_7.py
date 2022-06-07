@@ -1,5 +1,4 @@
 import array
-from isort import file
 import pandas as pd
 import matplotlib.pyplot as plt
 import itertools
@@ -250,23 +249,28 @@ def row_col_trends(chip_specs):
           total_time = select_specs.loc["Total Time"]
           compute_time = select_specs.loc["Compute Portion"] * total_time 
           program_time = select_specs.loc["Program Portion"] * total_time
+          IPS = select_specs.loc["Inferences Per Second"]
+          IP_compute_time = 1 / compute_time
+          IP_program_time = 1 / program_time
+
 
           plt.plot(array_param, total_time, "-o")
           plt.plot(array_param, compute_time,"o-")
           plt.plot(array_param, program_time, "o-")
+          #plt.legend(["Inferences per total time", "Inferences per compute time", "Inferences per program time"])
           plt.legend(["Total Time", "Compute Time", "Program Time"])
           plt.grid("minor")
           plt.xlabel(variable)
+          plt.ylabel("Rate [1/us]")
           plt.ylabel("Time [us]")
-          plt.xscale("log")
-          plt.yscale("log")
+          #plt.xscale("log")
+          #plt.yscale("log")
           plt.suptitle("Effect of " + variable + " on Inference Time")
           plt.title(selector + " and other Features Held Constant", fontsize = 8)
           plt.savefig(plots_folder + file_term + "_time", dpi = 300, bbox_inches = "tight")  
           plt.close()
 
 
-          IPS = select_specs.loc["Inferences Per Second"]
           total_laser_power_dbm = select_specs.loc["Total Laser Power from Wall dBm"]
           total_laser_power     = select_specs.loc["Total Laser Power from Wall mW"]
           PD_power_total_dBm = total_laser_power_dbm + total_photonic_loss_OMA

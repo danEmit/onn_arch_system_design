@@ -1,4 +1,5 @@
 import csv
+import numpy as np
 
 make_plots = 1
 run_system_specs = 1
@@ -6,7 +7,7 @@ make_plots = run_system_specs and make_plots
 
 base_directory = "/Users/d/Desktop/onn_arch_system_design/"
 results_file_path = base_directory + "results/" + "analytical_standalone" + "/"
-NN_file_name = "Resnet50"
+NN_file_name = "test"
 NN_file_folder = "topologies/ONN/"
 NN_file_folder_mod = NN_file_folder.replace("/", "_") 
 results_file_base_folder = results_file_path + NN_file_folder_mod + NN_file_name + "/"
@@ -17,26 +18,7 @@ detailed_results_folder_complete = results_file_base_folder + detailed_results_f
 plots_folder = "plots/"
 plots_folder_complete = results_file_base_folder + plots_folder
 
-SRAM_input_size_options  = [1000000, 2000000, 5000000, 10000000]
-SRAM_filter_size_options = [ 500000, 1000000, 2000000,  5000000]
-SRAM_output_size_options = [ 300000, 1000000, 2000000,  5000000]
-
-batch_size_options_overall = [1, 8, 16, 32, 64, 128]
-accumulator_elements_options = [50000, 100000, 500000]
-batch_size_options_index = [0, 1, 2, 3, 4, 5]
-batch_size_options = [batch_size_options_overall[x] for x in batch_size_options_index]
-
-
-array_rows_options = [4, 8, 16, 32, 64, 128, 256]
-array_cols_options = [4, 8, 16, 32, 64, 128, 256]
-array_size_options = []
-for array_rows in array_rows_options:
-     for array_cols in array_cols_options:
-          array_size_options.append([array_rows, array_cols])
-
-symbol_rate_options = [2]
 all_layers = []
-
 if (0):
      if (1):
           input_height  = [10, 5]
@@ -66,6 +48,9 @@ else:
      channels = []
      num_filter = []
      strides = []
+     max_single_input_size = 0
+     max_all_filters_size = 0
+     max_output_size = 0
 
      NN_directory = base_directory + NN_file_folder + NN_file_name + ".csv"
 
@@ -80,13 +65,56 @@ else:
                     layer_dict = {"Input Height" : int(row[1]), "Input Width" : int(row[2]), "Filter Height" : int(row[3]), "Filter Width": int(row[4]), \
                     "Channels" : int(row[5]), "Num Filter" : int(row[6]), "Strides" : int(row[7])}
                     all_layers.append(layer_dict)
+                    
+                    single_input_size = layer_dict["Input Height"] * layer_dict["Input Width"] * layer_dict["Channels"]
+                    if single_input_size > max_single_input_size:
+                         max_single_input_size = single_input_size
+                    
+                    all_filters_size = layer_dict["Filter Height"] * layer_dict["Filter Width"] * layer_dict["Channels"] * layer_dict["Num Filter"]
+                    if all_filters_size > max_all_filters_size:
+                         max_all_filters_size = all_filters_size
+
+
+
                except:
                     print("can't convert all the data in NN file to ints")
 
 
 
+SRAM_input_size_options  = [1000000]#, 2000000]#, 5000000, 10000000]
+SRAM_filter_size_options = [ 500000]#, 1000000]#, 2000000,  5000000]
+SRAM_output_size_options = [ 300000]#, 1000000]#, 2000000,  5000000]
+
+array_rows = 16
+array_cols = 16
+array_rows_options = [4, 8]#, 16]#, 32, 64, 128, 256]
+array_cols_options = [4, 8]#, 16]#, 32, 64, 128, 256]
+array_size_options = []
+for array_rows in array_rows_options:
+     for array_cols in array_cols_options:
+          array_size_options.append([array_rows, array_cols])
+
+min_SRAM_filter_size = max(array_rows_options) * max(array_cols_options)
+SRAM_filter_size = int(max_all_filters_size)
+SRAM_filter_size_options = np.linspace(min_SRAM_filter_size, max_all_filters_size, 4).astype(int)
+
+SRAM_input_size_options = [int(x * max_single_input_size) for x in [1.1, 3.1, 5.1, 10.1]]
+SRAM_input_size = int(max_single_input_size * 1.1)
+
+SRAM_output_size_options = SRAM_input_size_options
+SRAM_output_size = SRAM_input_size
+
+batch_size_options = [1, 8, 16, 32, 64, 128]
+batch_size = 1
+
+accumulator_elements_options = [20000, 100000, 500000]
+accumulator_elements = 20000
+
+
+symbol_rate_options = [1,5,10]
 
 
 
 
 
+x =1 

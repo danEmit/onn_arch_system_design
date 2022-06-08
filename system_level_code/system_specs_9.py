@@ -394,10 +394,12 @@ def run_power_area_model(SS_results, array_params, symbolRate):
 
 	time_analysis(SS_results.loc["Total Weights Programming Cycles"], SS_results.loc["Total Vector Segments Processed"])
 	(laser_output_power, laser_wall_power) = photonics_power_analysis()
+	laser_wall_power_compute = laser_wall_power * compute_portion
+	all_specs.at["Total Laser Power from Wall mW Compute Adjusted"] = laser_wall_power_compute
 	photonics_area_total = photonics_area_analysis()
 	(electronics_power_circuit) = electronics_power_analysis(SS_results)
 	electronics_area = electronics_area_analysis(array_params)
-	total_power = electronics_power_circuit + laser_wall_power
+	total_power = electronics_power_circuit + laser_wall_power_compute
 	total_area  = electronics_area  + photonics_area_total
 
 	inferences_per_second = 1/total_time

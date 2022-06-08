@@ -36,7 +36,7 @@ time_specs_names = ["Compute Portion", "Program Portion", "Total Time"]
 
 semi_high_results_names = ["Total Electronics Area", "Total Photonics Area", "Total Electronics Program Power", \
 	"Total Electronics Compute Power", "Total Combined Electronics Power", "Total Electronics Power dBm", "Total Photonic Losses and OMA", "Total Photonic Power mW",\
-		"Total Laser Power from Wall mW", "Total Laser Power from Wall dBm"]
+		"Total Laser Power from Wall mW", "Total Laser Power from Wall dBm", "Total Laser Power from Wall mW Compute Adjusted"]
 
 overall_specs_names = ["Total Chip Area", "Total Chip Power", "Total Chip Power dBm", "Inferences Per Second", "Inferences Per Second Per Watt"]
 

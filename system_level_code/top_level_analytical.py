@@ -104,27 +104,11 @@ def sweep_hardware_configs(simulator):
           #practice_plots_6.make_plot_1(complete_final_specs)  
 
 def make_plots(chip_specs, hardware_runspecs_wanted, complete_final_specs):
-     '''
-     practice_plots_6.prepare_plot_specs(sim_params_analytical.symbol_rate_options, sim_params_analytical.array_size_options, sim_params_analytical.batch_size_options)
-     practice_plots_6.prepare_chip_specs(chip_specs)
-     practice_plots_6.plot_power(chip_specs)
-     practice_plots_6.plot_area(chip_specs)
-     practice_plots_6.plot_inf_specs(chip_specs)
-
-     params_interest = [["ADCs Power", "DRAM Program Power", "DRAM Compute Power", "PCM Heaters Power"], []]
-     params_total_quantities = ["Total Combined Electronics Power", "Total Laser Power from Wall mW"]
-     params_other_names = ["Other Electrical Power"]
-     practice_plots_6.power_breakdown(chip_specs, params_interest, params_total_quantities, params_other_names)
-     '''
-     '''
-     practice_plots_7.setup_plots(sim_params_analytical.NN_file_name, 1, sim_params_analytical.plots_folder_complete)
-     practice_plots_7.variable_batch(complete_final_specs, sim_params_analytical.symbol_rate_options, \
-          sim_params_analytical.array_size_options, sim_params_analytical.batch_size_options)  
-     practice_plots_7.variable_array(complete_final_specs, sim_params_analytical.symbol_rate_options, \
-          sim_params_analytical.array_size_options, sim_params_analytical.batch_size_options)  
-     '''
-     practice_plots_7.setup_plots(sim_params_analytical.NN_file_name, 1, sim_params_analytical.plots_folder_complete)
-     practice_plots_7.row_col_trends(complete_final_specs)
+     practice_plots_7.setup_plots(sim_params_analytical.NN_file_name, 1, sim_params_analytical.plots_folder_complete, complete_final_specs)
+     #practice_plots_7.plot_photonic_losses()
+     #practice_plots_7.plot_times()
+     practice_plots_7.plot_power()
+     #practice_plots_7.row_col_trends(complete_final_specs)
 
 
 def run_system_specs(num_hardware, hardware_runspecs_wanted):

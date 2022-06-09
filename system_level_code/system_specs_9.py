@@ -239,7 +239,7 @@ def electronics_power_analysis(SS_results):
 	ODAC_power_single = specs_info.ODAC_energyPerSymbol * symbolRate * mW_adjustment
 	ODAC_power_total = ODAC_power_single * num_ODAC 
 	ODAC_power_total = ODAC_power_total * compute_portion
-	all_specs.at["ODAC Drivers Power"] = ADC_power_total
+	all_specs.at["ODAC Drivers Power"] = ODAC_power_total
 
 	# PCM Heater
 	PCMHeater_power_single = (specs_info.PCMHeater_energyPerProgram / specs_info.program_cycle_time) * mW_adjustment

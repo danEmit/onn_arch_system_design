@@ -102,8 +102,6 @@ def sweep_hardware_full():
                       
 
 def sweep_hardware_partial():
-
-
      base_params =  [sim_params_analytical.array_rows, sim_params_analytical.array_cols, sim_params_analytical.SRAM_input_size, sim_params_analytical.SRAM_filter_size, \
      sim_params_analytical.SRAM_output_size, sim_params_analytical.accumulator_elements, sim_params_analytical.batch_size]
 
@@ -146,14 +144,14 @@ def sweep_hardware_partial():
      accumulator_elements_sweep.loc["SRAM Output Size", :] = sim_params_analytical.accumulator_elements_options
      all_params = pd.concat([all_params, accumulator_elements_sweep], axis = 1)
 
-
+     all_params = all_params.T.drop_duplicates().T
      print("\n\nALL PARAMS:")
      print(all_params, "\n\n")
      for col in range(all_params.shape[1]):
           hardware_wanted_single = all_params.iloc[:, col]
           search_solutions_run_sim(hardware_wanted_single)
      
-     return(len(all_params))
+     return(all_params.shape[1], base_params.iloc[:, 0])
 
 
 def organize_hardware():
@@ -165,7 +163,7 @@ def organize_hardware():
 
 
      #num_hardware = sweep_hardware_full()
-     num_hardware = sweep_hardware_partial()
+     (num_hardware, base_params) = sweep_hardware_partial()
 
      hardware_runspecs_existing.to_csv(sim_params_analytical.sim_results_file_path_name)
      print("\nDone running simulator for all hardware states")
@@ -173,14 +171,15 @@ def organize_hardware():
           #print(hardware_runspecs_wanted)
           (chip_specs, complete_final_specs) = run_system_specs(num_hardware, hardware_runspecs_wanted)
      if (sim_params_analytical.make_plots):
-          make_plots(chip_specs, hardware_runspecs_wanted, complete_final_specs)
+          make_plots(chip_specs, hardware_runspecs_wanted, complete_final_specs, base_params)
           #practice_plots_6.make_plot_1(complete_final_specs)  
 
-def make_plots(chip_specs, hardware_runspecs_wanted, complete_final_specs):
-     practice_plots_7.setup_plots(sim_params_analytical.NN_file_name, 1, sim_params_analytical.plots_folder_complete, complete_final_specs)
+def make_plots(chip_specs, hardware_runspecs_wanted, complete_final_specs, base_params):
+     practice_plots_7.setup_plots(sim_params_analytical.NN_file_name, 1, sim_params_analytical.plots_folder_complete, complete_final_specs, base_params)
      practice_plots_7.plot_photonic_losses()
      practice_plots_7.plot_times()
      practice_plots_7.plot_power()
+     practice_plots_7.plot_electronic_power_breakdown()
      #practice_plots_7.row_col_trends(complete_final_specs)
 
 

@@ -87,16 +87,17 @@ SRAM_output_size_options = [ 300000]#, 1000000]#, 2000000,  5000000]
 
 array_rows = 16
 array_cols = 16
-array_rows_options = [4, 8]#, 16]#, 32, 64, 128, 256]
-array_cols_options = [4, 8]#, 16]#, 32, 64, 128, 256]
+array_rows_options = [8, 16, 32, 64, 128, 256]
+array_cols_options = [8, 16, 32, 64, 128, 256]
 array_size_options = []
-for array_rows in array_rows_options:
-     for array_cols in array_cols_options:
-          array_size_options.append([array_rows, array_cols])
+for array_rows_slider in array_rows_options:
+     for array_rows_slider in array_cols_options:
+          array_size_options.append([array_rows_slider, array_rows_slider])
 
 min_SRAM_filter_size = max(array_rows_options) * max(array_cols_options)
 SRAM_filter_size = int(max_all_filters_size)
 SRAM_filter_size_options = np.linspace(min_SRAM_filter_size, max_all_filters_size, 4).astype(int)
+
 
 SRAM_input_size_options = [int(x * max_single_input_size) for x in [1.1, 3.1, 5.1, 10.1]]
 SRAM_input_size = int(max_single_input_size * 1.1)
@@ -107,9 +108,12 @@ SRAM_output_size = SRAM_input_size
 batch_size_options = [1, 8, 16, 32, 64, 128]
 batch_size = 1
 
-accumulator_elements_options = [20000, 100000, 500000]
+accumulator_elements_options = [20000, 100000, 1000000]
 accumulator_elements = 20000
 
+SRAM_input_size_options  = [1000000]
+SRAM_filter_size_options = [1000000]
+SRAM_output_size_options = [1000000]
 
 symbol_rate_options = [1,5,10]
 

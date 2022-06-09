@@ -9,7 +9,7 @@ a100_power_eff = 78
 a100_power = 1000 * a100_throughput / a100_power_eff
 a100_area = 826
 
-DPI = 50
+DPI = 300
 
 NN_name = ""
 include_nvidia = 0
@@ -26,7 +26,7 @@ def regular_to_dB(non_dB_val):
 def dB_to_regular(dB_val):
 	return (10 ** (dB_val / 10))
 
-def setup_plots(name, nvidia, folder, chip_specs_insert):
+def setup_plots(name, nvidia, folder, chip_specs_insert, base_params):
      global NN_name, include_nvidia, plots_folder, chip_specs, fixed_values, hardware_settings, hardware_names
      NN_name = name
      include_nvidia = nvidia
@@ -36,6 +36,8 @@ def setup_plots(name, nvidia, folder, chip_specs_insert):
      hardware_names.append("Symbol Rate (GHz)")
      hardware_settings = chip_specs.loc[hardware_names, :]
      fixed_values = hardware_settings.iloc[:, 0]
+     fixed_values = base_params
+     fixed_values.loc["Symbol Rate (GHz)"] = 1
 
 
 
@@ -44,7 +46,7 @@ def filter_data(variable, fixed_value_input = 0):
           fixed_value_input = fixed_values.copy()
      fixed_specs = hardware_names.copy()
      fixed_specs.remove(variable)
-     compare_vals = fixed_value_input.loc[fixed_specs]
+     compare_vals = fixed_value_input.loc[fixed_specs].astype(float)
      accepted_col = []
      for col in range(chip_specs.shape[1]):
           if chip_specs.loc[fixed_specs].iloc[:, col].equals(compare_vals):
@@ -57,10 +59,10 @@ def plot_photonic_losses():
      for rows_constant in [0, 1]:
           if rows_constant:
                variable = "Systolic Array Cols"
-               file_term = "constant_rows"
+               file_term = "variable_cols"
           else:
                variable = "Systolic Array Rows"
-               file_term = "constant_cols"
+               file_term = "variable_rows"
 
           filtered_data = filter_data(variable)
 
@@ -89,10 +91,10 @@ def plot_times():
      for rows_constant in [0, 1, 2]:
           if rows_constant == 0:
                variable = "Systolic Array Cols"
-               file_term = "variable_rows"
+               file_term = "variable_cols"
           elif rows_constant == 1:
                variable = "Systolic Array Rows"
-               file_term = "variable_cols"
+               file_term = "variable_rows"
           elif rows_constant == 2:
                variable = "Batch Size"
                file_term = "variable_batch"
@@ -103,8 +105,15 @@ def plot_times():
           compute_portion = filtered_data.loc["Compute Portion"]
           program_portion = filtered_data.loc["Program Portion"]
           total_time = filtered_data.loc["Total Time"]
+          #IPS = filtered_data.loc["Inferences Per Second"]
+          #total_time = 1/IPS
           compute_time = compute_portion * total_time 
           program_time = program_portion * total_time
+
+          if (rows_constant == 2):
+               total_time = total_time/array_param
+               compute_time = compute_time / array_param
+               program_time = program_time / array_param
 
           plt.plot(array_param, total_time, "-o")
           plt.plot(array_param, compute_time,"o-")
@@ -136,10 +145,10 @@ def plot_power():
      for rows_constant in [0, 1]:
           if rows_constant == 0:
                variable = "Systolic Array Cols"
-               file_term = "variable_rows"
+               file_term = "variable_cols"
           elif rows_constant == 1:
                variable = "Systolic Array Rows"
-               file_term = "variable_cols"
+               file_term = "variable_rows"
      
           filtered_data = filter_data(variable)
           array_param = filtered_data.loc[variable]
@@ -165,11 +174,44 @@ def plot_power():
           plt.savefig(plots_folder + "power_breakdown_" + file_term, dpi = DPI, bbox_inches = "tight")  
           plt.close()
 
-def plot_electronic_program_power_breakdown():
-     
+def plot_electronic_power_breakdown():
+     for rows_constant in [0, 1]:
+          if rows_constant == 0:
+               variable = "Systolic Array Cols"
+               file_term = "variable_cols"
+          elif rows_constant == 1:
+               variable = "Systolic Array Rows"
+               file_term = "variable_rows"
+
+          filtered_data = filter_data(variable)
+          array_param = filtered_data.loc[variable]
+
+          ADC_power = filtered_data.loc["ADCs Power"]
+          DRAM_power = filtered_data.loc["DRAM Compute Power"]
+          PS_power = filtered_data.loc["PS Power"]
+          MRM_heater_power = filtered_data.loc["MRM Heaters Power"]
+          ODAC_power = filtered_data.loc["ODAC Drivers Power"]
+          total_electronic_power = filtered_data.loc["Total Electronics Compute Power"]
+
+          plt.plot(array_param, ADC_power, "-o")
+          plt.plot(array_param, DRAM_power,"o-")
+          plt.plot(array_param, PS_power, "o-")
+          plt.plot(array_param, MRM_heater_power, "o-" )
+          plt.plot(array_param, ODAC_power, "o-")
+          plt.plot(array_param, total_electronic_power, "o-" )
+          plt.legend(["ADCs", "DRAM", "Ser/Des", "MRM Heater", "ODAC Driver", "total"])
+          plt.grid("minor")
+          plt.xlabel(variable)
+          plt.ylabel("Power [mW]")
+          #plt.xscale("log")
+          plt.yscale("linear")
+          plt.suptitle("Effect of " + variable + " on Different Electronic Compute Power Consumption")
+          plt.title("Other Features Held Constant", fontsize = 8)
+          plt.savefig(plots_folder + "electronic_power_power_breakdown_" + file_term, dpi = DPI, bbox_inches = "tight")   
+          plt.close()
 
 
-
+'''
 # note assuming only one batch and symbol rate size
 # also just one memory size, accumulator, etc
 def row_col_trends(chip_specs):
@@ -285,3 +327,5 @@ def row_col_trends(chip_specs):
           plt.title("Effect of " + variable + " on IPSW")     
           plt.savefig(plots_folder + file_term + "_IPSW_electronics", dpi = DPI, bbox_inches = "tight")   
           plt.close()
+
+'''

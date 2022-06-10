@@ -15,10 +15,19 @@ NN_name = ""
 include_nvidia = 0
 plots_folder = ""
 
-chip_specs   = []
-fixed_values = []
-hardware_settings = []
-hardware_names = []
+#chip_specs   = []
+#fixed_values = []
+#hardware_settings = []
+#hardware_names = []
+array_rows_sweep_data = []
+array_cols_sweep_data = []
+batch_sweep_data = []
+
+rows_variable_title = ""
+cols_variable_title = ""
+batch_variable_title = ""
+
+
 # Helper Functions --------
 def regular_to_dB(non_dB_val):
 	return (10*math.log10(non_dB_val))
@@ -26,45 +35,79 @@ def regular_to_dB(non_dB_val):
 def dB_to_regular(dB_val):
 	return (10 ** (dB_val / 10))
 
-def setup_plots(name, nvidia, folder, chip_specs_insert, base_params):
-     global NN_name, include_nvidia, plots_folder, chip_specs, fixed_values, hardware_settings, hardware_names
+def setup_plots(name, nvidia, folder, chip_specs, target_symbol_rate, array_rows_sweep_params, array_cols_sweep_params, batch_sweep_params):
+     global NN_name, include_nvidia, plots_folder, array_rows_sweep_data, array_cols_sweep_data, batch_sweep_data, \
+     rows_variable_title, cols_variable_title, batch_variable_title
      NN_name = name
      include_nvidia = nvidia
      plots_folder = folder
-     chip_specs = chip_specs_insert
+
      hardware_names = specs_info.hardware_specs_names.copy()
      hardware_names.append("Symbol Rate (GHz)")
      hardware_settings = chip_specs.loc[hardware_names, :]
-     fixed_values = hardware_settings.iloc[:, 0]
-     fixed_values = base_params
-     fixed_values.loc["Symbol Rate (GHz)"] = 1
+
+     array_rows_sweep_params.loc["Symbol Rate (GHz)", :] = target_symbol_rate 
+     array_cols_sweep_params.loc["Symbol Rate (GHz)", :] = target_symbol_rate 
+     batch_sweep_params.loc["Symbol Rate (GHz)", :] = target_symbol_rate 
+
+     array_rows_sweep_data = pd.DataFrame([], index = chip_specs.index)
+     array_cols_sweep_data = pd.DataFrame([], index = chip_specs.index)
+     batch_sweep_data = pd.DataFrame([], index = chip_specs.index)
+
+     for array_rows in range(array_rows_sweep_params.shape[1]):
+          for col in range(chip_specs.shape[1]):
+               if array_rows_sweep_params.iloc[:, array_rows].equals(hardware_settings.iloc[:, col]):
+                    array_rows_sweep_data.loc[:, array_rows_sweep_data.shape[1]] = chip_specs.iloc[:, col]
+
+     for array_cols in range(array_cols_sweep_params.shape[1]):
+          for col in range(chip_specs.shape[1]):
+               if array_cols_sweep_params.iloc[:, array_cols].equals(hardware_settings.iloc[:, col]):
+                    array_cols_sweep_data.loc[:, array_cols_sweep_data.shape[1]] = chip_specs.iloc[:, col]
+
+     for batch in range(batch_sweep_params.shape[1]):
+          for col in range(chip_specs.shape[1]):
+               if batch_sweep_params.iloc[:, batch].equals(hardware_settings.iloc[:, col]):
+                    batch_sweep_data.loc[:, batch_sweep_data.shape[1]] = chip_specs.iloc[:, col]
 
 
+     rows_variable_title = "Array Cols: " + str(round(array_rows_sweep_data.loc["Systolic Array Cols", 0])) +\
+      ", SRAM Input Size: "  + str(round(array_rows_sweep_data.loc["SRAM Input Size", 0])) + \
+      ", SRAM Filter Size: " + str(round(array_rows_sweep_data.loc["SRAM Filter Size", 0])) + \
+      ", SRAM Output Size: " + str(round(array_rows_sweep_data.loc["SRAM Output Size", 0])) + \
+      ", Batch Size: "       + str(round(array_rows_sweep_data.loc["Batch Size", 0])) + \
+      ", Accumulator Elements: " + str(round(array_rows_sweep_data.loc["Accumulator Elements", 0])) 
 
-def filter_data(variable, fixed_value_input = 0):
-     if fixed_value_input == 0:
-          fixed_value_input = fixed_values.copy()
-     fixed_specs = hardware_names.copy()
-     fixed_specs.remove(variable)
-     compare_vals = fixed_value_input.loc[fixed_specs].astype(float)
-     accepted_col = []
-     for col in range(chip_specs.shape[1]):
-          if chip_specs.loc[fixed_specs].iloc[:, col].equals(compare_vals):
-               accepted_col.append(col)
+     cols_variable_title = "Array Rows: " + str(round(array_cols_sweep_data.loc["Systolic Array Rows", 0])) +\
+      ", SRAM Input Size: "  + str(round(array_cols_sweep_data.loc["SRAM Input Size", 0])) + \
+      ", SRAM Filter Size: " + str(round(array_cols_sweep_data.loc["SRAM Filter Size", 0])) + \
+      ", SRAM Output Size: " + str(round(array_cols_sweep_data.loc["SRAM Output Size", 0])) + \
+      ", Batch Size: "       + str(round(array_rows_sweep_data.loc["Batch Size", 0])) + \
+      ", Accumulator Elements: " + str(round(array_cols_sweep_data.loc["Accumulator Elements", 0])) 
 
-     filtered_data = chip_specs.iloc[:, accepted_col]
-     return(filtered_data)
+     batch_variable_title = "Array Rows: " + str(round(batch_sweep_data.loc["Systolic Array Rows", 0])) +\
+      ", Array Cols: " + str(round(batch_sweep_data.loc["Systolic Array Cols", 0])) +\
+      ", SRAM Input Size: "  + str(round(batch_sweep_data.loc["SRAM Input Size", 0])) + \
+      ", SRAM Filter Size: " + str(round(batch_sweep_data.loc["SRAM Filter Size", 0])) + \
+      ", SRAM Output Size: " + str(round(batch_sweep_data.loc["SRAM Output Size", 0])) + \
+      ", Accumulator Elements: " + str(round(batch_sweep_data.loc["Accumulator Elements", 0])) 
+
+     print(rows_variable_title)
+     print(cols_variable_title)
+     print(batch_variable_title)
+
 
 def plot_photonic_losses():
      for rows_constant in [0, 1]:
           if rows_constant:
                variable = "Systolic Array Cols"
                file_term = "variable_cols"
+               filtered_data = array_cols_sweep_data
+               title = rows_variable_title
           else:
                variable = "Systolic Array Rows"
                file_term = "variable_rows"
-
-          filtered_data = filter_data(variable)
+               filtered_data = array_rows_sweep_data
+               title = cols_variable_title
 
           array_param = filtered_data.loc[variable]
           combining_loss = filtered_data.loc["Power Loss Waveguide Power Combining"]
@@ -89,19 +132,23 @@ def plot_photonic_losses():
 
 def plot_times():
      for rows_constant in [0, 1, 2]:
-          if rows_constant == 0:
+          if rows_constant:
                variable = "Systolic Array Cols"
                file_term = "variable_cols"
+               filtered_data = array_cols_sweep_data
+               title = rows_variable_title
           elif rows_constant == 1:
                variable = "Systolic Array Rows"
                file_term = "variable_rows"
-          elif rows_constant == 2:
+               filtered_data = array_rows_sweep_data
+               title = cols_variable_title
+          else:
                variable = "Batch Size"
                file_term = "variable_batch"
+               filtered_data = batch_sweep_data
+               title = batch_variable_title
 
-          filtered_data = filter_data(variable)
           array_param = filtered_data.loc[variable]
-
           compute_portion = filtered_data.loc["Compute Portion"]
           program_portion = filtered_data.loc["Program Portion"]
           total_time = filtered_data.loc["Total Time"]
@@ -137,20 +184,23 @@ def plot_times():
           plt.xlabel(variable)
           plt.ylabel("(Unitless)")
           plt.suptitle("Effect of " + variable + " on Inference Time")
-          plt.title("All other Features Held Constant", fontsize = 8)
+          plt.title(title, fontsize = 8)
           plt.savefig(plots_folder + "time_portions_" + file_term, dpi = DPI, bbox_inches = "tight")  
           plt.close()
 
 def plot_power():
      for rows_constant in [0, 1]:
-          if rows_constant == 0:
+          if rows_constant:
                variable = "Systolic Array Cols"
                file_term = "variable_cols"
-          elif rows_constant == 1:
+               filtered_data = array_cols_sweep_data
+               title = rows_variable_title
+          else:
                variable = "Systolic Array Rows"
                file_term = "variable_rows"
+               filtered_data = array_rows_sweep_data
+               title = cols_variable_title
      
-          filtered_data = filter_data(variable)
           array_param = filtered_data.loc[variable]
 
           electronics_program_power = filtered_data.loc["Total Electronics Program Power"]
@@ -168,7 +218,7 @@ def plot_power():
           plt.xlabel(variable)
           plt.ylabel("Power [mW]")
           #plt.xscale("log")
-          #plt.yscale("log")
+          plt.yscale("log")
           plt.suptitle("Effect of " + variable + " on Chip Power")
           plt.title("All other Features Held Constant", fontsize = 8)
           plt.savefig(plots_folder + "power_breakdown_" + file_term, dpi = DPI, bbox_inches = "tight")  
@@ -176,14 +226,17 @@ def plot_power():
 
 def plot_electronic_power_breakdown():
      for rows_constant in [0, 1]:
-          if rows_constant == 0:
+          if rows_constant:
                variable = "Systolic Array Cols"
                file_term = "variable_cols"
-          elif rows_constant == 1:
+               filtered_data = array_cols_sweep_data
+               title = rows_variable_title
+          else:
                variable = "Systolic Array Rows"
                file_term = "variable_rows"
+               filtered_data = array_rows_sweep_data
+               title = cols_variable_title
 
-          filtered_data = filter_data(variable)
           array_param = filtered_data.loc[variable]
 
           ADC_power = filtered_data.loc["ADCs Power"]

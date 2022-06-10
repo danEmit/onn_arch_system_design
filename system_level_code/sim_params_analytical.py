@@ -1,6 +1,8 @@
 import csv
 import numpy as np
 
+mega = 10 ** 6
+
 make_plots = 1
 run_system_specs = 1
 make_plots = run_system_specs and make_plots
@@ -118,7 +120,39 @@ SRAM_output_size_options = [1000000]
 symbol_rate_options = [1,5,10]
 
 
+## array rows
+array_rows_options = [8, 16, 32, 64, 128, 256]
+array_rows = 0
+array_cols = 16
+batch_size = 8
+SRAM_input_size = mega
+SRAM_filter_size = int(0.5 * mega)
+SRAM_output_size = int(0.5 * mega)
+accumulator_elements = 20000
+array_rows_sweep_data = [array_rows, array_cols, SRAM_input_size, SRAM_filter_size, SRAM_output_size, accumulator_elements, batch_size]
 
+
+array_rows = 16
+array_cols_options = [8, 16, 32, 64, 128, 256]
+array_cols = 0
+batch_size = 8
+SRAM_input_size = mega
+SRAM_filter_size = int(0.5 * mega)
+SRAM_output_size = int(0.5 * mega)
+accumulator_elements = 20000
+array_cols_sweep_data = [array_rows, array_cols, SRAM_input_size, SRAM_filter_size, SRAM_output_size, accumulator_elements, batch_size]
+
+
+
+array_rows = 16
+array_cols = 16
+batch_size_options = [1, 8, 16, 32, 64, 128]
+batch_size = 0
+SRAM_input_size = mega
+SRAM_filter_size = int(0.5 * mega)
+SRAM_output_size = int(0.5 * mega)
+accumulator_elements = 20000
+batch_sweep_data = [array_rows, array_cols, SRAM_input_size, SRAM_filter_size, SRAM_output_size, accumulator_elements, batch_size]
 
 
 x =1 

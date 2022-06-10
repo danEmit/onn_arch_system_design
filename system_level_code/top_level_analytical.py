@@ -19,6 +19,10 @@ simulator = 0
 hardware_runspecs_existing = 0
 hardware_runspecs_wanted = 0
 
+array_rows_sweep_params = 0
+array_cols_sweep_params = 0
+batch_sweep_params = 0
+
 def load_saved_hardware_runspecs_results(results_file_path_name):
      print("Loading existing results file")
      try:
@@ -71,7 +75,6 @@ def search_solutions_run_sim(hardware_wanted_single):
           print("\nDid not find existing results for this hardware state, will now run simulation")    
           simulator.set_hardware(hardware_wanted_single)   
           midlevel_specs_single = simulator.run_all_layers()
-          print("insert")
           hardware_runspecs_wanted.insert(hardware_runspecs_wanted.shape[1], \
                "filler name", pd.concat([hardware_wanted_single, midlevel_specs_single]), allow_duplicates=True)
           hardware_runspecs_existing.insert(hardware_runspecs_existing.shape[1], \
@@ -100,6 +103,35 @@ def sweep_hardware_full():
                                    search_solutions_run_sim(hardware_wanted_single)
      return(num_hardware)
                       
+def sweep_hardware_partial_2():
+     global array_rows_sweep_params, array_cols_sweep_params, batch_sweep_params
+     all_params  = pd.DataFrame([], index = hardware_names)
+
+     array_rows_sweep_params = pd.DataFrame(sim_params_analytical.array_rows_sweep_data, index = hardware_names)
+     array_rows_sweep_index = [0] * len(sim_params_analytical.array_rows_options)
+     array_rows_sweep_params = array_rows_sweep_params.iloc[:, [0] * len(array_rows_sweep_index)]
+     array_rows_sweep_params.loc["Systolic Array Rows", :] = sim_params_analytical.array_rows_options
+
+     array_cols_sweep_params = pd.DataFrame(sim_params_analytical.array_cols_sweep_data, index = hardware_names)
+     array_cols_sweep_index = [0] * len(sim_params_analytical.array_cols_options)
+     array_cols_sweep_params = array_cols_sweep_params.iloc[:, [0] * len(array_cols_sweep_index)]
+     array_cols_sweep_params.loc["Systolic Array Cols", :] = sim_params_analytical.array_cols_options
+
+     batch_sweep_params = pd.DataFrame(sim_params_analytical.batch_sweep_data, index = hardware_names)
+     batch_sweep_index = [0] * len(sim_params_analytical.batch_size_options)
+     batch_sweep_params = batch_sweep_params.iloc[:, [0] * len(batch_sweep_index)]
+     batch_sweep_params.loc["Batch Size", :] = sim_params_analytical.batch_size_options
+
+     all_params = pd.concat([array_rows_sweep_params, array_cols_sweep_params, batch_sweep_params], axis = 1)
+     all_params = all_params.T.drop_duplicates().T
+
+     for col in range(all_params.shape[1]):
+          hardware_wanted_single = all_params.iloc[:, col]
+          search_solutions_run_sim(hardware_wanted_single)
+
+     return(all_params.shape[1])
+     #print(all_params)
+
 
 def sweep_hardware_partial():
      base_params =  [sim_params_analytical.array_rows, sim_params_analytical.array_cols, sim_params_analytical.SRAM_input_size, sim_params_analytical.SRAM_filter_size, \
@@ -161,21 +193,21 @@ def organize_hardware():
                sim_params_analytical.sim_results_file_path_name)
      hardware_runspecs_wanted = pd.DataFrame(index = hardware_runspecs_names)
 
-
      #num_hardware = sweep_hardware_full()
-     (num_hardware, base_params) = sweep_hardware_partial()
+     #(num_hardware, base_params) = sweep_hardware_partial()
+     num_hardware = sweep_hardware_partial_2()
 
      hardware_runspecs_existing.to_csv(sim_params_analytical.sim_results_file_path_name)
      print("\nDone running simulator for all hardware states")
      if (sim_params_analytical.run_system_specs):
-          #print(hardware_runspecs_wanted)
           (chip_specs, complete_final_specs) = run_system_specs(num_hardware, hardware_runspecs_wanted)
      if (sim_params_analytical.make_plots):
-          make_plots(chip_specs, hardware_runspecs_wanted, complete_final_specs, base_params)
-          #practice_plots_6.make_plot_1(complete_final_specs)  
+          make_plots(chip_specs, hardware_runspecs_wanted, complete_final_specs)
 
-def make_plots(chip_specs, hardware_runspecs_wanted, complete_final_specs, base_params):
-     practice_plots_7.setup_plots(sim_params_analytical.NN_file_name, 1, sim_params_analytical.plots_folder_complete, complete_final_specs, base_params)
+def make_plots(chip_specs, hardware_runspecs_wanted, complete_final_specs):
+     practice_plots_7.setup_plots(sim_params_analytical.NN_file_name, 1, \
+          sim_params_analytical.plots_folder_complete, complete_final_specs, 10,\
+          array_rows_sweep_params, array_cols_sweep_params, batch_sweep_params)
      practice_plots_7.plot_photonic_losses()
      practice_plots_7.plot_times()
      practice_plots_7.plot_power()

@@ -22,6 +22,7 @@ hardware_runspecs_wanted = 0
 array_rows_sweep_params = 0
 array_cols_sweep_params = 0
 batch_sweep_params = 0
+SRAM_input_sweep_params = 0
 
 def load_saved_hardware_runspecs_results(results_file_path_name):
      print("Loading existing results file")
@@ -103,14 +104,27 @@ def sweep_hardware_full():
                                    search_solutions_run_sim(hardware_wanted_single)
      return(num_hardware)
                       
+def make_sweep_params_array(sweep_data, variable_options, variable_name):
+     sweep_params = pd.DataFrame(sweep_data, index = hardware_names)
+     sweep_index = [0] * len(variable_options)
+     sweep_params = sweep_params.iloc[:, [0] * len(sweep_index)]
+     sweep_params.loc[variable_name, :] = variable_options
+     return(sweep_params)
+
 def sweep_hardware_partial_2():
-     global array_rows_sweep_params, array_cols_sweep_params, batch_sweep_params
+     global array_rows_sweep_params, array_cols_sweep_params, batch_sweep_params, SRAM_input_sweep_params
      all_params  = pd.DataFrame([], index = hardware_names)
+
+     array_rows_sweep_params_2 = make_sweep_params_array(sim_params_analytical.array_rows_sweep_data, \
+          sim_params_analytical.array_rows_options, "Systolic Array Rows")
 
      array_rows_sweep_params = pd.DataFrame(sim_params_analytical.array_rows_sweep_data, index = hardware_names)
      array_rows_sweep_index = [0] * len(sim_params_analytical.array_rows_options)
      array_rows_sweep_params = array_rows_sweep_params.iloc[:, [0] * len(array_rows_sweep_index)]
      array_rows_sweep_params.loc["Systolic Array Rows", :] = sim_params_analytical.array_rows_options
+
+     print(array_rows_sweep_params_2)
+     print(array_rows_sweep_params)
 
      array_cols_sweep_params = pd.DataFrame(sim_params_analytical.array_cols_sweep_data, index = hardware_names)
      array_cols_sweep_index = [0] * len(sim_params_analytical.array_cols_options)
@@ -122,14 +136,22 @@ def sweep_hardware_partial_2():
      batch_sweep_params = batch_sweep_params.iloc[:, [0] * len(batch_sweep_index)]
      batch_sweep_params.loc["Batch Size", :] = sim_params_analytical.batch_size_options
 
-     all_params = pd.concat([array_rows_sweep_params, array_cols_sweep_params, batch_sweep_params], axis = 1)
+     SRAM_input_sweep_params = pd.DataFrame(sim_params_analytical.SRAM_input_sweep_data, index = hardware_names)
+     SRAM_input_sweep_index = [0] * len(sim_params_analytical.SRAM_input_size_options)
+     SRAM_input_sweep_params = SRAM_input_sweep_params.iloc[:, [0] * len(SRAM_input_sweep_index)]
+     SRAM_input_sweep_params.loc["SRAM Input Size", :] = sim_params_analytical.SRAM_input_size_options
+
+     all_params = pd.concat([array_rows_sweep_params, array_cols_sweep_params, batch_sweep_params, SRAM_input_sweep_params], axis = 1)
+     #all_params = pd.concat([array_rows_sweep_params], axis = 1)
+
      all_params = all_params.T.drop_duplicates().T
 
+     num_hardware = all_params.shape[1]
      for col in range(all_params.shape[1]):
           hardware_wanted_single = all_params.iloc[:, col]
           search_solutions_run_sim(hardware_wanted_single)
 
-     return(all_params.shape[1])
+     return(num_hardware)
      #print(all_params)
 
 
@@ -207,13 +229,12 @@ def organize_hardware():
 def make_plots(chip_specs, hardware_runspecs_wanted, complete_final_specs):
      practice_plots_7.setup_plots(sim_params_analytical.NN_file_name, 1, \
           sim_params_analytical.plots_folder_complete, complete_final_specs, 10,\
-          array_rows_sweep_params, array_cols_sweep_params, batch_sweep_params)
+          array_rows_sweep_params, array_cols_sweep_params, batch_sweep_params, SRAM_input_sweep_params)
      practice_plots_7.plot_photonic_losses()
      practice_plots_7.plot_times()
      practice_plots_7.plot_power()
      practice_plots_7.plot_electronic_power_breakdown()
-     #practice_plots_7.row_col_trends(complete_final_specs)
-
+     practice_plots_7.IPSW()
 
 def run_system_specs(num_hardware, hardware_runspecs_wanted):
      col_repeat_idxs = np.repeat(range(num_hardware), len(sim_params_analytical.symbol_rate_options))
@@ -223,6 +244,8 @@ def run_system_specs(num_hardware, hardware_runspecs_wanted):
      hardware_runspecs_wanted_expanded = pd.concat([symbol_rate_df, hardware_runspecs_wanted_expanded])
 
      chip_specs = pd.DataFrame(index = chip_specs_names)
+     #print(chip_specs.index)
+     #print(chip_specs.shape)
 
      for (columnName, hardware_runspecs_single) in hardware_runspecs_wanted_expanded.iteritems():
                chip_specs_single = system_specs_9.run_power_area_model(hardware_runspecs_single[runspecs_names],\

@@ -2,6 +2,7 @@
 import math 
 import pandas as pd
 import specs_info
+import math
 
 indPrint = specs_info.indPrint
 summaryPrint = specs_info.summaryPrint
@@ -11,6 +12,7 @@ mW_adjustment = specs_info.mW_adjustment
 symbolSize = specs_info.symbolSize
 
 all_specs_names = specs_info.all_specs_names
+#print(all_specs_names)
 all_specs_data = [0] * len(all_specs_names)
 all_specs = pd.DataFrame(all_specs_data, index = all_specs_names, columns = [""])
 
@@ -105,7 +107,7 @@ def photonic_loss_analysis():
 	tx_waveguide_loss_total = length_of_MRM_waveguide * num_MRM * specs_info.waveguide_loss_per_mm
 	all_specs.at["Power Loss Tx Waveguides"] = tx_waveguide_loss_total
 
-	splitting_tree_num_junction = num_rows 
+	splitting_tree_num_junction = math.log2(num_rows) 
 	splitting_tree_loss_total = splitting_tree_num_junction * specs_info.splitting_tree_loss_per_junction
 	all_specs.at["Power Loss Splitting Tree"] = splitting_tree_loss_total
 
@@ -126,27 +128,6 @@ def photonic_loss_analysis():
 	total_photonic_loss = crossbar_junctions_loss_total + crossbar_waveguide_loss_total + splitting_tree_loss_total + specs_info.grating_coupler_total_loss + tx_waveguide_loss_total + photonic_combining_loss_dB
 	return (total_photonic_loss)
 
-def photonic_actual_loss_analysis():
-	laser_wall_power = all_specs.loc["Total Laser Power from Wall mW"]
-	all_specs.at["PCM OMA Actual Loss"]    = (1 - dB_to_regular(all_specs.loc["PCM OMA"])) * laser_wall_power
-	all_specs.at["MRM Tx OMA Actual Loss"] = (1 - dB_to_regular(all_specs.loc["MRM Tx OMA"])) * laser_wall_power
-
-	all_specs.at["Crossbar Junctions Actual Loss"] = (1 - dB_to_regular(all_specs.loc["Power Loss Crossbar Junctions"])) * laser_wall_power
-	all_specs.at["Crossbar Waveguides Actual Loss"] = (1 - dB_to_regular(all_specs.loc["Power Loss Crossbar Waveguides"])) * laser_wall_power
-
-	all_specs.at["Splitting Tree Actual Loss"] = (1 - dB_to_regular(all_specs.loc["Power Loss Splitting Tree"])) * laser_wall_power
-	all_specs.at["Tx Waveguides Actual Loss"] = (1 - dB_to_regular(all_specs.loc["Power Loss Tx Waveguides"])) * laser_wall_power
-
-	all_specs.at["Grating Coupler Actual Loss"] = (1 - dB_to_regular(all_specs.loc["Power Loss Grating Coupler"])) * laser_wall_power
-	all_specs.at["Waveguide Power Combining Actual Loss"] = (1 - dB_to_regular(all_specs.loc["Power Loss Waveguide Power Combining"])) * laser_wall_power	
-
-'''
-photonic_power_actual_loss_names = ["PCM OMA Actual Loss", "MRM Tx OMA Actual Loss", "Crossbar Junctions Actual Loss", "Crossbar Waveguides Actual Loss", "Splitting Tree Actual Loss",\
-	"Tx Waveguides Actual Loss", "Grating Coupler Actual Loss", "Waveguide Power Combining Actual Loss"]
-
-photonic_power_specs_names = ["Photonic Power Single PD", "PCM OMA", "MRM Tx OMA", "Power Loss Crossbar Junctions", "Power Loss Crossbar Waveguides", "Power Loss Splitting Tree",\
-	"Power Loss Tx Waveguides", "Power Loss Grating Coupler", "Power Loss Waveguide Power Combining"]
-'''
 
 def photonics_power_analysis():
 	### Signal Power Analysis ------------------------
@@ -166,13 +147,14 @@ def photonics_power_analysis():
 	laser_output_power_dBm = PD_power_total_dBm - total_photonic_loss_OMA
 	laser_output_power = dB_to_regular(laser_output_power_dBm) # mW
 	laser_wall_power = laser_output_power / specs_info.laser_wall_efficiency
+	laser_wall_power_time_adjusted = laser_wall_power * compute_portion
 
-	all_specs.at["Total Photonic Losses and OMA"] = total_photonic_loss_OMA
-	all_specs.at["Total Photonic Power mW"] = laser_output_power
-	all_specs.at["Total Laser Power from Wall mW"] = laser_wall_power
-	all_specs.at["Total Laser Power from Wall dBm"] = regular_to_dB(laser_wall_power)
-
-	photonic_actual_loss_analysis()
+	all_specs.at["Total Photonic Losses and OMA dBm"] = total_photonic_loss_OMA
+	all_specs.at["Total Photonic Power"] = laser_output_power
+	all_specs.at["Total Laser Power from Wall"] = laser_wall_power
+	#all_specs.at["Total Laser Power from Wall dbm"] = regular_to_dB(laser_wall_power)
+	all_specs.at["Total Laser Power from Wall Time Adjusted"] = laser_wall_power_time_adjusted
+	all_specs.at["Total Laser Power from Wall Time Adjusted dBm"] = regular_to_dB(laser_wall_power_time_adjusted)
 
 	if (summaryPrint):
 		print("Photonics Power Summary")
@@ -181,7 +163,7 @@ def photonics_power_analysis():
 		print("Total laser power from wall: ", round(laser_wall_power, decimalPoints), "mW")
 		print()
 
-	return (laser_output_power, laser_wall_power)
+	return (laser_wall_power_time_adjusted)
 
 def photonics_area_analysis():
 	num_crossbar_cell = num_rows * num_cols
@@ -216,40 +198,35 @@ def photonics_area_analysis():
 
 	return(photonics_area_total)
 
-'''
-def electronics_component_count():
-	elc_comp_count = dict({"num_ADC": num_cols, "num_PS": num_rows + num_cols, "num_ODAC": num_rows, "num_PCMHeater": num_rows * num_cols, \
-		"num_MRMHeater_driver": num_cols + num_rows, "num_clocks": math.ceil((num_cols + num_rows) / 4), "num_RxAFE": num_cols})
-'''
 
 def electronics_power_analysis(SS_results):
 	#ADC
 	ADC_power_single = specs_info.ADC_power_all[freq_index]
 	ADC_power_total = ADC_power_single * num_ADC
-	ADC_power_total = ADC_power_total * compute_portion
+	ADC_power_total = ADC_power_total
 	all_specs.at["ADCs Power"] = ADC_power_total
 
 	#Serializer/deserializer
 	PS_power_single = specs_info.PS_energyPerBit * symbolSize * symbolRate * mW_adjustment
 	PS_power_total = PS_power_single * num_PS
-	PS_power_total = PS_power_total * compute_portion
+	PS_power_total = PS_power_total
 	all_specs.at["PS Power"] = PS_power_total
 
 	#ODACs
 	ODAC_power_single = specs_info.ODAC_energyPerSymbol * symbolRate * mW_adjustment
 	ODAC_power_total = ODAC_power_single * num_ODAC 
-	ODAC_power_total = ODAC_power_total * compute_portion
+	ODAC_power_total = ODAC_power_total 
 	all_specs.at["ODAC Drivers Power"] = ODAC_power_total
 
 	# PCM Heater
 	PCMHeater_power_single = (specs_info.PCMHeater_energyPerProgram / specs_info.program_cycle_time) * mW_adjustment
 	PCMHeater_power_total = PCMHeater_power_single * num_PCMHeater 
-	PCMHeater_power_total = PCMHeater_power_total * program_portion
+	PCMHeater_power_total = PCMHeater_power_total 
 	all_specs.at["PCM Heaters Power"] = PCMHeater_power_total
 
 	# MRM Heaters
 	MRMHeater_power_total  = specs_info.MRMHeater_power_single * num_MRMHeater_driver
-	MRMHeater_power_total  = MRMHeater_power_total * compute_portion
+	MRMHeater_power_total  = MRMHeater_power_total 
 	all_specs.at["MRM Heaters Power"] = MRMHeater_power_total
 	
 	# SRAM 
@@ -269,11 +246,11 @@ def electronics_power_analysis(SS_results):
 	DRAM_energyPerSymbol = specs_info.DRAM_energyPerBit * symbolSize 
 	DRAM_energy_total_program = SS_results.loc["DRAM Filter Reads"] * DRAM_energyPerSymbol
 	DRAM_power_total_program  = (DRAM_energy_total_program / program_time_total) * mW_adjustment
-	DRAM_power_total_program = DRAM_power_total_program * program_portion
+	DRAM_power_total_program = DRAM_power_total_program 
 
 	DRAM_energy_total_compute = (SS_results.loc["DRAM Input Reads"] + SS_results.loc["DRAM Output Writes"]) * DRAM_energyPerSymbol
 	DRAM_power_total_compute = (DRAM_energy_total_compute / compute_time_total) * mW_adjustment
-	DRAM_power_total_compute = DRAM_power_total_compute * compute_portion
+	DRAM_power_total_compute = DRAM_power_total_compute 
 
 	all_specs.at["DRAM Program Power"] = DRAM_power_total_program
 	all_specs.at["DRAM Compute Power"] = DRAM_power_total_compute
@@ -281,25 +258,28 @@ def electronics_power_analysis(SS_results):
 	# clock
 	clock_power_single = specs_info.clock_energyPerCycle * symbolRate * mW_adjustment
 	clock_power_total = clock_power_single * num_clocks
-	clock_power_total = clock_power_total * compute_portion
+	clock_power_total = clock_power_total 
 	all_specs.at["Clocks Power"] = clock_power_total
 
 	# rx AFE
 	RxAFE_power_total = specs_info.RxAFE_power_single * num_RxAFE
-	RxAFE_power_total = RxAFE_power_total * compute_portion
+	RxAFE_power_total = RxAFE_power_total 
 	all_specs.at["Rx AFE Power"] = RxAFE_power_total
 
 	electrical_power_compute_total = ADC_power_total + PS_power_total + ODAC_power_total + SRAM_power_total_compute + \
 	clock_power_total + RxAFE_power_total + MRMHeater_power_total + DRAM_power_total_compute 
 	electrical_power_program_total = PCMHeater_power_total + SRAM_power_total_program
-	#electrical_power_combined_total = electrical_power_program_total * program_portion + electrical_power_compute_total * compute_portion
-	electrical_power_combined_total = electrical_power_program_total + electrical_power_compute_total 
+	electrical_power_combined_total = electrical_power_program_total * program_portion + electrical_power_compute_total * compute_portion
+	#electrical_power_combined_total = electrical_power_program_total + electrical_power_compute_total 
 
 
-	all_specs.at["Total Electronics Program Power"] = electrical_power_program_total
-	all_specs.at["Total Electronics Compute Power"] = electrical_power_compute_total
-	all_specs.at["Total Combined Electronics Power"] = electrical_power_combined_total
-	all_specs.at["Total Electronics Power dBm"] = regular_to_dB(electrical_power_combined_total)
+	all_specs.at["Electronics Program Power"] = electrical_power_program_total
+	all_specs.at["Electronics Compute Power"] = electrical_power_compute_total
+	all_specs.at["Electronics Program Power Time Adjusted"] = electrical_power_program_total * program_portion
+	all_specs.at["Electronics Compute Power Time Adjusted"] = electrical_power_compute_total * compute_portion
+	all_specs.at["Total Electronics Power Time Adjusted"] = electrical_power_combined_total
+	all_specs.at["Total Electronics Power Time Adjusted dBm"] = regular_to_dB(electrical_power_combined_total)
+	#all_specs.at["Total Electronics Power dBm"] = regular_to_dB(electrical_power_combined_total)
 
 	if (indPrint):
 		print("ADCs total power: ", round(ADC_power_total, decimalPoints))
@@ -393,20 +373,18 @@ def run_power_area_model(SS_results, array_params, symbolRate):
 	component_count()
 
 	time_analysis(SS_results.loc["Total Weights Programming Cycles"], SS_results.loc["Total Vector Segments Processed"])
-	(laser_output_power, laser_wall_power) = photonics_power_analysis()
-	laser_wall_power_compute = laser_wall_power * compute_portion
-	all_specs.at["Total Laser Power from Wall mW Compute Adjusted"] = laser_wall_power_compute
+	laser_wall_power_time_adjusted = photonics_power_analysis()
 	photonics_area_total = photonics_area_analysis()
 	(electronics_power_circuit) = electronics_power_analysis(SS_results)
 	electronics_area = electronics_area_analysis(array_params)
-	total_power = electronics_power_circuit + laser_wall_power_compute
+	total_power = electronics_power_circuit + laser_wall_power_time_adjusted
 	total_area  = electronics_area  + photonics_area_total
 
-	inferences_per_second = 1/total_time
+	inferences_per_second = array_params["Batch Size"]/total_time
 	inferences_per_second_per_watt = 1000 * inferences_per_second / total_power
 
 	all_specs.at["Total Chip Area":"Inferences Per Second Per Watt", ""] = [total_area, \
-	total_power, regular_to_dB(total_power), inferences_per_second, inferences_per_second_per_watt] 
+	total_power, inferences_per_second, inferences_per_second_per_watt] 
 
 	if (summaryPrint): 
 		print("Overall Summary")

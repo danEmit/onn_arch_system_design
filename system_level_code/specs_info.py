@@ -9,13 +9,6 @@ runspecs_names = ["SRAM Input Reads", "SRAM Filter Reads", "SRAM Output Writes",
 hardware_specs_names = ["Systolic Array Rows", "Systolic Array Cols", "SRAM Input Size", "SRAM Filter Size", "SRAM Output Size", "Accumulator Elements", "Batch Size"]
 
 
-#analytical_model_acc_names = ["Systolic Array Rows", "Systolic Array Cols", "SRAM Input Size", "SRAM Filter Size", "SRAM Output Size", "Batch Size", "Accumulator Total Size"]
-
-extra_specs_basic = ["Natural Row Fold", "Natural Col Fold", "Natural Num Programs", "Num Conv in Input (for batch 1)", "Num Conv in Input (Batch)"]
-extra_specs_adv = ["Necessary Accumulator Depth for Batch 1, \nno Col ReProgram", "Necessary Accumulator Depth for Batch 1, \nFull Col ReProgram", \
-     "Col Fold * Batch Product, \nGiven Accumulator Size", "Needed SRAM Input Size \nGiven the Accumulator Size \n(Function of Allowed Batch Size with No Col ReProgram)", \
-          "Needed SRAM Input Size \nGiven the Accumulator Size \n(Function of Allowed Batch Size with Full Col ReProgram)"]
-acc_related_specs = [""]
 
 
 electronic_area_specs_names = ["ADCs Area", "PS Area", "ODAC Drivers Area", "PCM Heaters Area", "MRM Heaters Area",\
@@ -29,19 +22,18 @@ photonic_area_specs_names = ["MRMs Area", "Crossbar Array Area", "Tx Power Split
 photonic_power_specs_names = ["Photonic Power Single PD", "PCM OMA", "MRM Tx OMA", "Power Loss Crossbar Junctions", "Power Loss Crossbar Waveguides", "Power Loss Splitting Tree",\
 	"Power Loss Tx Waveguides", "Power Loss Grating Coupler", "Power Loss Waveguide Power Combining"]
 
-photonic_power_actual_loss_names = ["PCM OMA Actual Loss", "MRM Tx OMA Actual Loss", "Crossbar Junctions Actual Loss", "Crossbar Waveguides Actual Loss", "Splitting Tree Actual Loss",\
-	"Tx Waveguides Actual Loss", "Grating Coupler Actual Loss", "Waveguide Power Combining Actual Loss"]
-
 time_specs_names = ["Compute Portion", "Program Portion", "Total Time"]
 
-semi_high_results_names = ["Total Electronics Area", "Total Photonics Area", "Total Electronics Program Power", \
-	"Total Electronics Compute Power", "Total Combined Electronics Power", "Total Electronics Power dBm", "Total Photonic Losses and OMA", "Total Photonic Power mW",\
-		"Total Laser Power from Wall mW", "Total Laser Power from Wall dBm", "Total Laser Power from Wall mW Compute Adjusted"]
+semi_high_results_names = ["Total Electronics Area", "Total Photonics Area", "Electronics Program Power", \
+	"Electronics Compute Power", "Electronics Program Power Time Adjusted", "Electronics Compute Power Time Adjusted", \
+	"Total Electronics Power Time Adjusted", "Total Electronics Power Time Adjusted dBm", "Total Photonic Losses and OMA dBm", \
+	"Total Photonic Power", "Total Laser Power from Wall", \
+	"Total Laser Power from Wall Time Adjusted", "Total Laser Power from Wall Time Adjusted dBm"]
 
-overall_specs_names = ["Total Chip Area", "Total Chip Power", "Total Chip Power dBm", "Inferences Per Second", "Inferences Per Second Per Watt"]
+overall_specs_names = ["Total Chip Area", "Total Chip Power", "Inferences Per Second", "Inferences Per Second Per Watt"]
 
 all_specs_names = electronic_area_specs_names + electronic_power_specs_names + photonic_area_specs_names + photonic_power_specs_names \
-+ photonic_power_actual_loss_names + time_specs_names + semi_high_results_names + overall_specs_names
+ + time_specs_names + semi_high_results_names + overall_specs_names
 
 
 # Code Settings ----------

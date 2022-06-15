@@ -58,8 +58,8 @@ def component_count():
 
 def time_analysis(program_cycles, vector_input_cycles):
 	global total_time, total_time_us, compute_portion, program_portion, program_time_total, compute_time_total 
-	program_time_total = program_cycles * specs_info.program_cycle_time
-	compute_time_total = vector_input_cycles / symbolRate
+	program_time_total = program_cycles * specs_info.program_cycle_time 
+	compute_time_total = (vector_input_cycles / symbolRate) 
 
 	total_time = program_time_total + compute_time_total
 	total_time_us = total_time * 10**6
@@ -111,7 +111,7 @@ def photonic_loss_analysis():
 	splitting_tree_loss_total = splitting_tree_num_junction * specs_info.splitting_tree_loss_per_junction
 	all_specs.at["Power Loss Splitting Tree"] = splitting_tree_loss_total
 
-	photonic_combining_loss = 1 / num_rows
+	photonic_combining_loss = 1 / (num_rows / 1)
 	photonic_combining_loss_dB = regular_to_dB(photonic_combining_loss)
 	all_specs.at["Power Loss Waveguide Power Combining"] = photonic_combining_loss_dB
 	all_specs.at["Power Loss Grating Coupler"] = specs_info.grating_coupler_total_loss

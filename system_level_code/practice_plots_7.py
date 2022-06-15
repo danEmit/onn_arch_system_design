@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import specs_info
 import math
+import seaborn as sns; sns.set_theme()
 
 a100_throughput = 30000
 a100_power_eff = 78
@@ -22,13 +23,17 @@ plots_folder = ""
 #hardware_names = []
 array_rows_sweep_data = []
 array_cols_sweep_data = []
-batch_sweep_data = []
-SRAM_input_sweeo_data = []
+batch_size_sweep_data = []
+SRAM_input_size_sweep_data = []
+array_rows_cols_sweep_data = []
+batch_SRAM_input_sweep_data = []
 
 rows_variable_title = ""
 cols_variable_title = ""
 batch_variable_title = ""
 SRAM_input_variable_title = ""
+array_rows_cols_variable_title = ""
+batch_SRAM_input_sweep_title = ""
 
 # Helper Functions --------
 def regular_to_dB(non_dB_val):
@@ -37,76 +42,64 @@ def regular_to_dB(non_dB_val):
 def dB_to_regular(dB_val):
 	return (10 ** (dB_val / 10))
 
-def setup_plots(name, nvidia, folder, chip_specs, target_symbol_rate, array_rows_sweep_params, array_cols_sweep_params, batch_sweep_params, SRAM_input_sweep_params):
-     global NN_name, include_nvidia, plots_folder, array_rows_sweep_data, array_cols_sweep_data, batch_sweep_data, SRAM_input_sweep_data,\
-     rows_variable_title, cols_variable_title, batch_variable_title, SRAM_input_variable_title
+def make_variable_sweep_title(data, sweep_variable):
+     title = ""
+     if sweep_variable != "Systolic Array Rows":
+          title += "Array Rows: " + str(round(data.loc["Systolic Array Rows"].iloc[0])) + ", "
+     if sweep_variable != "Systolic Array Cols":
+          title += "Array Cols: " + str(round(data.loc["Systolic Array Cols"].iloc[0])) + ", "
+     if sweep_variable != "Batch Size":
+          title += "Batch Size: " + str(round(data.loc["Batch Size"].iloc[0])) + ", "
+     if sweep_variable != "Accumulator Elements":
+          title += "Accumulator Elements: " + str(round(data.loc["Accumulator Elements"].iloc[0])) + ",\n"
+     if sweep_variable != "SRAM Input Size":
+          title += "SRAM Input Size: " + str(round(data.loc["SRAM Input Size"].iloc[0])) + ", "
+     if sweep_variable != "SRAM Filter Size":
+          title += "SRAM Filter Size: " + str(round(data.loc["SRAM Filter Size"].iloc[0])) + ", "
+     if sweep_variable != "SRAM Output Size":
+          title += "SRAM Output Size: " + str(round(data.loc["SRAM Output Size"].iloc[0])) 
+
+     return(title)
+
+
+def setup_plots(name, nvidia, folder, target_symbol_rate, array_rows_sweep_results, array_cols_sweep_results,\
+ batch_size_sweep_results, SRAM_input_size_sweep_results, array_rows_cols_sweep_results, batch_SRAM_input_sweep_results):
+     global NN_name, include_nvidia, plots_folder, \
+     array_rows_sweep_data, array_cols_sweep_data, batch_size_sweep_data, SRAM_input_size_sweep_data, \
+     array_rows_cols_sweep_data, batch_SRAM_input_sweep_data,\
+     rows_variable_title, cols_variable_title, batch_variable_title, SRAM_input_variable_title, \
+     array_rows_cols_variable_title, batch_SRAM_input_sweep_data
+
      NN_name = name
      include_nvidia = nvidia
      plots_folder = folder
 
-     hardware_names = specs_info.hardware_specs_names.copy()
-     hardware_names.append("Symbol Rate (GHz)")
-     hardware_settings = chip_specs.loc[hardware_names, :]
+     #hardware_names = specs_info.hardware_specs_names.copy()
+     #hardware_names.append("Symbol Rate (GHz)")
+     #hardware_settings = chip_specs.loc[hardware_names, :]
 
-     array_rows_sweep_params.loc["Symbol Rate (GHz)", :] = target_symbol_rate 
-     array_cols_sweep_params.loc["Symbol Rate (GHz)", :] = target_symbol_rate 
-     batch_sweep_params.loc["Symbol Rate (GHz)", :] = target_symbol_rate 
-     SRAM_input_sweep_params.loc["Symbol Rate (GHz)", :] = target_symbol_rate 
+     array_rows_sweep_data = array_rows_sweep_results
+     array_cols_sweep_data = array_cols_sweep_results
+     batch_size_sweep_data = batch_size_sweep_results
+     SRAM_input_size_sweep_data = SRAM_input_size_sweep_results
+     array_rows_cols_sweep_data = array_rows_cols_sweep_results
+     batch_SRAM_input_sweep_data = batch_SRAM_input_sweep_results
 
-     array_rows_sweep_data = pd.DataFrame([], index = chip_specs.index)
-     array_cols_sweep_data = pd.DataFrame([], index = chip_specs.index)
-     batch_sweep_data = pd.DataFrame([], index = chip_specs.index)
-     SRAM_input_sweep_data = pd.DataFrame([], index = chip_specs.index)
+     #array_rows_sweep_params.loc["Symbol Rate (GHz)", :] = target_symbol_rate 
+     #array_cols_sweep_params.loc["Symbol Rate (GHz)", :] = target_symbol_rate 
+     #batch_sweep_params.loc["Symbol Rate (GHz)", :] = target_symbol_rate 
+     #SRAM_input_sweep_params.loc["Symbol Rate (GHz)", :] = target_symbol_rate 
 
-     for array_rows in range(array_rows_sweep_params.shape[1]):
-          for col in range(chip_specs.shape[1]):
-               if array_rows_sweep_params.iloc[:, array_rows].equals(hardware_settings.iloc[:, col]):
-                    array_rows_sweep_data.loc[:, array_rows_sweep_data.shape[1]] = chip_specs.iloc[:, col]
 
-     for array_cols in range(array_cols_sweep_params.shape[1]):
-          for col in range(chip_specs.shape[1]):
-               if array_cols_sweep_params.iloc[:, array_cols].equals(hardware_settings.iloc[:, col]):
-                    array_cols_sweep_data.loc[:, array_cols_sweep_data.shape[1]] = chip_specs.iloc[:, col]
-
-     for batch in range(batch_sweep_params.shape[1]):
-          for col in range(chip_specs.shape[1]):
-               if batch_sweep_params.iloc[:, batch].equals(hardware_settings.iloc[:, col]):
-                    batch_sweep_data.loc[:, batch_sweep_data.shape[1]] = chip_specs.iloc[:, col]
-
-     for SRAM_input in range(SRAM_input_sweep_params.shape[1]):
-          for col in range(chip_specs.shape[1]):
-               if SRAM_input_sweep_params.iloc[:, SRAM_input].equals(hardware_settings.iloc[:, col]):
-                    SRAM_input_sweep_data.loc[:, SRAM_input_sweep_data.shape[1]] = chip_specs.iloc[:, col]
-
-     rows_variable_title = "Array Cols: " + str(round(array_rows_sweep_data.loc["Systolic Array Cols", 0])) +\
-      ", SRAM Input Size: "  + str(round(array_rows_sweep_data.loc["SRAM Input Size", 0])) + \
-      ", SRAM Filter Size: " + str(round(array_rows_sweep_data.loc["SRAM Filter Size", 0])) + \
-      ",\nSRAM Output Size: " + str(round(array_rows_sweep_data.loc["SRAM Output Size", 0])) + \
-      ", Batch Size: "       + str(round(array_rows_sweep_data.loc["Batch Size", 0])) + \
-      ", Accumulator Elements: " + str(round(array_rows_sweep_data.loc["Accumulator Elements", 0])) 
-
-     cols_variable_title = "Array Rows: " + str(round(array_cols_sweep_data.loc["Systolic Array Rows", 0])) +\
-      ", SRAM Input Size: "  + str(round(array_cols_sweep_data.loc["SRAM Input Size", 0])) + \
-      ", SRAM Filter Size: " + str(round(array_cols_sweep_data.loc["SRAM Filter Size", 0])) + \
-      ",\nSRAM Output Size: " + str(round(array_cols_sweep_data.loc["SRAM Output Size", 0])) + \
-      ", Batch Size: "       + str(round(array_rows_sweep_data.loc["Batch Size", 0])) + \
-      ", Accumulator Elements: " + str(round(array_cols_sweep_data.loc["Accumulator Elements", 0])) 
-
-     batch_variable_title = "Array Rows: " + str(round(batch_sweep_data.loc["Systolic Array Rows", 0])) +\
-      ", Array Cols: " + str(round(batch_sweep_data.loc["Systolic Array Cols", 0])) +\
-      ", SRAM Input Size: "  + str(round(batch_sweep_data.loc["SRAM Input Size", 0])) + \
-      ",\nSRAM Filter Size: " + str(round(batch_sweep_data.loc["SRAM Filter Size", 0])) + \
-      ", SRAM Output Size: " + str(round(batch_sweep_data.loc["SRAM Output Size", 0])) + \
-      ", Accumulator Elements: " + str(round(batch_sweep_data.loc["Accumulator Elements", 0])) 
-
-     SRAM_input_variable_title = "Array Rows: " + str(round(batch_sweep_data.loc["Systolic Array Rows", 0])) +\
-      ", Array Cols: " + str(round(batch_sweep_data.loc["Systolic Array Cols", 0])) +\
-      ", SRAM Filter Size: " + str(round(batch_sweep_data.loc["SRAM Filter Size", 0])) + \
-      ",\nSRAM Output Size: " + str(round(batch_sweep_data.loc["SRAM Output Size", 0])) + \
-      ", Batch Size: "       + str(round(array_rows_sweep_data.loc["Batch Size", 0])) + \
-      ", Accumulator Elements: " + str(round(batch_sweep_data.loc["Accumulator Elements", 0])) 
+     rows_variable_title = make_variable_sweep_title(array_rows_sweep_data, "Systolic Array Rows")
+     cols_variable_title = make_variable_sweep_title(array_cols_sweep_data, "Systolic Array Cols")
+     batch_variable_title = make_variable_sweep_title(batch_size_sweep_data, "Batch Size")
+     SRAM_input_variable_title = make_variable_sweep_title(SRAM_input_size_sweep_data, "SRAM Input Size")
+     array_rows_cols_variable_title = "filler title for now"
+     batch_SRAM_input_variable_title = "filler title for now"
 
 def plot_photonic_losses():
+     print("Plotting photonic losses as a function of systolic array rows and cols")
      for rows_constant in [0, 1]:
           if rows_constant:
                variable = "Systolic Array Cols"
@@ -124,12 +117,18 @@ def plot_photonic_losses():
           crossbar_loss = filtered_data.loc["Power Loss Crossbar Junctions"]
           spliting_tree_loss = filtered_data.loc["Power Loss Splitting Tree"]
           total_photonic_loss_OMA = filtered_data.loc["Total Photonic Losses and OMA dBm"]
+          crossbar_waveguides_loss = filtered_data.loc["Power Loss Crossbar Waveguides"]
+          tx_waveguide_loss = filtered_data.loc["Power Loss Tx Waveguides"]
+
 
           plt.plot(array_param, combining_loss, "-o")
           plt.plot(array_param, crossbar_loss,"o-")
           plt.plot(array_param, spliting_tree_loss, "o-")
           plt.plot(array_param, total_photonic_loss_OMA, "o-" )
-          plt.legend(["Power Loss Waveguide Power Combining", "Power Loss Crossbar Junctions", "Power Loss Splitting Tree", "Total Photonic Losses and OMA"])
+          plt.plot(array_param, crossbar_waveguides_loss, "o-" )
+          plt.plot(array_param, tx_waveguide_loss, "o-" )
+          plt.legend(["Power Loss Waveguide Power Combining", "Power Loss Crossbar Junctions", "Power Loss Splitting Tree",\
+           "Total Photonic Losses and OMA", "Power Loss Crossbar Waveguides", "Power Loss Tx Waveguides"])
           plt.grid("minor")
           plt.xlabel(variable)
           plt.ylabel("Loss [dB]")
@@ -141,6 +140,7 @@ def plot_photonic_losses():
           plt.close()
 
 def plot_times():
+     print("Plotting effect of SA rows and columns and also batch size on inference time and ratio of compute to program time")
      for rows_constant in [0, 1, 2]:
           if rows_constant == 0:
                variable = "Systolic Array Cols"
@@ -155,7 +155,7 @@ def plot_times():
           else:
                variable = "Batch Size"
                file_term = "variable_batch"
-               filtered_data = batch_sweep_data
+               filtered_data = batch_size_sweep_data
                title = batch_variable_title
 
           array_param = filtered_data.loc[variable]
@@ -167,10 +167,12 @@ def plot_times():
           compute_time = compute_portion * total_time 
           program_time = program_portion * total_time
 
+          '''
           if (rows_constant == 2):
                total_time = total_time/array_param
                compute_time = compute_time / array_param
                program_time = program_time / array_param
+          '''
 
           plt.plot(array_param, total_time, "-o")
           plt.plot(array_param, compute_time,"o-")
@@ -179,7 +181,7 @@ def plot_times():
           plt.legend(["Total Time", "Compute Time", "Program Time"])
           plt.grid("minor")
           plt.xlabel(variable)
-          plt.ylabel("Time [us]")
+          plt.ylabel("Time [sec]")
           #plt.xscale("log")
           #plt.yscale("log")
           plt.suptitle("Effect of " + variable + " on Inference Time")
@@ -193,12 +195,14 @@ def plot_times():
           plt.grid("minor")
           plt.xlabel(variable)
           plt.ylabel("(Unitless)")
-          plt.suptitle("Effect of " + variable + " on Inference Time")
+          plt.suptitle("Effect of " + variable + " on Compute vs Program Time")
           plt.title(title, fontsize = title_font_size)
           plt.savefig(plots_folder + "time_portions_" + file_term, dpi = DPI, bbox_inches = "tight")  
           plt.close()
 
+
 def plot_power():
+     print("Plotting high-level breakdown of system power as a function of systolic array rows and cols")
      for rows_constant in [0, 1]:
           if rows_constant:
                variable = "Systolic Array Cols"
@@ -229,12 +233,13 @@ def plot_power():
           plt.ylabel("Power [mW]")
           #plt.xscale("log")
           plt.yscale("log")
-          plt.suptitle("Effect of " + variable + " on Chip Power")
+          plt.suptitle("Effect of " + variable + " on Chip Power (Time Adjusted)")
           plt.title(title, fontsize = title_font_size)
           plt.savefig(plots_folder + "power_breakdown_" + file_term, dpi = DPI, bbox_inches = "tight")  
           plt.close()
 
 def plot_electronic_power_breakdown():
+     print("Plotting a breakdown of electronic power as a function of SA rows, SA cols, batch size, and SRAM input size")
      for rows_constant in [0, 1, 2, 3]:
           if rows_constant == 0:
                variable = "Systolic Array Cols"
@@ -249,12 +254,12 @@ def plot_electronic_power_breakdown():
           elif rows_constant == 2:
                variable = "Batch Size"
                file_term = "variable_batch"
-               filtered_data = batch_sweep_data
+               filtered_data = batch_size_sweep_data
                title = batch_variable_title
           elif rows_constant == 3:
                variable = "SRAM Input Size"
                file_term = "variable_SRAM_input_size"
-               filtered_data = SRAM_input_sweep_data
+               filtered_data = SRAM_input_size_sweep_data
                title = SRAM_input_variable_title
 
           array_param = filtered_data.loc[variable]
@@ -284,6 +289,7 @@ def plot_electronic_power_breakdown():
           plt.close()
 
 def IPSW():
+     print("plotting IPSW and IPS as a function of SA rows, SA cols, and batch size")
      for rows_constant in [0, 1, 2]:
           if rows_constant == 0:
                variable = "Systolic Array Cols"
@@ -298,11 +304,12 @@ def IPSW():
           else:
                variable = "Batch Size"
                file_term = "variable_batch"
-               filtered_data = batch_sweep_data
+               filtered_data = batch_size_sweep_data
                title = batch_variable_title
 
           array_param = filtered_data.loc[variable]
           IPSW = filtered_data.loc["Inferences Per Second Per Watt"]
+          IPS = filtered_data.loc["Inferences Per Second"]
           plt.plot(array_param, IPSW, "-o")
           #plt.legend("IPSW")
           plt.grid("minor")
@@ -313,6 +320,63 @@ def IPSW():
           plt.title(title, fontsize = title_font_size)
           plt.savefig(plots_folder + "IPSW_" + file_term, dpi = DPI, bbox_inches = "tight")   
           plt.close()
+
+          plt.plot(array_param, IPS, "-o")
+          plt.grid("minor")
+          plt.xlabel(variable)
+          plt.ylabel("IPS")
+          plt.yscale("linear")
+          plt.suptitle("Effect of " + variable + " on Inferences per Second")
+          plt.title(title, fontsize = title_font_size)
+          plt.savefig(plots_folder + "IPS_notWatt_" + file_term, dpi = DPI, bbox_inches = "tight")   
+          plt.close()
+
+def array_rows_cols_sweep_plots():
+     print("Plotting IPSW as function of SA rows AND cols")
+     filtered_data = array_rows_cols_sweep_data
+     row_vals = np.unique(filtered_data.loc["Systolic Array Rows"])
+     col_vals = np.unique(filtered_data.loc["Systolic Array Cols"])
+     IPSW = np.zeros((len(row_vals), len(col_vals)))
+     for col in filtered_data:
+          row_index = np.where(row_vals == filtered_data.loc["Systolic Array Rows", col])[0][0]
+          col_index = np.where(col_vals == filtered_data.loc["Systolic Array Cols", col])[0][0]
+          IPSW[row_index, col_index] = filtered_data.loc["Inferences Per Second Per Watt", col]
+
+     ax = sns.heatmap(IPSW)
+     plt.title("Effect of Systolic Array Rows and Cols on IPSW")
+     plt.xlabel("Systolic Array Rows")
+     plt.ylabel("Systolic Array Cols")
+
+     ax.set_xticklabels([str(int(x)) for x in row_vals])
+     ax.set_yticklabels([str(int(x)) for x in col_vals])
+     plt.savefig(plots_folder + "IPSW_rows_cols_2D", dpi = DPI, bbox_inches = "tight")
+     plt.close()
+
+
+def batch_SRAM_input_sweep_plots():
+     print("Plotting IPSW as function of batch and SRAM input")
+     filtered_data = batch_SRAM_input_sweep_data
+     row_vals = np.unique(filtered_data.loc["Batch Size"])
+     col_vals = np.unique(filtered_data.loc["SRAM Input Size"])
+     IPSW = np.zeros((len(row_vals), len(col_vals)))
+     for col in filtered_data:
+          row_index = np.where(row_vals == filtered_data.loc["Batch Size", col])[0][0]
+          col_index = np.where(col_vals == filtered_data.loc["SRAM Input Size", col])[0][0]
+          IPSW[row_index, col_index] = filtered_data.loc["Inferences Per Second Per Watt", col]
+
+     ax = sns.heatmap(IPSW)
+     plt.title("Effect of Batch Size and SRAM Input Size on IPSW")
+     plt.ylabel("Batch Size")
+     plt.xlabel("SRAM Input Size")
+
+     ax.set_yticklabels([str(int(x)) for x in row_vals])
+     ax.set_xticklabels([str(int(x)) for x in col_vals])
+     plt.savefig(plots_folder + "IPSW_batch_SRAM_input_2D", dpi = DPI, bbox_inches = "tight")
+     plt.close()
+
+
+
+
 
 
 

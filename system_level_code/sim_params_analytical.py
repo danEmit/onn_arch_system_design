@@ -3,7 +3,7 @@ import numpy as np
 
 mega = 10 ** 6
 
-make_plots = 0
+make_plots = 1
 run_system_specs = 1
 make_plots = run_system_specs and make_plots
 
@@ -117,77 +117,69 @@ SRAM_input_size_options  = [1000000]
 SRAM_filter_size_options = [1000000]
 SRAM_output_size_options = [1000000]
 
-symbol_rate_options = [1,5,10]
+symbol_rate_options = [10]
 
 ## array rows
 array_rows_options = [8, 16, 32, 64, 128, 256]
+#array_rows_options = [8, 17]
 array_rows = 0
-array_cols = 16
-batch_size = 8
-SRAM_input_size = mega
+array_cols = 64
+batch_size = 32
+SRAM_input_size = mega * 100
 SRAM_filter_size = int(0.5 * mega)
 SRAM_output_size = int(0.5 * mega)
 accumulator_elements = 20000
 array_rows_sweep_data = [array_rows, array_cols, SRAM_input_size, SRAM_filter_size, SRAM_output_size, accumulator_elements, batch_size]
 
-array_rows = 16
+array_rows = 64
 array_cols_options = [8, 16, 32, 64, 128, 256]
+#array_cols_options = [8, 18]
 array_cols = 0
-batch_size = 8
-SRAM_input_size = mega
+batch_size = 32
+SRAM_input_size = mega * 100
 SRAM_filter_size = int(0.5 * mega)
 SRAM_output_size = int(0.5 * mega)
 accumulator_elements = 20000
 array_cols_sweep_data = [array_rows, array_cols, SRAM_input_size, SRAM_filter_size, SRAM_output_size, accumulator_elements, batch_size]
 
-array_rows = 16
-array_cols = 16
+array_rows = 64
+array_cols = 64
 batch_size_options = [1, 8, 16, 32, 64, 128]
+#batch_size_options = [32]
 batch_size = 0
-SRAM_input_size = mega
+SRAM_input_size = mega * 10
 SRAM_filter_size = int(0.5 * mega)
-SRAM_output_size = int(0.5 * mega)
+SRAM_output_size = int(0.5 * mega) 
 accumulator_elements = 20000
-batch_sweep_data = [array_rows, array_cols, SRAM_input_size, SRAM_filter_size, SRAM_output_size, accumulator_elements, batch_size]
+batch_size_sweep_data = [array_rows, array_cols, SRAM_input_size, SRAM_filter_size, SRAM_output_size, accumulator_elements, batch_size]
 
-array_rows = 32
-array_cols = 32
+array_rows = 64
+array_cols = 64
 batch_size = 32
 SRAM_input_size = 0
-SRAM_input_size_options = np.linspace(mega, 100 * mega, 5).astype(int)
+SRAM_input_size_options = list(np.linspace(mega, 100 * mega, 5).astype(int))
+SRAM_filter_size = int(0.5 * mega)
+SRAM_output_size = int(0.5 * mega) * 100
+accumulator_elements = 20000
+SRAM_input_size_sweep_data = [array_rows, array_cols, SRAM_input_size, SRAM_filter_size, SRAM_output_size, accumulator_elements, batch_size]
+
+
+array_rows = 0
+array_cols = 0
+batch_size = 128
+SRAM_input_size = 10 * mega
 SRAM_filter_size = int(0.5 * mega)
 SRAM_output_size = int(0.5 * mega)
 accumulator_elements = 20000
-SRAM_input_sweep_data = [array_rows, array_cols, SRAM_input_size, SRAM_filter_size, SRAM_output_size, accumulator_elements, batch_size]
+array_rows_cols_sweep_data = [array_rows, array_cols, SRAM_input_size, SRAM_filter_size, SRAM_output_size, accumulator_elements, batch_size]
 
 
+array_rows = 64
+array_cols = 64
+batch_size = 0
+SRAM_input_size = 0 
+SRAM_filter_size = int(0.5 * mega)
+SRAM_output_size = int(0.5 * mega)
+accumulator_elements = 20000
+batch_SRAM_input_sweep_data = [array_rows, array_cols, SRAM_input_size, SRAM_filter_size, SRAM_output_size, accumulator_elements, batch_size]
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-x =1 

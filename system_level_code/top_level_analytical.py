@@ -74,7 +74,6 @@ def search_solutions_run_sim(hardware_wanted_single, column_name):
                print("Found existing results for this hardware state")
                break
 
-     need_run_sim = 1
      if (need_run_sim):       
           print("\nDid not find existing results for this hardware state, will now run simulation")    
           simulator.set_hardware(hardware_wanted_single)   

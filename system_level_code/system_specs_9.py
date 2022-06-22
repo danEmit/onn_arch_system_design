@@ -10,6 +10,7 @@ decimalPoints = specs_info.decimalPoints
 highestSummaryPrint = specs_info.highestSummaryPrint
 mW_adjustment = specs_info.mW_adjustment
 symbolSize = specs_info.symbolSize
+electronics_clock = specs_info.electronics_clock
 
 all_specs_names = specs_info.all_specs_names
 #print(all_specs_names)
@@ -233,15 +234,26 @@ def electronics_power_analysis(SS_results):
 	SRAM_energyPerSymbol = specs_info.SRAM_energyPerBit * symbolSize 
 	SRAM_energy_total_program = SS_results.loc["SRAM Filter Reads"] * SRAM_energyPerSymbol
 	SRAM_power_total_program  = (SRAM_energy_total_program / program_time_total) * mW_adjustment
-	SRAM_power_total_program = SRAM_power_total_program * program_portion
+	#SRAM_power_total_program = SRAM_power_total_program * program_portion
 
-	SRAM_energy_total_compute = (SS_results.loc["SRAM Input Reads"] + SS_results.loc["SRAM Output Writes"]) * SRAM_energyPerSymbol
-	SRAM_power_total_compute = (SRAM_energy_total_compute / compute_time_total) * mW_adjustment
-	SRAM_power_total_compute = SRAM_power_total_compute * compute_portion
+	SRAM_energy_total_compute_final_sums = (SS_results.loc["SRAM Input Reads"] + SS_results.loc["SRAM Output Writes"]) * SRAM_energyPerSymbol
+	SRAM_power_total_compute_final_sums  = (SRAM_energy_total_compute_final_sums / compute_time_total) * mW_adjustment
+	#SRAM_power_total_compute = SRAM_power_total_compute * compute_portion
+
+	SRAM_accesses_accumulator = SS_results.loc["Total Vector Segments Processed"] * (symbolRate / electronics_clock) * num_cols * 2
+	SRAM_energy_accumulator = SRAM_accesses_accumulator * SRAM_energyPerSymbol
+	SRAM_power_accumulator = (SRAM_energy_accumulator / compute_time_total) * mW_adjustment
+	#SRAM_power_total_compute = SRAM_power_total_compute_final_sums + SRAM_power_accumulator
 
 	all_specs.at["SRAM Program Power"] = SRAM_power_total_program
-	all_specs.at["SRAM Compute Power"] = SRAM_power_total_compute
-	
+	all_specs.at["SRAM Final Sum Compute Power"] = SRAM_power_total_compute_final_sums 
+	all_specs.at["SRAM Accumulator Power"] = SRAM_power_accumulator
+
+	accumulator_additions = SS_results.loc["Total Vector Segments Processed"] * (symbolRate / electronics_clock) * num_cols
+	accumulator_addition_power = specs_info.single_addition_energy * (accumulator_additions / compute_time_total) * mW_adjustment
+
+	all_specs.at["Accumulator Adder Power"] = accumulator_addition_power
+
 	# DRAM
 	DRAM_energyPerSymbol = specs_info.DRAM_energyPerBit * symbolSize 
 	DRAM_energy_total_program = SS_results.loc["DRAM Filter Reads"] * DRAM_energyPerSymbol
@@ -266,8 +278,9 @@ def electronics_power_analysis(SS_results):
 	RxAFE_power_total = RxAFE_power_total 
 	all_specs.at["Rx AFE Power"] = RxAFE_power_total
 
-	electrical_power_compute_total = ADC_power_total + PS_power_total + ODAC_power_total + SRAM_power_total_compute + \
-	clock_power_total + RxAFE_power_total + MRMHeater_power_total + DRAM_power_total_compute 
+
+	electrical_power_compute_total = ADC_power_total + PS_power_total + ODAC_power_total + SRAM_power_total_compute_final_sums + \
+	SRAM_power_accumulator + clock_power_total + RxAFE_power_total + MRMHeater_power_total + DRAM_power_total_compute 
 	electrical_power_program_total = PCMHeater_power_total + SRAM_power_total_program
 	electrical_power_combined_total = electrical_power_program_total * program_portion + electrical_power_compute_total * compute_portion
 	#electrical_power_combined_total = electrical_power_program_total + electrical_power_compute_total 
@@ -330,7 +343,7 @@ def electronics_area_analysis(array_params):
 	all_specs.at["MRM Heaters Area"] = MRMHeater_area_total
 
 	#SRAM
-	SRAM_area_total  = specs_info.SRAM_area_single * (array_params.loc["SRAM Input Size"] + array_params.loc["SRAM Filter Size"] + array_params.loc["SRAM Output Size"])
+	SRAM_area_total  = specs_info.symbolSize * specs_info.SRAM_area_single * (array_params.loc["SRAM Input Size"] + array_params.loc["SRAM Filter Size"] + array_params.loc["SRAM Output Size"])
 	all_specs.at["SRAM Area"] = SRAM_area_total
 
 	#Clock

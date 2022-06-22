@@ -8,14 +8,11 @@ runspecs_names = ["SRAM Input Reads", "SRAM Filter Reads", "SRAM Output Writes",
           "Total Weights Programming Cycles", "Total Vector Segments Processed", "Accumulator Dumps"]
 hardware_specs_names = ["Systolic Array Rows", "Systolic Array Cols", "SRAM Input Size", "SRAM Filter Size", "SRAM Output Size", "Accumulator Elements", "Batch Size"]
 
-
-
-
 electronic_area_specs_names = ["ADCs Area", "PS Area", "ODAC Drivers Area", "PCM Heaters Area", "MRM Heaters Area",\
 	"SRAM Area", "DRAM Area", "Clock Area", "Rx AFE Area"]
 
 electronic_power_specs_names = ["ADCs Power", "PS Power", "ODAC Drivers Power", "PCM Heaters Power", "MRM Heaters Power", \
-	"SRAM Program Power", "SRAM Compute Power", "DRAM Program Power", "DRAM Compute Power", "Clocks Power", "Rx AFE Power"]
+	"SRAM Program Power", "SRAM Final Sum Compute Power", "SRAM Accumulator Power", "Accumulator Adder Power", "DRAM Program Power", "DRAM Compute Power", "Clocks Power", "Rx AFE Power"]
 
 photonic_area_specs_names = ["MRMs Area", "Crossbar Array Area", "Tx Power Splitters Area", "Grating Coupler Area"]
 
@@ -49,6 +46,8 @@ symbolSize = 6
 
 program_cycle_time = 100 * 10**-9
 
+electronics_clock = 10 ** 9
+
 ADC_Vpp = 1
 RxAFE_gain = 5000
 PD_responsitivity = 1
@@ -79,6 +78,7 @@ SRAM_energyPerBit = 50 * 10**-15
 DRAM_energyPerBit = 3.9 * 10**-12
 clock_energyPerCycle = 750 * 10**-15
 RxAFE_power_single = 0.00225 * mW_adjustment
+single_addition_energy = (0.1 * 6 / 32) * 10 ** -12 # joule
 
 ADC_area_all  = [0.03, 0.035, 0.0475]
 PS_area_single  = 0; 
@@ -89,13 +89,6 @@ SRAM_area_single = (.315 * 10**-6) / 0.7 # 0.7 = fill factor
 DRAM_area_total = 0;
 clock_area_single = 0.021
 RxAFE_area_single = 0
-
-
-
-
-
-
-
 
 
 def access_specs_names():

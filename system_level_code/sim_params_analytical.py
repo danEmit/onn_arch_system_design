@@ -3,8 +3,8 @@ import numpy as np
 
 mega = 10 ** 6
 
-make_plots = 1
-run_system_specs = 1
+make_plots = 0
+run_system_specs = 0
 make_plots = run_system_specs and make_plots
 
 base_directory = "/Users/d/Desktop/onn_arch_system_design/"
@@ -14,6 +14,7 @@ NN_file_folder = "topologies/ONN/"
 NN_file_folder_mod = NN_file_folder.replace("/", "_") 
 results_file_base_folder = results_file_path + NN_file_folder_mod + NN_file_name + "/"
 sim_results_file_path_name = results_file_base_folder + NN_file_name + "__hardware_runspecs_info.csv"
+sim_results_file_path_name_current = results_file_base_folder + NN_file_name + "__hardware_runspecs_info_CURRENT.csv"
 chip_specs_file_path_name = results_file_base_folder + NN_file_name + "__chip_specs.csv"
 detailed_results_folder = "layer_detail/"
 detailed_results_folder_complete = results_file_base_folder + detailed_results_folder
@@ -120,7 +121,7 @@ SRAM_output_size_options = [1000000]
 symbol_rate_options = [10]
 
 ## array rows
-array_rows_options = [8, 16, 32, 64, 128, 256]
+array_rows_options = [8, 16, 32, 64, 128]
 #array_rows_options = [8, 17]
 array_rows = 0
 array_cols = 64
@@ -132,8 +133,7 @@ accumulator_elements = 20000
 array_rows_sweep_data = [array_rows, array_cols, SRAM_input_size, SRAM_filter_size, SRAM_output_size, accumulator_elements, batch_size]
 
 array_rows = 64
-array_cols_options = [8, 16, 32, 64, 128, 256]
-#array_cols_options = [8, 18]
+array_cols_options = [8, 16, 32, 64, 128]
 array_cols = 0
 batch_size = 32
 SRAM_input_size = mega * 100
@@ -142,32 +142,32 @@ SRAM_output_size = int(0.5 * mega)
 accumulator_elements = 20000
 array_cols_sweep_data = [array_rows, array_cols, SRAM_input_size, SRAM_filter_size, SRAM_output_size, accumulator_elements, batch_size]
 
-array_rows = 64
-array_cols = 64
+array_rows = 32
+array_cols = 32
 batch_size_options = [1, 8, 16, 32, 64, 128]
 #batch_size_options = [32]
 batch_size = 0
-SRAM_input_size = mega * 10
+SRAM_input_size = mega * 35
 SRAM_filter_size = int(0.5 * mega)
-SRAM_output_size = int(0.5 * mega) 
+SRAM_output_size = int(1.5 * mega) 
 accumulator_elements = 20000
 batch_size_sweep_data = [array_rows, array_cols, SRAM_input_size, SRAM_filter_size, SRAM_output_size, accumulator_elements, batch_size]
 
-array_rows = 64
-array_cols = 64
+array_rows = 16
+array_cols = 16
 batch_size = 32
 SRAM_input_size = 0
-SRAM_input_size_options = list(np.linspace(mega, 100 * mega, 5).astype(int))
-SRAM_filter_size = int(0.5 * mega)
-SRAM_output_size = int(0.5 * mega) * 100
+SRAM_input_size_options = list(np.linspace(mega, 10 * mega, 3).astype(int))
+SRAM_filter_size = int(10 * mega)
+SRAM_output_size = int(10 * mega) 
 accumulator_elements = 20000
 SRAM_input_size_sweep_data = [array_rows, array_cols, SRAM_input_size, SRAM_filter_size, SRAM_output_size, accumulator_elements, batch_size]
 
 
 array_rows = 0
 array_cols = 0
-batch_size = 128
-SRAM_input_size = 10 * mega
+batch_size = 32
+SRAM_input_size = 100 * mega
 SRAM_filter_size = int(0.5 * mega)
 SRAM_output_size = int(0.5 * mega)
 accumulator_elements = 20000
@@ -182,4 +182,21 @@ SRAM_filter_size = int(0.5 * mega)
 SRAM_output_size = int(0.5 * mega)
 accumulator_elements = 20000
 batch_SRAM_input_sweep_data = [array_rows, array_cols, SRAM_input_size, SRAM_filter_size, SRAM_output_size, accumulator_elements, batch_size]
+
+array_rows = 64
+array_cols = 64
+batch_size = 32
+SRAM_input_size = 10 * mega
+SRAM_filter_size = int(0.5 * mega)
+SRAM_output_size = int(0.5 * mega)
+accumulator_elements = 20000
+single_setting = [array_rows, array_cols, SRAM_input_size, SRAM_filter_size, SRAM_output_size, accumulator_elements, batch_size]
+
+
+
+
+
+
+
+
 

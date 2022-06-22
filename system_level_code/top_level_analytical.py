@@ -74,6 +74,7 @@ def search_solutions_run_sim(hardware_wanted_single, column_name):
                print("Found existing results for this hardware state")
                break
 
+     need_run_sim = 1
      if (need_run_sim):       
           print("\nDid not find existing results for this hardware state, will now run simulation")    
           simulator.set_hardware(hardware_wanted_single)   
@@ -145,14 +146,8 @@ def sweep_hardware_partial():
 
      all_params = pd.concat([array_rows_sweep_params, array_cols_sweep_params, batch_size_sweep_params, \
           SRAM_input_size_sweep_params, array_rows_cols_sweep_params, batch_SRAM_input_sweep_params], axis = 1)
-     #all_params = pd.concat([batch_size_sweep_params, SRAM_input_size_sweep_params, array_rows_cols_sweep_params], axis = 1)
 
-     #all_params = pd.concat([array_rows_sweep_params, array_cols_sweep_params], axis = 1)
-     #all_params.columns = [str(x) for x in range(all_params.shape[1])]
-
-     # don't do this
-     #all_params = all_params.T.drop_duplicates().T
-
+     all_params = pd.DataFrame(sim_params_analytical.single_setting, index = hardware_names)
      num_hardware = all_params.shape[1]
      for col in all_params:
           hardware_wanted_single = all_params.loc[:, col]
@@ -171,6 +166,7 @@ def organize_hardware():
      num_hardware = sweep_hardware_partial()
 
      hardware_runspecs_existing.to_csv(sim_params_analytical.sim_results_file_path_name)
+     #hardware_runspecs_wanted.to_csv(sim_params_analytical.sim_results_file_path_name_current)
      print("\nDone running simulator for all hardware states\n")
      if (sim_params_analytical.run_system_specs):
           (chip_specs, complete_final_specs) = run_system_specs(num_hardware, hardware_runspecs_wanted)
@@ -203,6 +199,7 @@ def make_plots(array_rows_sweep_results, array_cols_sweep_results, batch_size_sw
      practice_plots_7.IPSW()
      practice_plots_7.array_rows_cols_sweep_plots()
      practice_plots_7.batch_SRAM_input_sweep_plots()
+     practice_plots_7.comps_of_IPSW()
 
 
 def run_system_specs(num_hardware, hardware_runspecs_wanted):

@@ -1,5 +1,4 @@
 import math
-from sympy import comp
 
 class SRAM_model():
      def __init__(self, memory_size_words, name):
@@ -7,6 +6,7 @@ class SRAM_model():
           self.fill_size = 0
           self.DRAM_reads = []
           self.component_misses = []
+          self.component_accesses = []
           self.memory_size_words = memory_size_words
           self.name = name
           
@@ -33,11 +33,11 @@ class SRAM_model():
 
           self.DRAM_reads_layer = 0
           self.component_misses_layer = 0
+          self.component_accesses_layer = 0
 
      def access_component(self, component_id):
           # check if it's already there
-          if self.name == "input":
-               x = 1
+          self.component_accesses_layer += 1
           if not self.component_status[component_id]:
                self.add_component(component_id)
                self.component_misses_layer += 1
@@ -69,6 +69,7 @@ class SRAM_model():
      def conclude_layer(self):
           self.DRAM_reads.append(self.DRAM_reads_layer)
           self.component_misses.append(self.component_misses_layer)
+          self.component_accesses.append(self.component_accesses_layer)
 
      def conclude_NN(self):
           self.DRAM_reads = []

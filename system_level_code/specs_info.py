@@ -21,6 +21,8 @@ photonic_power_specs_names = ["Photonic Power Single PD", "PCM OMA", "MRM Tx OMA
 
 time_specs_names = ["Compute Portion", "Program Portion", "Total Time"]
 
+other = ["Dual Core"]
+
 semi_high_results_names = ["Total Electronics Area", "Total Photonics Area", "Electronics Program Power", \
 	"Electronics Compute Power", "Electronics Program Power Time Adjusted", "Electronics Compute Power Time Adjusted", \
 	"Total Electronics Power Time Adjusted", "Total Electronics Power Time Adjusted dBm", "Total Photonic Losses and OMA dBm", \
@@ -30,7 +32,7 @@ semi_high_results_names = ["Total Electronics Area", "Total Photonics Area", "El
 overall_specs_names = ["Total Chip Area", "Total Chip Power", "Inferences Per Second", "Inferences Per Second Per Watt"]
 
 all_specs_names = electronic_area_specs_names + electronic_power_specs_names + photonic_area_specs_names + photonic_power_specs_names \
- + time_specs_names + semi_high_results_names + overall_specs_names
+ + time_specs_names + semi_high_results_names + overall_specs_names + other
 
 
 # Code Settings ----------

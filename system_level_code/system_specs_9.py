@@ -36,10 +36,11 @@ def identify_freq():
 	print("Proposed symbol rate not in system, modeling must abort")
 	return (-1)
 
-def identify_globals(array_params, symbolRate_input):
-	global num_rows, num_cols, freq_index, symbolRate
+def identify_globals(array_params, symbolRate_input, dual_core_input):
+	global num_rows, num_cols, freq_index, symbolRate, dual_core
 	num_rows = array_params.loc["Systolic Array Rows"]
 	num_cols = array_params.loc["Systolic Array Cols"]
+	dual_core = dual_core_input
 	symbolRate = symbolRate_input
 	freq_index = identify_freq()
 
@@ -62,9 +63,16 @@ def time_analysis(program_cycles, vector_input_cycles):
 	program_time_total = program_cycles * specs_info.program_cycle_time 
 	compute_time_total = (vector_input_cycles / symbolRate) 
 
-	total_time = program_time_total + compute_time_total
+	if (dual_core):
+		print("DOING DUAL CORE")
+		if compute_time_total > program_time_total:
+			total_time = compute_time_total
+		else: 
+			total_time = program_time_total
+	else:
+		total_time = program_time_total + compute_time_total
+	
 	total_time_us = total_time * 10**6
-
 	compute_portion = compute_time_total / total_time
 	program_portion = program_time_total / total_time
 
@@ -75,6 +83,7 @@ def time_analysis(program_cycles, vector_input_cycles):
 		print("total time: ", round(total_time_us, decimalPoints), "microseconds")
 		print()
 
+	all_specs.at["Dual Core"] = dual_core
 	all_specs.at["Compute Portion"] = compute_portion
 	all_specs.at["Program Portion"] = program_portion
 	all_specs.at["Total Time"] = total_time
@@ -381,10 +390,9 @@ def electronics_area_analysis(array_params):
 	return(electronics_area)
 
 
-def run_power_area_model(SS_results, array_params, symbolRate):
-	identify_globals(array_params, symbolRate)
+def run_power_area_model(SS_results, array_params, symbolRate, dual_core = 0):
+	identify_globals(array_params, symbolRate, dual_core)
 	component_count()
-
 	time_analysis(SS_results.loc["Total Weights Programming Cycles"], SS_results.loc["Total Vector Segments Processed"])
 	laser_wall_power_time_adjusted = photonics_power_analysis()
 	photonics_area_total = photonics_area_analysis()

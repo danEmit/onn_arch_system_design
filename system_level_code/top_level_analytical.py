@@ -212,7 +212,7 @@ def run_system_specs(num_hardware, hardware_runspecs_wanted):
 
      for (columnName, hardware_runspecs_single) in hardware_runspecs_wanted_expanded.iteritems():
                chip_specs_single = system_specs_9.run_power_area_model(hardware_runspecs_single[runspecs_names],\
-                     hardware_runspecs_single[hardware_names], hardware_runspecs_single["Symbol Rate (GHz)"] * 10**9)
+                     hardware_runspecs_single[hardware_names], hardware_runspecs_single["Symbol Rate (GHz)"] * 10**9, sim_params_analytical.dual_core)
                chip_specs.insert(chip_specs.shape[1], columnName, chip_specs_single, allow_duplicates = True)    
      
      complete_final_specs = pd.concat([hardware_runspecs_wanted_expanded, chip_specs])

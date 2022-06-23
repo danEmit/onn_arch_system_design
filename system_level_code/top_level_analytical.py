@@ -1,4 +1,3 @@
-from sqlalchemy import column
 import sim_params_analytical
 import pseudo_analytical_sim
 import pprint
@@ -146,7 +145,7 @@ def sweep_hardware_partial():
      all_params = pd.concat([array_rows_sweep_params, array_cols_sweep_params, batch_size_sweep_params, \
           SRAM_input_size_sweep_params, array_rows_cols_sweep_params, batch_SRAM_input_sweep_params], axis = 1)
 
-     all_params = pd.DataFrame(sim_params_analytical.single_setting, index = hardware_names)
+     #all_params = pd.DataFrame(sim_params_analytical.single_setting, index = hardware_names)
      num_hardware = all_params.shape[1]
      for col in all_params:
           hardware_wanted_single = all_params.loc[:, col]

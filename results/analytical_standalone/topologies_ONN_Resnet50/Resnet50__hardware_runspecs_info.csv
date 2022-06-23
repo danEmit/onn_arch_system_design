@@ -1,0 +1,17 @@
+,filler name
+Systolic Array Rows,64
+Systolic Array Cols,64
+SRAM Input Size,10000000
+SRAM Filter Size,500000
+SRAM Output Size,500000
+Accumulator Elements,20000
+Batch Size,32
+SRAM Input Reads,1739792768
+SRAM Filter Reads,28071936
+SRAM Output Writes,334638336
+DRAM Input Reads,14477231104
+DRAM Filter Reads,25554944
+DRAM Output Writes,308409536
+Total Weights Programming Cycles,6803
+Total Vector Segments Processed,27456512
+Accumulator Dumps,358

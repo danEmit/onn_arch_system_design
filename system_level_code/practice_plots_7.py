@@ -104,12 +104,12 @@ def plot_photonic_losses():
                variable = "Systolic Array Cols"
                file_term = "variable_cols"
                filtered_data = array_cols_sweep_data
-               title = rows_variable_title
+               title = cols_variable_title
           else:
                variable = "Systolic Array Rows"
                file_term = "variable_rows"
                filtered_data = array_rows_sweep_data
-               title = cols_variable_title
+               title = rows_variable_title
 
           array_param = filtered_data.loc[variable]
           combining_loss = filtered_data.loc["Power Loss Waveguide Power Combining"]
@@ -145,12 +145,12 @@ def plot_times():
                variable = "Systolic Array Cols"
                file_term = "variable_cols"
                filtered_data = array_cols_sweep_data
-               title = rows_variable_title
+               title = cols_variable_title
           elif rows_constant == 1:
                variable = "Systolic Array Rows"
                file_term = "variable_rows"
                filtered_data = array_rows_sweep_data
-               title = cols_variable_title
+               title = rows_variable_title
           else:
                variable = "Batch Size"
                file_term = "variable_batch"
@@ -207,18 +207,17 @@ def plot_power():
                variable = "Systolic Array Cols"
                file_term = "variable_cols"
                filtered_data = array_cols_sweep_data
-               title = rows_variable_title
+               title = cols_variable_title
           elif rows_constant == 1:
                variable = "Systolic Array Rows"
                file_term = "variable_rows"
                filtered_data = array_rows_sweep_data
-               title = cols_variable_title
+               title = rows_variable_title
           else:
                variable = "Batch Size"
                file_term = "variable_batch"
                filtered_data = batch_size_sweep_data
                title = batch_variable_title
-
      
           array_param = filtered_data.loc[variable]
 
@@ -250,12 +249,12 @@ def plot_electronic_power_breakdown():
                variable = "Systolic Array Cols"
                file_term = "variable_cols"
                filtered_data = array_cols_sweep_data
-               title = rows_variable_title
+               title = cols_variable_title
           elif rows_constant == 1:
                variable = "Systolic Array Rows"
                file_term = "variable_rows"
                filtered_data = array_rows_sweep_data
-               title = cols_variable_title
+               title = rows_variable_title
           elif rows_constant == 2:
                variable = "Batch Size"
                file_term = "variable_batch"
@@ -292,7 +291,7 @@ def plot_electronic_power_breakdown():
           plt.yscale("log")
           plt.suptitle("Effect of " + variable + " on Different Electronic Compute Power Consumption")
           plt.title(title, fontsize = title_font_size)
-          plt.savefig(plots_folder + "electronic_power_power_breakdown_" + file_term, dpi = DPI, bbox_inches = "tight")   
+          plt.savefig(plots_folder + "electronic_power_breakdown_" + file_term, dpi = DPI, bbox_inches = "tight")   
           plt.close()
 
 def IPSW():
@@ -302,12 +301,12 @@ def IPSW():
                variable = "Systolic Array Cols"
                file_term = "variable_cols"
                filtered_data = array_cols_sweep_data
-               title = rows_variable_title
+               title = cols_variable_title
           elif rows_constant == 1:
                variable = "Systolic Array Rows"
                file_term = "variable_rows"
                filtered_data = array_rows_sweep_data
-               title = cols_variable_title
+               title = rows_variable_title
           else:
                variable = "Batch Size"
                file_term = "variable_batch"
@@ -391,12 +390,12 @@ def comps_of_IPSW():
                variable = "Systolic Array Cols"
                file_term = "variable_cols"
                filtered_data = array_cols_sweep_data
-               title = rows_variable_title
+               title = cols_variable_title
           elif rows_constant == 1:
                variable = "Systolic Array Rows"
                file_term = "variable_rows"
                filtered_data = array_rows_sweep_data
-               title = cols_variable_title
+               title = rows_variable_title
           else:
                variable = "Batch Size"
                file_term = "variable_batch"
@@ -422,8 +421,8 @@ def comps_of_IPSW():
           plt.grid("minor")
           plt.xlabel(variable)
           plt.ylabel("W * sec / inference")
-          plt.yscale("linear")
-          plt.suptitle("Effect of " + variable)
+          plt.yscale("log")
+          plt.suptitle("Effect of " + variable + " on various powers vs IPS")
           plt.title(title, fontsize = int(1.5 * title_font_size))
           plt.legend(["1 / IPSW", "Electronics Compute Power / IPS", "Photonics Compute Power / IPS", "ADC Compute Power / IPS"])
           plt.savefig(plots_folder + "comps_of_IPWS_inverse_" + file_term, dpi = DPI, bbox_inches = "tight")   

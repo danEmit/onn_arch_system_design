@@ -64,7 +64,6 @@ def time_analysis(program_cycles, vector_input_cycles):
 	compute_time_total = (vector_input_cycles / symbolRate) 
 
 	if (dual_core):
-		print("DOING DUAL CORE")
 		if compute_time_total > program_time_total:
 			total_time = compute_time_total
 		else: 
@@ -249,7 +248,7 @@ def electronics_power_analysis(SS_results):
 	SRAM_power_total_compute_final_sums  = (SRAM_energy_total_compute_final_sums / compute_time_total) * mW_adjustment
 	#SRAM_power_total_compute = SRAM_power_total_compute * compute_portion
 
-	SRAM_accesses_accumulator = SS_results.loc["Total Vector Segments Processed"] * (symbolRate / electronics_clock) * num_cols * 2
+	SRAM_accesses_accumulator = SS_results.loc["Total Vector Segments Processed"] * num_cols * 2
 	SRAM_energy_accumulator = SRAM_accesses_accumulator * SRAM_energyPerSymbol
 	SRAM_power_accumulator = (SRAM_energy_accumulator / compute_time_total) * mW_adjustment
 	#SRAM_power_total_compute = SRAM_power_total_compute_final_sums + SRAM_power_accumulator
@@ -258,7 +257,7 @@ def electronics_power_analysis(SS_results):
 	all_specs.at["SRAM Final Sum Compute Power"] = SRAM_power_total_compute_final_sums 
 	all_specs.at["SRAM Accumulator Power"] = SRAM_power_accumulator
 
-	accumulator_additions = SS_results.loc["Total Vector Segments Processed"] * (symbolRate / electronics_clock) * num_cols
+	accumulator_additions = SS_results.loc["Total Vector Segments Processed"] * num_cols
 	accumulator_addition_power = specs_info.single_addition_energy * (accumulator_additions / compute_time_total) * mW_adjustment
 
 	all_specs.at["Accumulator Adder Power"] = accumulator_addition_power

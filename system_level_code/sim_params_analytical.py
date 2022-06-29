@@ -3,11 +3,11 @@ import numpy as np
 
 mega = 10 ** 6
 
-make_plots = 0
+make_plots = 1
 run_system_specs = 1
 make_plots = run_system_specs and make_plots
 
-base_directory = "/home/dansturm/Desktop/onn_arch_system_design/"
+base_directory = "/Users/d//Desktop/onn_arch_system_design/"
 results_file_path = base_directory + "results/" + "analytical_standalone" + "/"
 NN_file_name = "Resnet50"
 NN_file_folder = "topologies/ONN/"
@@ -78,7 +78,7 @@ array_rows_sweep_data = [array_rows, array_cols, SRAM_input_size, SRAM_filter_si
 array_rows = 32
 array_cols_options = [8, 16, 32, 64, 128, 256]
 array_cols = 0
-batch_size = 1
+batch_size = 32
 SRAM_input_size = mega * 35
 SRAM_filter_size = mega
 SRAM_output_size = mega

@@ -1,0 +1,14 @@
+,0,totals
+Num Programming Practice,55,55
+Num Programming Theory,55,55
+Num Compute Cycles Practice,90475,90475
+Num Compute Cycles Theory,90475,90475
+SRAM Input Reads,1439375,1439375
+SRAM Filter Reads,35000,35000
+SRAM Output Writes,65800,65800
+DRAM Input Reads,69615,69615
+DRAM Filter Reads,56320,56320
+DRAM Output Writes,65800,65800
+Accumulator Dumps,1,1
+SRAM DRAM Input  Misses (Batch),1,1
+SRAM DRAM Filter Misses (Batch),55,55

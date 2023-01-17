@@ -64,14 +64,14 @@ grating_coupler_area = 0.0009
 PCM_OMA = -0.13
 MRM_Tx_OMA = -4
 
-crossbar_junctions_loss_single = -0.05 # dB
+crossbar_junctions_loss_single = -0.01 # dB
 waveguide_loss_per_mm = -.3
 splitting_tree_loss_per_junction = -0.1
 grating_coupler_total_loss = -2
 
 laser_wall_efficiency = 0.2
 
-ADC_power_all = [15, 20, 25] 
+ADC_power_all = [1.26, 20, 25] 
 PS_energyPerBit = 100 * 10**-15 # joules
 ODAC_energyPerSymbol = 168 * 10**-15
 PCMHeater_energyPerProgram = 100 * 10**-12

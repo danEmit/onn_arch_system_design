@@ -153,6 +153,9 @@ def photonics_power_analysis():
 	all_specs.at["MRM Tx OMA"] = specs_info.MRM_Tx_OMA
 
 	total_photonic_loss_OMA = photonic_loss_analysis() + specs_info.PCM_OMA + specs_info.MRM_Tx_OMA 
+	total_photonic_loss_OMA = (total_photonic_loss_OMA / 2) 
+
+
 	laser_output_power_dBm = PD_power_total_dBm - total_photonic_loss_OMA
 	laser_output_power = dB_to_regular(laser_output_power_dBm) # mW
 	laser_wall_power = laser_output_power / specs_info.laser_wall_efficiency

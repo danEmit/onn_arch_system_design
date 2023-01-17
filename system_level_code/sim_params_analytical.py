@@ -7,7 +7,7 @@ make_plots = 1
 run_system_specs = 1
 make_plots = run_system_specs and make_plots
 
-base_directory = "/Users/d//Desktop/onn_arch_system_design/"
+base_directory = "/Users/d/Desktop/research/onn_arch_system_design/"
 results_file_path = base_directory + "results/" + "analytical_standalone" + "/"
 NN_file_name = "Resnet50"
 NN_file_folder = "topologies/ONN/"
@@ -65,7 +65,7 @@ dual_core = 1
 symbol_rate_options = [10]
 
 
-array_rows_options = [8, 16, 32, 64, 128, 256]
+array_rows_options = [8, 16, 32, 64, 128, 256, 512]
 array_rows = 0
 array_cols = 32
 batch_size = 1
@@ -76,7 +76,7 @@ accumulator_elements = mega
 array_rows_sweep_data = [array_rows, array_cols, SRAM_input_size, SRAM_filter_size, SRAM_output_size, accumulator_elements, batch_size]
 
 array_rows = 32
-array_cols_options = [8, 16, 32, 64, 128, 256]
+array_cols_options = [8, 16, 32, 64, 128, 256, 512]
 array_cols = 0
 batch_size = 32
 SRAM_input_size = mega * 35

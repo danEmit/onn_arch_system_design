@@ -10,8 +10,12 @@ a100_power_eff = 78
 a100_power = 1000 * a100_throughput / a100_power_eff
 a100_area = 826
 
-DPI = 300
-title_font_size = 6
+DPI = 500
+title_font_size = 8
+xlabel_fontsize = 18
+ylabel_fontsize = 18
+xticks_fontsize = 15
+yticks_fontsize = 15
 
 NN_name = ""
 include_nvidia = 0
@@ -51,13 +55,37 @@ def make_variable_sweep_title(data, sweep_variable_1, sweep_variable_2= ""):
      if sweep_variable_1 != "Batch Size" and sweep_variable_2 != "Batch Size":
           title += "Batch Size: " + str(round(data.loc["Batch Size"].iloc[0])) + ", "
      if sweep_variable_1 != "Accumulator Elements" and sweep_variable_2 != "Accumulator Elements" :
-          title += "Accumulator Elements: " + str(round(data.loc["Accumulator Elements"].iloc[0])) + ",\n"
+          value = data.loc["Accumulator Elements"].iloc[0]
+          value = value / 1000000
+          if value % 1 != 0:
+               value = round(value, 1)
+          else:
+               value = int(value)
+          title += "Accumulator Elements: " + str(value) + "M,\n"
      if sweep_variable_1 != "SRAM Input Size" and sweep_variable_2 != "SRAM Input Size":
-          title += "SRAM Input Size: " + str(round(data.loc["SRAM Input Size"].iloc[0])) + ", "
+          value = data.loc["SRAM Input Size"].iloc[0]
+          value = value / 1000000
+          if value % 1 != 0:
+               value = round(value, 1)
+          else:
+               value = int(value)
+          title += "SRAM Input Size: " + str(value) + "M, "
      if sweep_variable_1 != "SRAM Filter Size" and sweep_variable_2 != "SRAM Filter Size":
-          title += "SRAM Filter Size: " + str(round(data.loc["SRAM Filter Size"].iloc[0])) + ", "
+          value = data.loc["SRAM Input Size"].iloc[0]
+          value = value / 1000000
+          if value % 1 != 0:
+               value = round(value, 1)
+          else:
+               value = int(value)
+          title += "SRAM Filter Size: " + str(value) + "M, "
      if sweep_variable_1 != "SRAM Output Size" and sweep_variable_2 != "SRAM Output Size":
-          title += "SRAM Output Size: " + str(round(data.loc["SRAM Output Size"].iloc[0])) 
+          value = data.loc["SRAM Output Size"].iloc[0]
+          value = value / 1000000
+          if value % 1 != 0:
+               value = round(value, 1)
+          else:
+               value = int(value)
+          title += "SRAM Output Size: " + str(value)  + "M"
      return(title)
 
 
@@ -236,7 +264,7 @@ def plot_power():
           plt.xlabel(variable)
           plt.ylabel("Power [mW]")
           #plt.xscale("log")
-          plt.yscale("log")
+          #plt.yscale("log")
           plt.suptitle("Effect of " + variable + " on Chip Power (Time Adjusted)")
           plt.title(title, fontsize = int(1.5 *title_font_size))
           plt.savefig(plots_folder + "power_breakdown_" + file_term, dpi = DPI, bbox_inches = "tight")  
@@ -244,7 +272,7 @@ def plot_power():
 
 def plot_electronic_power_breakdown():
      print("Plotting a breakdown of electronic power as a function of SA rows, SA cols, batch size, and SRAM input size")
-     for rows_constant in [0, 1, 2, 3]:
+     for rows_constant in [2]: # usually [0, 1, 2, 3]
           if rows_constant == 0:
                variable = "Systolic Array Cols"
                file_term = "variable_cols"
@@ -283,15 +311,21 @@ def plot_electronic_power_breakdown():
           plt.plot(array_param, ODAC_power, "o-")
           plt.plot(array_param, accumulator_SRAM_power, "o-")
           plt.plot(array_param, total_electronic_power, "o-" )
-          plt.legend(["ADCs", "DRAM", "Ser/Des", "MRM Heater", "ODAC Driver", "Accumulator SRAM Power", "total"])
+          plt.xticks(fontsize=xticks_fontsize)
+          plt.yticks(fontsize=yticks_fontsize)
+          plt.legend(["ADCs", "DRAM", "Ser/Des", "MRM Heater", "ODAC Driver", "Accumulator\nSRAM Power", "total"], fontsize = 12, bbox_to_anchor=(0.53, 0.38))
           plt.grid("minor")
-          plt.xlabel(variable)
-          plt.ylabel("Power [mW]")
+          plt.xlabel(variable, fontsize = xlabel_fontsize)
+          plt.ylabel("Power [mW]", fontsize = ylabel_fontsize)
           #plt.xscale("log")
           plt.yscale("log")
-          plt.suptitle("Effect of " + variable + " on Different Electronic Compute Power Consumption")
-          plt.title(title, fontsize = title_font_size)
+          #plt.suptitle("Effect of " + variable + " on Different Electronic Compute Power Consumption")
+          #plt.title(title, fontsize = title_font_size)
           plt.savefig(plots_folder + "electronic_power_breakdown_" + file_term, dpi = DPI, bbox_inches = "tight")   
+
+
+
+
           plt.close()
 
 def IPSW():
@@ -316,11 +350,12 @@ def IPSW():
           array_param = filtered_data.loc[variable]
           IPSW = filtered_data.loc["Inferences Per Second Per Watt"]
           IPS = filtered_data.loc["Inferences Per Second"]
+
           plt.plot(array_param, IPSW, "-o")
           #plt.legend("IPSW")
           plt.grid("minor")
           plt.xlabel(variable)
-          plt.ylabel("IPSW")
+          plt.ylabel("IPS/W")
           plt.yscale("linear")
           plt.suptitle("Effect of " + variable + " on Inferences per Second per Watt")
           plt.title(title, fontsize = int(1.5 * title_font_size))
@@ -338,7 +373,7 @@ def IPSW():
           plt.close()
 
 def array_rows_cols_sweep_plots():
-     print("Plotting IPSW as function of SA rows AND cols")
+     print("Plotting IPS/W as function of SA rows AND cols")
      filtered_data = array_rows_cols_sweep_data
      row_vals = np.unique(filtered_data.loc["Systolic Array Rows"])
      col_vals = np.unique(filtered_data.loc["Systolic Array Cols"])
@@ -348,20 +383,28 @@ def array_rows_cols_sweep_plots():
           col_index = np.where(col_vals == filtered_data.loc["Systolic Array Cols", col])[0][0]
           IPSW[row_index, col_index] = filtered_data.loc["Inferences Per Second Per Watt", col]
 
-     ax = sns.heatmap(IPSW, cbar_kws={'label': 'IPSW'})
-     plt.suptitle("Effect of Systolic Array Rows and Cols on IPSW")
-     plt.ylabel("Systolic Array Rows")
-     plt.xlabel("Systolic Array Cols")
+     ax = sns.heatmap(IPSW, cbar_kws={'label': 'IPS/W'})
+     #plt.suptitle("Effect of Systolic Array Rows and Cols on IPS/W")
+     plt.ylabel("Crossbar Array Rows", fontsize = ylabel_fontsize)
+     plt.xlabel("Crossbar Array Cols", fontsize = xlabel_fontsize)
+
+     plt.xticks(fontsize=xticks_fontsize)
+     plt.yticks(fontsize=yticks_fontsize)
+
+     ax.figure.axes[-1].yaxis.label.set_size(20)
+     cbar = ax.collections[0].colorbar
+     # here set the labelsize by 20
+     cbar.ax.tick_params(labelsize=15)
 
      ax.set_xticklabels([str(int(x)) for x in col_vals])
      ax.set_yticklabels([str(int(x)) for x in row_vals])
-     plt.title("\n\n\n" + array_rows_cols_variable_title, fontsize = int(1.5 * title_font_size))
+     #plt.title("\n\n\n" + array_rows_cols_variable_title, fontsize = int(title_font_size))
      plt.savefig(plots_folder + "IPSW_rows_cols_2D", dpi = DPI, bbox_inches = "tight")
      plt.close()
 
 
 def batch_SRAM_input_sweep_plots():
-     print("Plotting IPSW as function of batch and SRAM input")
+     print("Plotting IPS/W as function of batch and SRAM input")
      filtered_data = batch_SRAM_input_sweep_data
      row_vals = np.unique(filtered_data.loc["Batch Size"])
      col_vals = np.unique(filtered_data.loc["SRAM Input Size"])
@@ -371,20 +414,33 @@ def batch_SRAM_input_sweep_plots():
           col_index = np.where(col_vals == filtered_data.loc["SRAM Input Size", col])[0][0]
           IPSW[row_index, col_index] = filtered_data.loc["Inferences Per Second Per Watt", col]
 
-     ax = sns.heatmap(IPSW)
-     plt.suptitle("Effect of Batch Size and SRAM Input Size on IPSW")
-     plt.ylabel("Batch Size")
-     plt.xlabel("SRAM Input Size")
+     ax = sns.heatmap(IPSW, cbar_kws={'label': 'IPS/W'})
+     ax.figure.axes[-1].yaxis.label.set_size(20)
+     cbar = ax.collections[0].colorbar
+     # here set the labelsize by 20
+     cbar.ax.tick_params(labelsize=15)
+
+
+     #plt.suptitle("Effect of Batch Size and SRAM Input Size on IPS/W")
+     plt.ylabel("Batch Size", fontsize = ylabel_fontsize)
+     plt.xlabel("SRAM Input Size [MegaBytes]", fontsize = xlabel_fontsize)
+
+     col_vals = col_vals * 6 / (8 * 1000000)
+     col_vals = np.round(col_vals, 1)
+
 
      ax.set_yticklabels([str(int(x)) for x in row_vals])
      ax.set_xticklabels([str(int(x)) for x in col_vals])
-     plt.title(batch_SRAM_input_variable_title, fontsize = title_font_size)
+     plt.xticks(fontsize=xticks_fontsize)
+     plt.yticks(fontsize=yticks_fontsize)
+
+     #plt.title(batch_SRAM_input_variable_title, fontsize = title_font_size)
      plt.savefig(plots_folder + "IPSW_batch_SRAM_input_2D", dpi = DPI, bbox_inches = "tight")
      plt.close()
 
 
 def comps_of_IPSW():
-     print("plotting the contributions of different power sources to 1/IPSW")
+     print("plotting the contributions of different power sources to 1/IPS/W")
      for rows_constant in [0, 1, 2]:
           if rows_constant == 0:
                variable = "Systolic Array Cols"
@@ -423,26 +479,123 @@ def comps_of_IPSW():
           plt.ylabel("W * sec / inference")
           plt.yscale("log")
           plt.suptitle("Effect of " + variable + " on various powers vs IPS")
-          plt.title(title, fontsize = int(1.5 * title_font_size))
-          plt.legend(["1 / IPSW", "Electronics Compute Power / IPS", "Photonics Compute Power / IPS", "ADC Compute Power / IPS"])
+          plt.title(title, fontsize = int(title_font_size))
+          plt.legend(["1 / IPS/W", "Electronics Compute Power / IPS", "Photonics Compute Power / IPS", "ADC Compute Power / IPS"])
           plt.savefig(plots_folder + "comps_of_IPWS_inverse_" + file_term, dpi = DPI, bbox_inches = "tight")   
           plt.close()
 
 
+def IPS_dual_core_manual_data():
+     print("plotting the effect of dual vs single core on IPS vs batch size")
+
+     IPS_single_core = [400.737357, 2934.389401, 2934.389401, 2934.389401, 2934.389401, 2934.389401]
+     IPS_dual_core   = [352.586135, 1532.070682, 2013.089511, 2387.959051, 2633.124002, 2775.545584]
+
+     array_param = batch_size_sweep_data.loc["Batch Size"]
+     title = batch_variable_title
+
+     plt.figure(figsize=(10 * 1.15, 2.3 * 1.15))
+     plt.plot(array_param, IPS_single_core, "-o")
+     plt.plot(array_param, IPS_dual_core, "-o")
+     plt.grid("minor")
+     plt.xlabel("Batch Size", fontsize = xlabel_fontsize)
+     plt.ylabel("IPS", fontsize = ylabel_fontsize)
+     plt.yscale("linear")
+     #plt.suptitle("Effect of Batch Size on IPS in Single- and Dual-Core Crossbar Acccelerators")
+     #plt.subplots_adjust(top=0.78)
+     #plt.title(title, fontsize = title_font_size)
+     plt.legend(['Dual Core', 'Single Core'])
+     #plt.tight_layout()
+     
+
+
+     plt.xticks(fontsize=xticks_fontsize)
+     plt.yticks(fontsize=yticks_fontsize)
+
+     #plt.show()
+     #set_size_inches(30, 10.5)
+     plt.savefig(plots_folder + "IPS_variable_batch_dual_single_core", dpi = DPI, bbox_inches = "tight")   
+     plt.close()
 
 
 
+def single_config_breakdown():
+     print("taking a certain optimal config and making breakdown of power and area")
+
+     ADCsPower = 3200.0
+     PCMHeaterPower = 16384 * 0.179186040588822
+     DRAMComputePower = 15026.2439258661
+     PSPower = 1536
+
+     totalElectronicsPowerTimeAdjusted = 25100
+     electronicPowerRemainder = totalElectronicsPowerTimeAdjusted - ADCsPower - PCMHeaterPower  - DRAMComputePower - PSPower
+     laserWallPower = 5313.15043252708
+
+     powers = [ADCsPower, PCMHeaterPower, DRAMComputePower, laserWallPower, electronicPowerRemainder, PSPower]
+     total = sum(powers)
+     labels = ['ADCs', 'PCM Heater', 'DRAM (Compute)', "Laser Power\nFrom Wall", "Other Electronic\n Power",  'Ser/Des']
+
+     print(labels)
+     print(powers)
+     print([100 * i / total for i in powers] )
+
+
+     ADCsArea = 6.08
+     SRAMArea = 99.9
+     CrossbarArea = 6.5536 * 2
+     totalPhotonicsArea = 13.13751
+     remainingPhotonicsArea = totalPhotonicsArea - CrossbarArea
+     totalElectronicsArea = 107.9192
+     remainingElectronicsArea = totalElectronicsArea - ADCsArea - SRAMArea
+
+     areas = [ADCsArea, SRAMArea, CrossbarArea, remainingElectronicsArea, remainingPhotonicsArea]
+     totalArea = sum(areas)
+     labels = ["ADCs Area", "SRAM Area", "Crossbar Area", "Other Electronics Area", "Other Photonics Area"]
+
+     print(labels)
+     print(areas)
+     print([100 * i / totalArea for i in areas])
 
 
 
+     '''
+     fig, ax = plt.subplots(figsize=(6, 3), subplot_kw=dict(aspect="equal"))
+     def func(pct, allvals):
+         absolute = int(np.round(pct/100.*np.sum(allvals)))
+         return "{:.1f}%\n({:d} g)".format(pct, absolute)
+
+
+     wedges, texts, autotexts = ax.pie(powers, autopct=lambda pct: func(pct, powers),
+                                       textprops=dict(color="w"))
+
+     ax.legend(wedges, labels,
+               title="Ingredients",
+               loc="center left",
+               bbox_to_anchor=(1, 0, 0.5, 1))
+
+     plt.setp(autotexts, size=8, weight="bold")
+
+     ax.set_title("Matplotlib bakery: A pie")
 
 
 
+     fig1, ax1 = plt.subplots()
+     wedges, texts, autotexts = ax1.pie(powers, labels=labels, autopct=lambda p: '{:.1f} W'.format(p * total / (100 * 1000)),
+        shadow=False, startangle=0)
+
+     #ax1.legend(wedges, labels,
+     #     title="Ingredients",
+     #     loc="center left",
+     #     bbox_to_anchor=(1, 0, 0.5, 1))
+     #plt.setp(autotexts, size=8, weight="bold")
+
+     ax1.axis('equal') 
+
+     plt.savefig(plots_folder + "power_breakdown", dpi = 500, bbox_inches = "tight")   
 
 
 
-
-
+     '''
 
 
 

@@ -10,7 +10,7 @@ class scalesim:
                  verbose=True,
                  config='',
                  topology='',
-                 input_type_gemm=False):
+                 input_type_gemm=False, hardware_arch_overwrite = ""):
 
         # Data structures
         self.config = scale_config()
@@ -31,12 +31,12 @@ class scalesim:
         self.run_done_flag = False
         self.logs_generated_flag = False
 
-        self.set_params(config_filename=config, topology_filename=topology)
+        self.set_params(config_filename=config, topology_filename=topology, hardware_arch_overwrite = hardware_arch_overwrite)
 
     #
     def set_params(self,
                    config_filename='',
-                   topology_filename='' ):
+                   topology_filename='', hardware_arch_overwrite = ""):
         # First check if the user provided a valid topology file
         if not topology_filename == '':
             if not os.path.exists(topology_filename):
@@ -56,7 +56,7 @@ class scalesim:
             self.config_file = config_filename
 
         # Parse config first
-        self.config.read_conf_file(self.config_file)
+        self.config.read_conf_file(self.config_file, hardware_arch_overwrite)
 
         # Take the CLI topology over the one in config
         # If topology is not passed from CLI take the one from config

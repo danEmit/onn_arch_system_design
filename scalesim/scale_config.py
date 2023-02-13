@@ -30,7 +30,7 @@ class scale_config:
         self.valid_df_list = ['os', 'ws', 'is']
 
     #
-    def read_conf_file(self, conf_file_in):
+    def read_conf_file(self, conf_file_in, hardware_arch_overwrite):
 
         me = 'scale_config.' + 'read_conf_file()'
 
@@ -63,6 +63,14 @@ class scale_config:
         self.ofmap_offset = int(config.get(section, 'OfmapOffset'))
         self.df = config.get(section, 'Dataflow')
         self.memory_banks = int(config.get(section, 'MemoryBanks').strip())
+
+        ## here is where i need to overwrite things 
+        self.array_rows = hardware_arch_overwrite["Systolic Array Rows"]
+        self.array_cols = hardware_arch_overwrite["Systolic Array Cols"]
+        self.ifmap_sz_kb = hardware_arch_overwrite["SRAM Input Size"]
+        self.filter_sz_kb = hardware_arch_overwrite["SRAM Filter Size"]
+        self.ofmap_sz_kb = hardware_arch_overwrite["SRAM Output Size"]
+        self.df = self.df ## maybe change this in the future
 
         # Anand: ISSUE #2. Patch
         if self.use_user_bandwidth:

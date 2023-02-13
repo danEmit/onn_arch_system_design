@@ -2,7 +2,7 @@ import time
 from scalesim.scale_sim import scalesim
 
 
-def run_scale_sim(hardware_arch):
+def run_scale_sim(hardware_arch, NN_layers):
 	print("\nBeginning ScaleSim Execution")
 	dummy_config_file = "/Users/d/Desktop/SS_adaptation.nosync/dummy/scale.cfg"
 	dummy_NN_file = "/Users/d/Desktop/SS_adaptation.nosync/dummy/basicNN.csv"
@@ -12,7 +12,7 @@ def run_scale_sim(hardware_arch):
 	s = scalesim(save_disk_space=True, verbose=1,
 				 config=dummy_config_file,
 				 topology=dummy_NN_file,
-				 input_type_gemm=gemm_input, hardware_arch_overwrite = hardware_arch)
+				 input_type_gemm=gemm_input, hardware_arch_overwrite = hardware_arch, NN_layers_overwrite = NN_layers)
 
 
 	startExecutionTime = time.time()

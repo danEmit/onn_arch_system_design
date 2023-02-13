@@ -10,7 +10,7 @@ class scalesim:
                  verbose=True,
                  config='',
                  topology='',
-                 input_type_gemm=False, hardware_arch_overwrite = ""):
+                 input_type_gemm=False, hardware_arch_overwrite = "", NN_layers_overwrite = ""):
 
         # Data structures
         self.config = scale_config()
@@ -31,12 +31,12 @@ class scalesim:
         self.run_done_flag = False
         self.logs_generated_flag = False
 
-        self.set_params(config_filename=config, topology_filename=topology, hardware_arch_overwrite = hardware_arch_overwrite)
+        self.set_params(config_filename=config, topology_filename=topology, hardware_arch_overwrite = hardware_arch_overwrite, NN_layers_overwrite = NN_layers_overwrite)
 
     #
     def set_params(self,
                    config_filename='',
-                   topology_filename='', hardware_arch_overwrite = ""):
+                   topology_filename='', hardware_arch_overwrite = "", NN_layers_overwrite = ""):
         # First check if the user provided a valid topology file
         if not topology_filename == '':
             if not os.path.exists(topology_filename):
@@ -67,7 +67,18 @@ class scalesim:
 
         # Parse the topology
         self.topo.load_arrays(topofile=self.topology_file, mnk_inputs=self.read_gemm_inputs)
+        ## here can update arrays stuff
+        all_layers = [0] * len(NN_layers_overwrite)
+        for i in range(len(NN_layers_overwrite)):
+            layer = ["dummy_name_" + str(i)]
+            layer.extend(NN_layers_overwrite[i].to_list())
+            all_layers[i] = layer
+            
+        self.topo.topo_arrays = all_layers	
+        self.topo.num_layers = len(NN_layers_overwrite)
+        print(self.topo.topo_arrays)	
 
+        
         #num_layers = self.topo.get_num_layers()
         #self.config.scale_memory_maps(num_layers=num_layers)
 

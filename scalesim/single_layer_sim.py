@@ -1,5 +1,5 @@
 import os
-
+import scalesim.global_vars as global_vars
 from scalesim.scale_config import scale_config as cfg
 from scalesim.topology_utils import topologies as topo
 from scalesim.compute.operand_matrix import operand_matrix as opmat
@@ -123,7 +123,18 @@ class single_layer_sim:
 
         # 1.3 Get the no compute demand matrices from for 2 operands and the output
         ifmap_prefetch_mat, filter_prefetch_mat = self.compute_system.get_prefetch_matrices()
-        ifmap_demand_mat, filter_demand_mat, ofmap_demand_mat = self.compute_system.get_demand_matrices()
+        ifmap_demand_mat, filter_demand_mat, ofmap_demand_mat, ifmap_demand_mat_non_skew = self.compute_system.get_demand_matrices()
+
+
+
+        global_vars.ifmap_demand_mat.append(ifmap_demand_mat)
+        global_vars.filter_demand_mat.append(filter_demand_mat)
+        global_vars.ofmap_demand_mat.append(ofmap_demand_mat)
+        global_vars.ifmap_demand_mat_non_skew.append(ifmap_demand_mat_non_skew)
+
+
+
+
         #print('DEBUG: Compute operations done')
         # 2. Setup the memory system and run the demands through it to find any memory bottleneck and generate traces
 

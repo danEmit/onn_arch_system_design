@@ -25,10 +25,10 @@ def analyze_memory_writes():
 
 def run_scale_sim(hardware_arch, NN_layers):
 	print("\nBeginning ScaleSim Execution")
-	dummy_config_file = "/Users/d/Desktop/SS_adaptation.nosync/dummy/scale.cfg"
-	dummy_NN_file = "/Users/d/Desktop/SS_adaptation.nosync/dummy/basicNN.csv"
+	dummy_config_file = "/Users/d/Desktop/cnn_on_array.nosync/SS_adaptation/dummy/scale.cfg"
+	dummy_NN_file = "/Users/d/Desktop/cnn_on_array.nosync/SS_adaptation/dummy/basicNN.csv"
 	gemm_input = 0
-	logpath = "/Users/d/Desktop/SS_adaptation.nosync/logs"
+	logpath = "/Users/d/Desktop/cnn_on_array.nosync/SS_adaptation/logs"
 	global_vars.initialize()
 
 	s = scalesim(save_disk_space=True, verbose=1,

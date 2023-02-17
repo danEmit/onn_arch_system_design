@@ -98,8 +98,19 @@ def run_scale_sim(hardware_arch, NN_layers):
 	startExecutionTime = time.time()
 	s.run_scale(top_path=logpath)
 	endExecutionTime = time.time()
-	print("TOTAL SS EXECUTION TIME:", round((endExecutionTime - startExecutionTime), 3))
-	return(analyze_outputs())
+
+	#print("TOTAL SS EXECUTION TIME:", round((endExecutionTime - startExecutionTime), 3))
+	SS_results = analyze_outputs()
+	endPostProcessTime = time.time()
+	SS_execution_time = round((endExecutionTime - startExecutionTime) / 60, 3)
+	SS_post_process_time = round((endPostProcessTime - endExecutionTime) / 60, 3)
+	SS_results.loc["Simulation Run Time [min]"] = SS_execution_time
+	SS_results.loc["Simulation Post Process Time [min]"] = SS_post_process_time
+	return(SS_results)
+
+	
+
+
 
 
 

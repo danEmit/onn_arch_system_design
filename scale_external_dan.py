@@ -2,39 +2,6 @@ import time
 from scalesim.scale_sim import scalesim
 import scalesim.global_vars as global_vars
 import numpy as np
-#def analyze_SRAM_traces():
-	
-'''
-def analyze_SRAM_trace(SRAM_demand_mat):
-	numLayers = len(SRAM_demand_mat)
-	SRAM_cycles = [0] * numLayers
-	for layer in range(numLayers):
-		row_idx = 0
-		SRAM_cycles[layer] = []
-		SRAM_demand_mat_singleLayer = SRAM_demand_mat[layer]
-		while (row_idx < SRAM_demand_mat_singleLayer.shape[0]):
-			row = SRAM_demand_mat_singleLayer[row_idx, :] 
-			program_row_count = 0
-			program_col_count = 0 #redundant?
-			 
-			while(sum(row == -1) != row.shape[0]):
-				if (program_row_count == 0):
-					program_col_count = sum(row != -1)
-				program_row_count += 1
-				row_idx += 1
-				row = SRAM_demand_mat_singleLayer[row_idx, :]  
-
-			if program_row_count != 0: 
-				statsRow = [program_row_count, program_col_count, program_col_count * program_row_count]
-				SRAM_cycles[layer].append(statsRow)
-			
-			else:
-				row_idx += 1
-				
-		SRAM_cycles[layer] = np.array(SRAM_cycles[layer])
-
-	return SRAM_cycles
-'''
 
 def analyze_SRAM_trace(SRAM_demand_mat):
 	numLayers = len(SRAM_demand_mat)
@@ -62,22 +29,6 @@ def analyze_SRAM_trace(SRAM_demand_mat):
 		SRAM_cycles[layer] = [active_instances, active_clock_cycles, active_ind_words]
 
 	return(SRAM_cycles)
-
-
-	'''
-	prev_state = "compute"
-	curr_state = "compute"
-
-	for clock_cycle in range(num_clock_cycles - 1):
-		accesses = SRAM_demand_mat_singleLayer[clock_cycle, :] 
-
-
-	while (clock_cycle < num_clock_cycles):
-		accesses = SRAM_demand_mat_singleLayer[clock_cycle, :] 
-		if (sum(accesses == -1) != num_access_cols):
-			curr_state = "program"
-			#if prev_state == "compute":
-	'''
 
 def analyze_memory_writes():
 	# here are some magic numbers. they are important!
@@ -113,9 +64,6 @@ def analyze_SRAM_usage():
 	memory_accesses = analyze_memory_writes()
 
 
-
-
-
 def run_scale_sim(hardware_arch, NN_layers):
 	print("\nBeginning ScaleSim Execution")
 	dummy_config_file = "/Users/d/Desktop/cnn_on_array.nosync/SS_adaptation/dummy/scale.cfg"
@@ -136,30 +84,6 @@ def run_scale_sim(hardware_arch, NN_layers):
 	print("TOTAL SS EXECUTION TIME:", round((endExecutionTime - startExecutionTime), 3))
 	analyze_SRAM_usage()
 	print()
-
-def main():
-	# no plan to ever really run this (?)
-	dummy_config_file = "/Users/d/Desktop/SS_adaptation.nosync/dummy/scale.cfg"
-	dummy_NN_file = "/Users/d/Desktop/SS_adaptation.nosync/dummy/basicNN.csv"
-	gemm_input = 0
-	logpath = "/Users/d/Desktop/SS_adaptation.nosync/logs"
-	hardware_arch_overwrite = "hasdfas"
-
-	s = scalesim(save_disk_space=True, verbose=1,
-				 config=dummy_config_file,
-				 topology=dummy_NN_file,
-				 input_type_gemm=gemm_input, hardware_arch_overwrite = hardware_arch_overwrite)
-	startExecutionTime = time.time()
-	#logpath = "../test_runs"
-	s.run_scale(top_path=logpath)
-	endExecutionTime = time.time()
-	print("\nTOTAL SS EXECUTION TIME:", round((endExecutionTime - startExecutionTime), 3))
-	print()
-	
-
-if __name__ == "__main__":
-	main()
-
 
 
 

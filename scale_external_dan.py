@@ -2,6 +2,7 @@ import time
 from scalesim.scale_sim import scalesim
 import scalesim.global_vars as global_vars
 import numpy as np
+import pandas as pd
 
 def analyze_SRAM_trace(SRAM_demand_mat):
 	numLayers = len(SRAM_demand_mat)
@@ -28,7 +29,7 @@ def analyze_SRAM_trace(SRAM_demand_mat):
 
 		SRAM_cycles[layer] = [active_instances, active_clock_cycles, active_ind_words]
 
-	return(SRAM_cycles)
+	return(np.array(SRAM_cycles))
 
 def analyze_memory_writes():
 	# here are some magic numbers. they are important!
@@ -49,7 +50,7 @@ def analyze_memory_writes():
 
 	return([sram_ifmap_reads, sram_filter_reads, sram_ofmap_writes, dram_ifmap_reads, dram_filter_reads, dram_ofmap_writes])
 
-def analyze_SRAM_usage():
+def analyze_outputs():
 	input_demand_mat = global_vars.ifmap_demand_mat
 	filter_demand_mat = global_vars.filter_demand_mat
 	output_demand_mat = global_vars.ofmap_demand_mat
@@ -57,11 +58,27 @@ def analyze_SRAM_usage():
 	## i know the below makes no sense but it does, it works 
 	combined_input_output_demand_mat = [np.logical_and(input_demand_mat[layer] == -1, output_demand_mat[layer] == -1) * -2  + 1  for layer in range(len(input_demand_mat))]
 
-	program_counts = analyze_SRAM_trace(filter_demand_mat)
-	analog_compute_counts = analyze_SRAM_trace(input_demand_mat_non_skew)
-	digital_compute_counts = analyze_SRAM_trace(combined_input_output_demand_mat)
+	program_counts_layer = analyze_SRAM_trace(filter_demand_mat)
+	analog_compute_counts_layer = analyze_SRAM_trace(input_demand_mat_non_skew)
+	digital_compute_counts_layer = analyze_SRAM_trace(combined_input_output_demand_mat)
 
+	program_counts_total = np.sum(program_counts_layer, 0)
+	analog_compute_counts_total = np.sum(analog_compute_counts_layer, 0)
+	digital_compute_counts_total = np.sum(digital_compute_counts_layer, 0)
+	
 	memory_accesses = analyze_memory_writes()
+	totals = memory_accesses
+
+	totals.extend(program_counts_total[0:2])
+	totals.extend(analog_compute_counts_total[0:2])
+	totals.extend([digital_compute_counts_total[1]])
+	runspecs_names = ["SRAM Input Reads", "SRAM Filter Reads", "SRAM Output Writes", \
+	"DRAM Input Reads", "DRAM Filter Reads", "DRAM Output Writes",\
+			"Total Programming Instances", "Total Programming Clock Cycles", \
+			"Total Compute Instances", "Total Compute Clock Cycles Analog", "Total Compute Clock Cycles Digital"]
+
+	return(pd.DataFrame(totals, runspecs_names))
+
 
 
 def run_scale_sim(hardware_arch, NN_layers):
@@ -82,8 +99,7 @@ def run_scale_sim(hardware_arch, NN_layers):
 	s.run_scale(top_path=logpath)
 	endExecutionTime = time.time()
 	print("TOTAL SS EXECUTION TIME:", round((endExecutionTime - startExecutionTime), 3))
-	analyze_SRAM_usage()
-	print()
+	return(analyze_outputs())
 
 
 

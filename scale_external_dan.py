@@ -89,7 +89,7 @@ def run_scale_sim(hardware_arch, NN_layers):
 	logpath = "/Users/d/Desktop/cnn_on_array.nosync/SS_adaptation/logs"
 	global_vars.initialize()
 
-	s = scalesim(save_disk_space=True, verbose=1,
+	s = scalesim(save_disk_space=False, verbose=1,
 				 config=dummy_config_file,
 				 topology=dummy_NN_file,
 				 input_type_gemm=gemm_input, hardware_arch_overwrite = hardware_arch, NN_layers_overwrite = NN_layers)

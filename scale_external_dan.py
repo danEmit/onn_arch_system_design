@@ -31,6 +31,81 @@ def analyze_SRAM_trace(SRAM_demand_mat):
 
 	return(np.array(SRAM_cycles))
 
+def count_SRAM_trace_clock_cycles(SRAM_demand_mat):
+	numLayers = len(SRAM_demand_mat)
+	SRAM_cycles = [0] * numLayers
+	inactive = -1
+	for layer in range(numLayers):
+		clock_cycle = 0
+		SRAM_demand_mat_singleLayer = SRAM_demand_mat[layer]
+
+		num_access_cols = SRAM_demand_mat_singleLayer.shape[1]
+		clock_cycle_status = np.sum(SRAM_demand_mat_singleLayer == inactive, axis = 1) != num_access_cols
+		num_active_clock_cycle = np.sum(clock_cycle_status)
+
+		SRAM_cycles[layer] = num_active_clock_cycle
+	
+	return(SRAM_cycles)
+
+def analyze_all_SRAM_traces_together(filter_SRAM_demand, input_SRAM_demand, output_SRAM_demand):
+	numLayers = len(filter_SRAM_demand)
+	SRAM_cycles = [0] * numLayers
+	inactive = -1
+	for layer in range(numLayers):
+		filter_SRAM_status = np.sum(filter_SRAM_demand[layer] == inactive, axis = 1) != filter_SRAM_demand[layer].shape[1]
+		input_SRAM_status = np.sum(input_SRAM_demand[layer] == inactive, axis = 1) != input_SRAM_demand[layer].shape[1]
+		output_SRAM_status = np.sum(output_SRAM_demand[layer] == inactive, axis = 1) != output_SRAM_demand[layer].shape[1]
+		num_clock_cycles = len(filter_SRAM_status)
+
+		compute_clock_cycle_count = 0
+		program_clock_cycle_count = 0 
+		compute_instance_count = 0
+		program_instance_count = 0 
+
+		mode = "nothing"
+		for clock_cycle in range(num_clock_cycles):
+			if mode == "nothing":
+				if filter_SRAM_status[clock_cycle]:
+					mode = "program"
+					program_instance_count += 1
+					program_clock_cycle_count += 1
+			elif mode == "program": ## note that there is some chance here that the new 
+				#clock cycle is the (first and) last compute cycle 
+				if output_SRAM_status[clock_cycle]:
+					mode = "compute_end"
+					compute_instance_count += 1
+					compute_clock_cycle_count += 1
+				elif input_SRAM_status[clock_cycle]:
+					mode = "compute_start"
+					compute_instance_count += 1
+					compute_clock_cycle_count += 1
+				else:
+					program_clock_cycle_count += 1
+			elif mode == "compute_start":
+				compute_clock_cycle_count += 1
+				if output_SRAM_status[clock_cycle]:
+					mode = "compute_end"
+			elif mode == "compute_end":
+				if output_SRAM_status[clock_cycle]:
+					compute_clock_cycle_count += 1
+				elif filter_SRAM_status[clock_cycle]:
+					mode = "program"
+					program_instance_count += 1
+					program_clock_cycle_count += 1
+				else:
+					mode = "nothing"
+
+
+		program_clock_cycle_count_alternate = np.sum(filter_SRAM_status)
+		if (program_clock_cycle_count_alternate != program_clock_cycle_count):
+			print("ERROR, different methods of calculating program clock cycle count give different results")
+		SRAM_cycles[layer] = [program_instance_count, program_clock_cycle_count, compute_instance_count, compute_clock_cycle_count]
+
+	
+	SRAM_cycles = np.array(SRAM_cycles)
+	return(np.array(SRAM_cycles))
+
+
 def analyze_memory_writes():
 	# here are some magic numbers. they are important!
 	SRAM_IFMAP_READS = 2;  SRAM_FILTER_READS = 5;  SRAM_OFMAP_WRITES = 8

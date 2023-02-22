@@ -4,33 +4,6 @@ import scalesim.global_vars as global_vars
 import numpy as np
 import pandas as pd
 
-def analyze_SRAM_trace(SRAM_demand_mat):
-	numLayers = len(SRAM_demand_mat)
-	SRAM_cycles = [0] * numLayers
-	inactive = -1
-	for layer in range(numLayers):
-		clock_cycle = 0
-		SRAM_demand_mat_singleLayer = SRAM_demand_mat[layer]
-
-		num_access_cols = SRAM_demand_mat_singleLayer.shape[1]
-		clock_cycle_status = np.sum(SRAM_demand_mat_singleLayer == inactive, axis = 1) != num_access_cols
-		num_active_clock_cycle = np.sum(clock_cycle_status)
-		num_clock_cycles = SRAM_demand_mat_singleLayer.shape[0]
-
-		active_instances = 0
-		active_clock_cycles = np.sum(clock_cycle_status)
-		active_ind_words = np.sum(SRAM_demand_mat_singleLayer != inactive)
-
-		if clock_cycle_status[0]:
-			active_instances += 1
-		for clock_cycle in range(num_clock_cycles - 1):
-			if (not clock_cycle_status[clock_cycle] and clock_cycle_status[clock_cycle + 1]):
-				active_instances += 1
-
-		SRAM_cycles[layer] = [active_instances, active_clock_cycles, active_ind_words]
-
-	return(np.array(SRAM_cycles))
-
 def count_SRAM_trace_clock_cycles(SRAM_demand_mat):
 	numLayers = len(SRAM_demand_mat)
 	SRAM_cycles = [0] * numLayers
@@ -130,27 +103,19 @@ def analyze_outputs():
 	filter_demand_mat = global_vars.filter_demand_mat
 	output_demand_mat = global_vars.ofmap_demand_mat
 	input_demand_mat_non_skew = global_vars.ifmap_demand_mat_non_skew
-	## i know the below makes no sense but it does, it works 
-	combined_input_output_demand_mat = [np.logical_and(input_demand_mat[layer] == -1, output_demand_mat[layer] == -1) * -2  + 1  for layer in range(len(input_demand_mat))]
 
-	program_counts_layer = analyze_SRAM_trace(filter_demand_mat)
-	analog_compute_counts_layer = analyze_SRAM_trace(input_demand_mat_non_skew)
-	digital_compute_counts_layer = analyze_SRAM_trace(combined_input_output_demand_mat)
-
-	program_counts_total = np.sum(program_counts_layer, 0)
-	analog_compute_counts_total = np.sum(analog_compute_counts_layer, 0)
-	digital_compute_counts_total = np.sum(digital_compute_counts_layer, 0)
-	
 	memory_accesses = analyze_memory_writes()
 	totals = memory_accesses
-
-	totals.extend(program_counts_total[0:2])
-	totals.extend(analog_compute_counts_total[0:2])
-	totals.extend([digital_compute_counts_total[1]])
 	runspecs_names = ["SRAM Input Reads", "SRAM Filter Reads", "SRAM Output Writes", \
-	"DRAM Input Reads", "DRAM Filter Reads", "DRAM Output Writes",\
-			"Total Programming Instances", "Total Programming Clock Cycles", \
-			"Total Compute Instances", "Total Compute Clock Cycles Analog", "Total Compute Clock Cycles Digital"]
+		"DRAM Input Reads", "DRAM Filter Reads", "DRAM Output Writes",\
+				"Total Programming Instances", "Total Programming Clock Cycles", \
+				"Total Compute Instances", "Total Compute Clock Cycles Analog", "Total Compute Clock Cycles Digital"]
+
+	SRAM_accesses_layer = analyze_all_SRAM_traces_together(filter_demand_mat, input_demand_mat, output_demand_mat)
+	SRAM_accesses_total = np.sum(SRAM_accesses_layer, axis = 0)
+	analog_compute_counts_layer = count_SRAM_trace_clock_cycles(input_demand_mat_non_skew)
+	analog_compute_counts_total = sum(analog_compute_counts_layer)
+	totals.extend([SRAM_accesses_total[0], SRAM_accesses_total[1], SRAM_accesses_total[2], analog_compute_counts_total, SRAM_accesses_total[3]])
 
 	return(pd.DataFrame(totals, runspecs_names))
 

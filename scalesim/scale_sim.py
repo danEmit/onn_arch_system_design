@@ -76,7 +76,7 @@ class scalesim:
             
         self.topo.topo_arrays = all_layers	
         self.topo.num_layers = len(NN_layers_overwrite)
-        print(self.topo.topo_arrays)	
+        #print(self.topo.topo_arrays)	
 
         
         #num_layers = self.topo.get_num_layers()

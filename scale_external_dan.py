@@ -72,9 +72,11 @@ def analyze_all_SRAM_traces_together(filter_SRAM_demand, input_SRAM_demand, outp
 		program_clock_cycle_count_alternate = np.sum(filter_SRAM_status)
 		if (program_clock_cycle_count_alternate != program_clock_cycle_count):
 			print("ERROR, different methods of calculating program clock cycle count give different results")
-		SRAM_cycles[layer] = [program_instance_count, program_clock_cycle_count, compute_instance_count, compute_clock_cycle_count]
+		if (program_instance_count != compute_instance_count):
+			print("ERROR, program instance count not equal to compute instance count")
+		
+		SRAM_cycles[layer] = [program_instance_count, program_clock_cycle_count, compute_clock_cycle_count]
 
-	
 	SRAM_cycles = np.array(SRAM_cycles)
 	return(np.array(SRAM_cycles))
 
@@ -108,14 +110,14 @@ def analyze_outputs():
 	totals = memory_accesses
 	runspecs_names = ["SRAM Input Reads", "SRAM Filter Reads", "SRAM Output Writes", \
 		"DRAM Input Reads", "DRAM Filter Reads", "DRAM Output Writes",\
-				"Total Programming Instances", "Total Programming Clock Cycles", \
-				"Total Compute Instances", "Total Compute Clock Cycles Analog", "Total Compute Clock Cycles Digital"]
+				"Total Program/Compute Instances", "Total Programming Clock Cycles", \
+			     "Total Compute Clock Cycles Analog", "Total Compute Clock Cycles Digital"]
 
 	SRAM_accesses_layer = analyze_all_SRAM_traces_together(filter_demand_mat, input_demand_mat, output_demand_mat)
 	SRAM_accesses_total = np.sum(SRAM_accesses_layer, axis = 0)
 	analog_compute_counts_layer = count_SRAM_trace_clock_cycles(input_demand_mat_non_skew)
 	analog_compute_counts_total = sum(analog_compute_counts_layer)
-	totals.extend([SRAM_accesses_total[0], SRAM_accesses_total[1], SRAM_accesses_total[2], analog_compute_counts_total, SRAM_accesses_total[3]])
+	totals.extend([SRAM_accesses_total[0], SRAM_accesses_total[1], analog_compute_counts_total, SRAM_accesses_total[2]])
 
 	return(pd.DataFrame(totals, runspecs_names))
 

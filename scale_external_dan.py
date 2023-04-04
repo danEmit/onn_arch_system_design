@@ -136,7 +136,6 @@ def run_scale_sim(hardware_arch, NN_layers):
 				 topology=dummy_NN_file,
 				 input_type_gemm=gemm_input, hardware_arch_overwrite = hardware_arch, NN_layers_overwrite = NN_layers)
 
-
 	startExecutionTime = time.time()
 	s.run_scale(top_path=logpath)
 	endExecutionTime = time.time()
@@ -151,9 +150,47 @@ def run_scale_sim(hardware_arch, NN_layers):
 	SS_results.loc["Simulation Post Process Time [min]"] = SS_post_process_time
 	return(SS_results)
 
-	
 
 
+def setHardware():
+	names = ["Systolic Array Rows", "Systolic Array Cols", "SRAM Input Size", "SRAM Filter Size", "SRAM Output Size", "Batch Size"]
+	arrayRows = 5
+	arrayCols = 5
+	SRAMInputSize = 1000
+	SRAMFilterSize = 1000
+	SRAMOutputSize = 1000
+	batchSize = 1
 
+	hardware = pd.DataFrame([arrayRows, arrayCols, SRAMInputSize, SRAMFilterSize, SRAMOutputSize, batchSize], names)
+	hardware = hardware.squeeze()
+	return(hardware)
 
+def setNN():
+	names = ["Input Rows", "Input Columns", "Filter Rows", "Filter Columns", "Channels", "Num Filter", "X Stride", "Y Stride"]
+	inputRows = [5]
+	inputCols = [5]
+	filterRows = [3]
+	filterCols = [3]
+	channels = [1]
+	numFilter = [6]
+	xStride = [1]
+	yStride = [1]
+
+	NNLayersAll = []
+
+	for i in range(len(inputRows)):
+		NNLayer = pd.DataFrame([inputRows[i], inputCols[i], filterRows[i], filterCols[i], channels[i], numFilter[i], xStride[i], yStride[i]], names)
+		NNLayersAll.append(NNLayer.squeeze())
+	return(NNLayersAll)
+
+def main():
+	NNLayers = setNN()
+	hardwareArch = setHardware()
+
+	SSResults = run_scale_sim(hardwareArch, NNLayers)
+	#SSResults = SSResults.loc[runspecs_names]
+	print(SSResults)
+
+if __name__ == "__main__":
+    main()
 

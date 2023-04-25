@@ -124,7 +124,7 @@ def analyze_outputs():
 
 
 def run_scale_sim(hardware_arch, NN_layers):
-	print("\nBeginning ScaleSim Execution")
+	#print("\nBeginning ScaleSim Execution")
 	dummy_config_file = "../SS_adaptation/dummy/scale.cfg"
 	dummy_NN_file = "../SS_adaptation/dummy/basicNN.csv"
 	gemm_input = 0

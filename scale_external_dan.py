@@ -3,6 +3,10 @@ from scalesim.scale_sim import scalesim
 import scalesim.global_vars as global_vars
 import numpy as np
 import pandas as pd
+import os
+
+os.chdir("/Users/d/Desktop/cnn_on_array.nosync/SS_adaptation/")
+
 
 def count_SRAM_trace_clock_cycles(SRAM_demand_mat):
 	numLayers = len(SRAM_demand_mat)
@@ -127,7 +131,7 @@ def run_scale_sim(hardware_arch, NN_layers):
 	#print("\nBeginning ScaleSim Execution")
 	dummy_config_file = "../SS_adaptation/dummy/scale.cfg"
 	dummy_NN_file = "../SS_adaptation/dummy/basicNN.csv"
-	gemm_input = 0
+	gemm_input = 1
 	logpath = "../SS_adaptation/logs"
 	global_vars.initialize()
 

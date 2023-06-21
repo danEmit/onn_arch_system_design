@@ -104,30 +104,37 @@ def analyze_memory_writes():
 
 	return([sram_ifmap_reads, sram_filter_reads, sram_ofmap_writes, dram_ifmap_reads, dram_filter_reads, dram_ofmap_writes])
 
-def analyze_outputs():
+def analyze_outputs(compute_type):
 	input_demand_mat = global_vars.ifmap_demand_mat
 	filter_demand_mat = global_vars.filter_demand_mat
 	output_demand_mat = global_vars.ofmap_demand_mat
 	input_demand_mat_non_skew = global_vars.ifmap_demand_mat_non_skew
 
-	memory_accesses = analyze_memory_writes()
-	totals = memory_accesses
-	runspecs_names = ["SRAM Input Reads", "SRAM Filter Reads", "SRAM Output Writes", \
-		"DRAM Input Reads", "DRAM Filter Reads", "DRAM Output Writes",\
-				"Total Program/Compute Instances", "Total Programming Clock Cycles", \
-			     "Total Compute Clock Cycles Analog", "Total Compute Clock Cycles Digital"]
 
-	SRAM_accesses_layer = analyze_all_SRAM_traces_together(filter_demand_mat, input_demand_mat, output_demand_mat)
-	SRAM_accesses_total = np.sum(SRAM_accesses_layer, axis = 0)
+	memory_accesses = analyze_memory_writes()
 	analog_compute_counts_layer = count_SRAM_trace_clock_cycles(input_demand_mat_non_skew)
 	analog_compute_counts_total = sum(analog_compute_counts_layer)
-	totals.extend([SRAM_accesses_total[0], SRAM_accesses_total[1], analog_compute_counts_total, SRAM_accesses_total[2]])
+
+	if compute_type == "digital":
+		totals = memory_accesses
+		runspecs_names = ["SRAM Input Reads", "SRAM Filter Reads", "SRAM Output Writes", \
+			"DRAM Input Reads", "DRAM Filter Reads", "DRAM Output Writes",\
+					"Total Program/Compute Instances", "Total Programming Clock Cycles", \
+					"Total Compute Clock Cycles Analog", "Total Compute Clock Cycles Digital"]
+
+		SRAM_accesses_layer = analyze_all_SRAM_traces_together(filter_demand_mat, input_demand_mat, output_demand_mat)
+		SRAM_accesses_total = np.sum(SRAM_accesses_layer, axis = 0)
+		totals.extend([SRAM_accesses_total[0], SRAM_accesses_total[1], analog_compute_counts_total, SRAM_accesses_total[2]])
+	
+	else:
+		runspecs_names = ["DRAM Input Reads", "Total Compute Clock Cycles Analog"]
+		totals = [memory_accesses[3], analog_compute_counts_total]
 
 	return(pd.DataFrame(totals, runspecs_names))
 
 
 
-def run_scale_sim(hardware_arch, NN_layers):
+def run_scale_sim(hardware_arch, NN_layers, compute_type):
 	#print("\nBeginning ScaleSim Execution")
 	dummy_config_file = "../SS_adaptation/dummy/scale.cfg"
 	dummy_NN_file = "../SS_adaptation/dummy/basicNN.csv"
@@ -138,14 +145,15 @@ def run_scale_sim(hardware_arch, NN_layers):
 	s = scalesim(save_disk_space=False, verbose=0,
 				 config=dummy_config_file,
 				 topology=dummy_NN_file,
-				 input_type_gemm=gemm_input, hardware_arch_overwrite = hardware_arch, NN_layers_overwrite = NN_layers)
+				 input_type_gemm=gemm_input, hardware_arch_overwrite = hardware_arch, 
+				 NN_layers_overwrite = NN_layers, compute_type = compute_type)
 
 	startExecutionTime = time.time()
 	s.run_scale(top_path=logpath)
 	endExecutionTime = time.time()
 
 	#print("TOTAL SS EXECUTION TIME:", round((endExecutionTime - startExecutionTime), 3))
-	SS_results = analyze_outputs()
+	SS_results = analyze_outputs(compute_type)
 	endPostProcessTime = time.time()
 	SS_execution_time = round((endExecutionTime - startExecutionTime) / 60, 5)
 	SS_post_process_time = round((endPostProcessTime - endExecutionTime) / 60, 5)

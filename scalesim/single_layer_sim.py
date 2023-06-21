@@ -7,7 +7,7 @@ from scalesim.compute.systolic_compute_os import systolic_compute_os
 from scalesim.compute.systolic_compute_ws import systolic_compute_ws
 from scalesim.compute.systolic_compute_is import systolic_compute_is
 from scalesim.memory.double_buffered_scratchpad_mem import double_buffered_scratchpad as mem_dbsp
-
+import numpy as np
 
 class single_layer_sim:
 	def __init__(self):
@@ -102,7 +102,7 @@ class single_layer_sim:
 		self.memory_system = mem_sys_obj
 		self.memory_system_ready_flag = True
 
-	def run(self):
+	def run(self, compute_type):
 		assert self.params_set_flag, 'Parameters are not set. Run set_params()'
 
 		# 1. Setup and the get the demand from compute system
@@ -125,7 +125,13 @@ class single_layer_sim:
 		ifmap_prefetch_mat, filter_prefetch_mat = self.compute_system.get_prefetch_matrices()
 		ifmap_demand_mat, filter_demand_mat, ofmap_demand_mat, ifmap_demand_mat_non_skew = self.compute_system.get_demand_matrices()
 
-
+		if (compute_type == "analog"):
+			print("*************** analog ***************")
+			ifmap_demand_mat = ifmap_demand_mat_non_skew
+			filter_demand_mat = np.ones(ifmap_demand_mat.shape)
+			ofmap_demand_mat = np.ones(ifmap_demand_mat.shape)
+		else:
+			print("*************** digital ***************")
 
 		global_vars.ifmap_demand_mat.append(ifmap_demand_mat)
 		global_vars.filter_demand_mat.append(filter_demand_mat)

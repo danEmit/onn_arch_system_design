@@ -126,12 +126,12 @@ class single_layer_sim:
 		ifmap_demand_mat, filter_demand_mat, ofmap_demand_mat, ifmap_demand_mat_non_skew = self.compute_system.get_demand_matrices()
 
 		if (compute_type == "analog"):
-			print("*************** analog ***************")
+			#print("*************** analog ***************")
 			ifmap_demand_mat = ifmap_demand_mat_non_skew
 			filter_demand_mat = np.ones(ifmap_demand_mat.shape)
 			ofmap_demand_mat = np.ones(ifmap_demand_mat.shape)
-		else:
-			print("*************** digital ***************")
+		#else:
+			#print("*************** digital ***************")
 
 		global_vars.ifmap_demand_mat.append(ifmap_demand_mat)
 		global_vars.filter_demand_mat.append(filter_demand_mat)

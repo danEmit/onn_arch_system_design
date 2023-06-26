@@ -7,6 +7,12 @@ import os
 
 os.chdir("/Users/d/Desktop/cnn_on_array.nosync/SS_adaptation/")
 
+text_output = ""
+
+def add_to_text_output(string_output):
+		print(string_output)
+		global text_output
+		text_output += "\n" + string_output
 
 def count_SRAM_trace_clock_cycles(SRAM_demand_mat):
 	numLayers = len(SRAM_demand_mat)
@@ -141,6 +147,7 @@ def run_scale_sim(hardware_arch, NN_layers, compute_type):
 	gemm_input = 1
 	logpath = "../SS_adaptation/logs"
 	global_vars.initialize()
+	add_to_text_output("SCALE-Sim will be doing compute type:" + compute_type)
 
 	s = scalesim(save_disk_space=False, verbose=0,
 				 config=dummy_config_file,
@@ -160,7 +167,7 @@ def run_scale_sim(hardware_arch, NN_layers, compute_type):
 	SS_results.loc[" "] = " "
 	SS_results.loc["Simulation Run Time [min]"] = SS_execution_time
 	SS_results.loc["Simulation Post Process Time [min]"] = SS_post_process_time
-	return(SS_results)
+	return(SS_results, text_output)
 
 
 

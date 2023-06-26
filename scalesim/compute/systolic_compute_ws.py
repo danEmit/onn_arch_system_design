@@ -217,7 +217,10 @@ class systolic_compute_ws:
                 # Account for the cycles for final output to drain out
                 this_fold_demand = np.concatenate((this_fold_demand, inter_fold_gap_suffix_mat), axis=0)
                 this_fold_demand_non_skew = this_fold_demand
+<<<<<<< HEAD
                 #self.ifmap_demand_matrix_NON_SKEW = this_fold_demand
+=======
+>>>>>>> git-will-not-let-me-fork-again
 
                 # Add skew to the IFMAP demand matrix to reflect systolic pipeline fill
                 this_fold_demand = skew_matrix(this_fold_demand)

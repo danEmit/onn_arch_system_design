@@ -42,9 +42,9 @@ class simulator:
         self.num_layers = self.topo.get_num_layers()
 
         self.params_set_flag = True
-
+        
     #
-    def run(self):
+    def run(self, compute_type):
         assert self.params_set_flag, 'Simulator parameters are not set'
 
         # 1. Create the layer runners for each layer
@@ -77,7 +77,7 @@ class simulator:
                 layer_id = single_layer_obj.get_layer_id()
                 print('\nRunning Layer ' + str(layer_id))
 
-            single_layer_obj.run()
+            single_layer_obj.run(compute_type)
 
             if self.verbose:
                 comp_items = single_layer_obj.get_compute_report_items()

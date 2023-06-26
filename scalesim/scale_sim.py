@@ -13,8 +13,12 @@ class scalesim:
                  verbose=True,
                  config='',
                  topology='',
+<<<<<<< HEAD
                  input_type_gemm=False, 
                  batch_size = 1):
+=======
+                 input_type_gemm=False, hardware_arch_overwrite = "", NN_layers_overwrite = "", compute_type = "digital"):
+>>>>>>> git-will-not-let-me-fork-again
 
         # Data structures
         self.config = scale_config()
@@ -34,13 +38,15 @@ class scalesim:
         self.verbose_flag = verbose
         self.run_done_flag = False
         self.logs_generated_flag = False
+        
+        self.compute_type = compute_type
 
-        self.set_params(config_filename=config, topology_filename=topology)
+        self.set_params(config_filename=config, topology_filename=topology, hardware_arch_overwrite = hardware_arch_overwrite, NN_layers_overwrite = NN_layers_overwrite)
 
     #
     def set_params(self,
                    config_filename='',
-                   topology_filename='' ):
+                   topology_filename='', hardware_arch_overwrite = "", NN_layers_overwrite = ""):
         # First check if the user provided a valid topology file
         if not topology_filename == '':
             if not os.path.exists(topology_filename):
@@ -60,7 +66,7 @@ class scalesim:
             self.config_file = config_filename
 
         # Parse config first
-        self.config.read_conf_file(self.config_file)
+        self.config.read_conf_file(self.config_file, hardware_arch_overwrite)
 
         # Take the CLI topology over the one in config
         # If topology is not passed from CLI take the one from config
@@ -71,11 +77,22 @@ class scalesim:
 
         # Parse the topology
         self.topo.load_arrays(topofile=self.topology_file, mnk_inputs=self.read_gemm_inputs)
+        ## here can update arrays stuff
+        all_layers = [0] * len(NN_layers_overwrite)
+        for i in range(len(NN_layers_overwrite)):
+            layer = ["dummy_name_" + str(i)]
+            layer.extend(NN_layers_overwrite[i].to_list())
+            all_layers[i] = layer
+            
+        self.topo.topo_arrays = all_layers	
+        self.topo.num_layers = len(NN_layers_overwrite)
+        #print(self.topo.topo_arrays)	
 
+        
         #num_layers = self.topo.get_num_layers()
         #self.config.scale_memory_maps(num_layers=num_layers)
 
-    #
+    
     def run_scale(self, top_path='.'):
 
         self.top_path = top_path
@@ -106,7 +123,7 @@ class scalesim:
         #    save_trace=save_trace,
         #    verbosity=self.verbose_flag
         #)
-        self.runner.run()
+        self.runner.run(self.compute_type)
         self.run_done_flag = True
 
         #self.runner.generate_all_logs()

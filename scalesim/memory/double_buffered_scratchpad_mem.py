@@ -175,6 +175,8 @@ class double_buffered_scratchpad:
             ifmap_serviced_cycles += [ifmap_cycle_out[0]]
             ifmap_stalls = ifmap_cycle_out[0] - cycle_arr[0] - ifmap_hit_latency
 
+
+            '''
             filter_demand_line = filter_demand_mat[i, :].reshape((1, filter_demand_mat.shape[1]))
             filter_cycle_out = self.filter_buf.service_reads(incoming_requests_arr_np=filter_demand_line,
                                                            incoming_cycles_arr=cycle_arr)
@@ -188,6 +190,8 @@ class double_buffered_scratchpad:
             ofmap_stalls = ofmap_cycle_out[0] - cycle_arr[0] - 1
 
             self.stall_cycles += int(max(ifmap_stalls[0], filter_stalls[0], ofmap_stalls[0]))
+            '''
+            self.stall_cycles += 0
 
         if self.estimate_bandwidth_mode:
             # IDE shows warning as complete_all_prefetches is not implemented in read_buffer class
@@ -195,18 +199,19 @@ class double_buffered_scratchpad:
             self.ifmap_buf.complete_all_prefetches()
             self.filter_buf.complete_all_prefetches()
 
-        self.ofmap_buf.empty_all_buffers(ofmap_serviced_cycles[-1])
+
+        #self.ofmap_buf.empty_all_buffers(ofmap_serviced_cycles[-1])
 
         # Prepare the traces
         ifmap_services_cycles_np = np.asarray(ifmap_serviced_cycles).reshape((len(ifmap_serviced_cycles), 1))
         self.ifmap_trace_matrix = np.concatenate((ifmap_services_cycles_np, ifmap_demand_mat), axis=1)
 
-        filter_services_cycles_np = np.asarray(filter_serviced_cycles).reshape((len(filter_serviced_cycles), 1))
-        self.filter_trace_matrix = np.concatenate((filter_services_cycles_np, filter_demand_mat), axis=1)
+        #filter_services_cycles_np = np.asarray(filter_serviced_cycles).reshape((len(filter_serviced_cycles), 1))
+        #self.filter_trace_matrix = np.concatenate((filter_services_cycles_np, filter_demand_mat), axis=1)
 
-        ofmap_services_cycles_np = np.asarray(ofmap_serviced_cycles).reshape((len(ofmap_serviced_cycles), 1))
-        self.ofmap_trace_matrix = np.concatenate((ofmap_services_cycles_np, ofmap_demand_mat), axis=1)
-        self.total_cycles = int(ofmap_serviced_cycles[-1][0])
+        #ofmap_services_cycles_np = np.asarray(ofmap_serviced_cycles).reshape((len(ofmap_serviced_cycles), 1))
+        #self.ofmap_trace_matrix = np.concatenate((ofmap_services_cycles_np, ofmap_demand_mat), axis=1)
+        #self.total_cycles = int(ofmap_serviced_cycles[-1][0])
 
         # END of serving demands from memory
         self.traces_valid = True

@@ -147,7 +147,7 @@ def run_scale_sim(hardware_arch, NN_layers, compute_type):
 	gemm_input = 1
 	logpath = "../SS_adaptation/logs"
 	global_vars.initialize()
-	add_to_text_output("SCALE-Sim will be doing compute type:" + compute_type)
+	add_to_text_output("SCALE-Sim will be doing compute type: " + compute_type)
 
 	s = scalesim(save_disk_space=False, verbose=0,
 				 config=dummy_config_file,

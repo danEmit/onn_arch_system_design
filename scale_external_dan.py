@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 import os
 
-os.chdir("/Users/d/Desktop/cnn_on_array.nosync/SS_adaptation/")
+#os.chdir("/Users/d/Desktop/cnn_on_array.nosync/SS_adaptation/")
 
 text_output = ""
 
@@ -147,6 +147,8 @@ def run_scale_sim(hardware_arch, NN_layers, compute_type):
 	gemm_input = 1
 	logpath = "../SS_adaptation/logs"
 	global_vars.initialize()
+	global text_output
+	text_output = ""
 	add_to_text_output("SCALE-Sim will be doing compute type: " + compute_type)
 
 	s = scalesim(save_disk_space=False, verbose=0,

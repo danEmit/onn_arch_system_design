@@ -245,7 +245,7 @@ class write_buffer:
     #
     def get_trace_matrix(self):
         if not self.trace_valid:
-            print('No trace has been generated yet')
+            #print('No trace has been generated yet')
             return
 
         trace_matrix = np.concatenate((self.cycles_vec, self.trace_matrix), axis=1)
@@ -272,7 +272,7 @@ class write_buffer:
     #
     def print_trace(self, filename):
         if not self.trace_valid:
-            print('No trace has been generated yet')
+            #print('No trace has been generated yet')
             return
         trace_matrix = self.get_trace_matrix()
         np.savetxt(filename, trace_matrix, fmt='%s', delimiter=",")

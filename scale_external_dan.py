@@ -5,7 +5,6 @@ import numpy as np
 import pandas as pd
 import os
 
-#os.chdir("/Users/d/Desktop/cnn_on_array.nosync/SS_adaptation/")
 
 text_output = ""
 
@@ -149,7 +148,7 @@ def run_scale_sim(hardware_arch, NN_layers, compute_type):
 	global_vars.initialize()
 	global text_output
 	text_output = ""
-	add_to_text_output("SCALE-Sim will be doing compute type: " + compute_type)
+	#add_to_text_output("SCALE-Sim will be doing compute type: " + compute_type)
 
 	s = scalesim(save_disk_space=False, verbose=0,
 				 config=dummy_config_file,
@@ -213,5 +212,7 @@ def main():
 	print(SSResults)
 
 if __name__ == "__main__":
+    #os.chdir("/Users/d/Desktop/cnn_on_array.nosync/SS_adaptation/")
+
     main()
 

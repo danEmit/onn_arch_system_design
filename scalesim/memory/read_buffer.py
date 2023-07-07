@@ -389,7 +389,7 @@ class read_buffer:
     #
     def get_trace_matrix(self):
         if not self.trace_valid:
-            print('No trace has been generated yet')
+            #print('No trace has been generated yet')
             return
 
         return self.trace_matrix
@@ -418,7 +418,7 @@ class read_buffer:
     #
     def print_trace(self, filename):
         if not self.trace_valid:
-            print('No trace has been generated yet')
+            #print('No trace has been generated yet')
             return
 
         np.savetxt(filename, self.trace_matrix, fmt='%s', delimiter=",")

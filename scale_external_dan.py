@@ -84,7 +84,12 @@ def analyze_all_SRAM_traces_together(filter_SRAM_demand, input_SRAM_demand, outp
 		if (program_instance_count != compute_instance_count):
 			print("ERROR, program instance count not equal to compute instance count")
 		
+		if (1):
+			compute_clock_cycle_count = sum(input_SRAM_status)
+
 		SRAM_cycles[layer] = [program_instance_count, program_clock_cycle_count, compute_clock_cycle_count]
+
+
 
 	SRAM_cycles = np.array(SRAM_cycles)
 	return(np.array(SRAM_cycles))
@@ -145,7 +150,7 @@ def run_scale_sim(hardware_arch, NN_layers, compute_type):
 	dummy_NN_file = "../SS_adaptation/dummy/basicNN.csv"
 	gemm_input = 1
 	logpath = "../SS_adaptation/logs"
-	global_vars.initialize()
+	global_vars.initialize(1)
 	global text_output
 	text_output = ""
 	#add_to_text_output("SCALE-Sim will be doing compute type: " + compute_type)

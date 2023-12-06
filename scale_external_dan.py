@@ -4,7 +4,10 @@ import scalesim.global_vars as global_vars
 import numpy as np
 import pandas as pd
 import os
+import platform
 
+if platform.node() == 'ds-MacBook-Air-2.local' or 'ds-Air-2.fios-router.home':
+	os.chdir("/Users/d/Desktop/cnn_on_array.nosync/SS_adaptation/")
 
 text_output = ""
 
@@ -130,7 +133,7 @@ def analyze_outputs(compute_type):
 		runspecs_names = ["SRAM Input Reads", "SRAM Filter Reads", "SRAM Output Writes", \
 			"DRAM Input Reads", "DRAM Filter Reads", "DRAM Output Writes",\
 					"Total Program/Compute Instances", "Total Programming Clock Cycles", \
-					"Total Compute Clock Cycles Analog", "Total Compute Clock Cycles Digital"]
+					"Total Compute Clock Cycles Analog", "Total Compute Clock Cycles"]
 
 		SRAM_accesses_layer = analyze_all_SRAM_traces_together(filter_demand_mat, input_demand_mat, output_demand_mat)
 		SRAM_accesses_total = np.sum(SRAM_accesses_layer, axis = 0)
@@ -194,10 +197,10 @@ def setNN():
 	names = ["Input Rows", "Input Columns", "Filter Rows", "Filter Columns", "Channels", "Num Filter", "X Stride", "Y Stride"]
 	inputRows = [5]
 	inputCols = [5]
-	filterRows = [3]
-	filterCols = [3]
+	filterRows = [4]
+	filterCols = [4]
 	channels = [1]
-	numFilter = [6]
+	numFilter = [1]
 	xStride = [1]
 	yStride = [1]
 
@@ -212,7 +215,7 @@ def main():
 	NNLayers = setNN()
 	hardwareArch = setHardware()
 
-	SSResults = run_scale_sim(hardwareArch, NNLayers)
+	SSResults = run_scale_sim(hardwareArch, NNLayers, "digital")
 	#SSResults = SSResults.loc[runspecs_names]
 	print(SSResults)
 

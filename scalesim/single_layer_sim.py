@@ -226,14 +226,14 @@ class single_layer_sim:
 
 		# Compute report
 		self.total_cycles = self.memory_system.get_total_compute_cycles()
-		self.stall_cycles = self.memory_system.get_stall_cycles()
-		self.overall_util = (self.num_compute * 100) / (self.total_cycles * self.num_mac_unit)
-		self.mapping_eff = self.compute_system.get_avg_mapping_efficiency() * 100
-		self.compute_util = self.compute_system.get_avg_compute_utilization() * 100
 
 		if not global_vars.sim_all:
 			self.total_cycles = 1
 
+		self.stall_cycles = self.memory_system.get_stall_cycles()
+		self.overall_util = (self.num_compute * 100) / (self.total_cycles * self.num_mac_unit)
+		self.mapping_eff = self.compute_system.get_avg_mapping_efficiency() * 100
+		self.compute_util = self.compute_system.get_avg_compute_utilization() * 100
 
 		# BW report
 		self.ifmap_sram_reads = self.compute_system.get_ifmap_requests()
@@ -244,21 +244,22 @@ class single_layer_sim:
 		self.avg_ofmap_sram_bw = self.ofmap_sram_writes / self.total_cycles
 
 		# Detail report
-		self.ifmap_sram_start_cycle, self.ifmap_sram_stop_cycle \
-			= self.memory_system.get_ifmap_sram_start_stop_cycles()
+
 
 		if global_vars.sim_all:
+			self.ifmap_sram_start_cycle, self.ifmap_sram_stop_cycle \
+			= self.memory_system.get_ifmap_sram_start_stop_cycles()
+
 			self.filter_sram_start_cycle, self.filter_sram_stop_cycle \
 			= self.memory_system.get_filter_sram_start_stop_cycles()
 
-			
 			self.ofmap_sram_start_cycle, self.ofmap_sram_stop_cycle \
 				= self.memory_system.get_ofmap_sram_start_stop_cycles()
 
-		self.ifmap_dram_start_cycle, self.ifmap_dram_stop_cycle, self.ifmap_dram_reads \
-			= self.memory_system.get_ifmap_dram_details()
-
 		if global_vars.sim_all:
+			self.ifmap_dram_start_cycle, self.ifmap_dram_stop_cycle, self.ifmap_dram_reads \
+				= self.memory_system.get_ifmap_dram_details()
+
 			self.filter_dram_start_cycle, self.filter_dram_stop_cycle, self.filter_dram_reads \
 				= self.memory_system.get_filter_dram_details()
 

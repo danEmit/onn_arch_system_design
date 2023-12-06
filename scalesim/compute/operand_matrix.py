@@ -89,6 +89,8 @@ class operand_matrix(object):
         # Assign the offsets
         self.ifmap_offset, self.filter_offset, self.ofmap_offset \
             = self.config.get_offsets()
+        
+        self.ofmap_offset = 10000
 
         # Address matrices: This is needed to take into account the updated dimensions
         self.ifmap_addr_matrix = np.ones((self.ofmap_px_per_filt * self.batch_size, self.conv_window_size), dtype='>i4')

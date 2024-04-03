@@ -7,7 +7,7 @@ import os
 import platform
 
 if platform.node() == 'ds-MacBook-Air-2.local' or 'ds-Air-2.fios-router.home':
-	os.chdir("/Users/d/Desktop/cnn_on_array.nosync/SS_adaptation/")
+	os.chdir("/Users/d/Desktop/research/old/cnn_on_array.nosync/SS_adaptation/")
 
 text_output = ""
 
@@ -122,7 +122,6 @@ def analyze_outputs(compute_type):
 	filter_demand_mat = global_vars.filter_demand_mat
 	output_demand_mat = global_vars.ofmap_demand_mat
 	input_demand_mat_non_skew = global_vars.ifmap_demand_mat_non_skew
-
 
 	memory_accesses = analyze_memory_writes()
 	analog_compute_counts_layer = count_SRAM_trace_clock_cycles(input_demand_mat_non_skew)

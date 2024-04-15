@@ -6,13 +6,13 @@ import pandas as pd
 import os
 import platform
 
-if platform.node() == 'ds-MacBook-Air-2.local' or 'ds-Air-2.fios-router.home':
-	os.chdir("/Users/d/Desktop/research/old/cnn_on_array.nosync/SS_adaptation/")
+#if platform.node() == 'ds-MacBook-Air-2.local' or 'ds-Air-2.fios-router.home':
+#	os.chdir("/Users/d/Desktop/research/old/cnn_on_array.nosync/SS_adaptation/")
 
 text_output = ""
 
 def add_to_text_output(string_output):
-		print(string_output)
+		#print(string_output)
 		global text_output
 		text_output += "\n" + string_output
 
@@ -124,38 +124,43 @@ def analyze_outputs(compute_type):
 	input_demand_mat_non_skew = global_vars.ifmap_demand_mat_non_skew
 
 	memory_accesses = analyze_memory_writes()
-	analog_compute_counts_layer = count_SRAM_trace_clock_cycles(input_demand_mat_non_skew)
-	analog_compute_counts_total = sum(analog_compute_counts_layer)
+
+	
+	runspecs_names = ["SRAM Input Reads", "SRAM Filter Reads", "SRAM Output Writes", \
+			"DRAM Input Reads", "DRAM Filter Reads", "DRAM Output Writes",\
+					"Total Program/Compute Instances", "Total Programming Clock Cycles", \
+					"Total Compute Clock Cycles"]
 
 	if compute_type == "digital":
 		totals = memory_accesses
-		runspecs_names = ["SRAM Input Reads", "SRAM Filter Reads", "SRAM Output Writes", \
-			"DRAM Input Reads", "DRAM Filter Reads", "DRAM Output Writes",\
-					"Total Program/Compute Instances", "Total Programming Clock Cycles", \
-					"Total Compute Clock Cycles Analog", "Total Compute Clock Cycles"]
+
 
 		SRAM_accesses_layer = analyze_all_SRAM_traces_together(filter_demand_mat, input_demand_mat, output_demand_mat)
 		SRAM_accesses_total = np.sum(SRAM_accesses_layer, axis = 0)
-		totals.extend([SRAM_accesses_total[0], SRAM_accesses_total[1], analog_compute_counts_total, SRAM_accesses_total[2]])
+		totals.extend([SRAM_accesses_total[0], SRAM_accesses_total[1], SRAM_accesses_total[2]])
 	
 	else:
-		runspecs_names = ["DRAM Input Reads", "Total Compute Clock Cycles Analog"]
-		totals = [memory_accesses[3], analog_compute_counts_total]
+		#runspecs_names = ["DRAM Input Reads", "Total Compute Clock Cycles"]
+		dram_input_reads = memory_accesses[3]
+		analog_compute_counts_layer = count_SRAM_trace_clock_cycles(input_demand_mat_non_skew)
+		analog_compute_counts_total = sum(analog_compute_counts_layer)
+		#totals = [memory_accesses[3], analog_compute_counts_total]
+		totals = [-1, -1, -1, dram_input_reads, -1, -1, -1, -1, analog_compute_counts_total]
 
 	return(pd.DataFrame(totals, runspecs_names))
 
 
 
-def run_scale_sim(hardware_arch, NN_layers, compute_type):
+def run_scale_sim(hardware_arch, NN_layers, compute_type, gemm_input):
 	#print("\nBeginning ScaleSim Execution")
 	dummy_config_file = "../SS_adaptation/dummy/scale.cfg"
 	dummy_NN_file = "../SS_adaptation/dummy/basicNN.csv"
-	gemm_input = 1
 	logpath = "../SS_adaptation/logs"
 	global_vars.initialize(1)
 	global text_output
 	text_output = ""
 	#add_to_text_output("SCALE-Sim will be doing compute type: " + compute_type)
+	#add_to_text_output("SCALE-Sim will be doing NN type: " + ("gemm" if gemm_input == 1 else "cnn"))
 
 	s = scalesim(save_disk_space=False, verbose=0,
 				 config=dummy_config_file,

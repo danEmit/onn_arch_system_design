@@ -134,7 +134,6 @@ def analyze_outputs(compute_type):
 	if compute_type == "digital":
 		totals = memory_accesses
 
-
 		SRAM_accesses_layer = analyze_all_SRAM_traces_together(filter_demand_mat, input_demand_mat, output_demand_mat)
 		SRAM_accesses_total = np.sum(SRAM_accesses_layer, axis = 0)
 		totals.extend([SRAM_accesses_total[0], SRAM_accesses_total[1], SRAM_accesses_total[2]])
@@ -161,7 +160,7 @@ def run_scale_sim(hardware_arch, NN_layers, compute_type, gemm_input):
 	text_output = ""
 	#add_to_text_output("SCALE-Sim will be doing compute type: " + compute_type)
 	#add_to_text_output("SCALE-Sim will be doing NN type: " + ("gemm" if gemm_input == 1 else "cnn"))
-
+ 
 	s = scalesim(save_disk_space=False, verbose=0,
 				 config=dummy_config_file,
 				 topology=dummy_NN_file,
